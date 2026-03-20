@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@import "flyonui/flyonui.css";
+
+@source "../views";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+/* removed source */
+
+/* Override FlyonUI light theme to use blue instead of indigo */
+[data-theme=light] {
+    --color-primary: oklch(54.61% .243 264.05); /* blue-600 #2563eb */
+    --color-primary-content: oklch(100% 0 0); /* white */
+}
+
+@theme {
+    /* Brand */
+    --color-primary: #2563eb;
+    --color-primary-content: #ffffff;
+    --color-accent: #3b82f6;
+    --color-accent-hover: #1d4ed8;
+
+    /* Surface */
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-border: #e2e8f0;
+    --color-border-strong: #cbd5e1;
+
+    /* Text */
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #64748b;
+    --color-text-muted: #94a3b8;
+
+    /* Traffic Light */
+    --color-critical: #ef4444;
+    --color-critical-bg: #fef2f2;
+    --color-warning: #f59e0b;
+    --color-warning-bg: #fffbeb;
+    --color-healthy: #22c55e;
+    --color-healthy-bg: #f0fdf4;
+
+    /* Payment Status */
+    --color-pending: #94a3b8;
+    --color-invoiced: #818cf8;
+    --color-paid: #22c55e;
+    --color-renewed: #0ea5e9;
+    --color-lapsed: #ef4444;
+
+    /* Sidebar */
+    --color-sidebar-bg: #1e3a5f;
+    --color-sidebar-text: #bfdbfe;
+    --color-sidebar-active: #ffffff;
+    --color-sidebar-active-bg: #2563eb;
+    --color-sidebar-accent: #60a5fa;
+
+    /* Fonts */
+    --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+}
+
+@layer base {
+    body {
+        @apply bg-bg text-sm leading-relaxed;
+        font-family: var(--font-sans);
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        @apply text-primary font-bold;
+    }
+}
