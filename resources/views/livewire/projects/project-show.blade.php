@@ -2,23 +2,27 @@
     {{-- Page Header --}}
     <x-ui.page-header :title="$project->project_name" :subtitle="'Project for ' . ($project->client?->name ?? 'Unknown Client')">
         <div class="flex items-center gap-3">
-            <a href="{{ route('projects.index') }}" class="btn btn-ghost btn-sm" wire:navigate>
-                <x-icon-arrow-left class="w-4 h-4 mr-1" /> Back to Projects
+            <a href="{{ route('projects.index') }}" class="btn btn-ghost btn-sm flex items-center gap-2" wire:navigate>
+                <x-icon-arrow-left class="w-4 h-4" />
+                <span>Back to Projects</span>
             </a>
 
-            <a href="{{ route('subscriptions.create', ['projectId' => $project->id]) }}" class="btn btn-primary btn-sm" wire:navigate>
-                <x-icon-plus class="w-4 h-4 mr-1" /> Add Subscription
+            <a href="{{ route('subscriptions.create', ['projectId' => $project->id]) }}" class="btn btn-primary btn-sm flex items-center gap-2" wire:navigate>
+                <x-icon-plus class="w-4 h-4" />
+                <span>Add Subscription</span>
             </a>
 
-            <a href="{{ route('invoices.create', ['clientId' => $project->client_id, 'projectId' => $project->id]) }}" class="btn btn-secondary btn-sm bg-slate-800 hover:bg-slate-700 text-white border-0" wire:navigate>
-                <x-icon-file-invoice class="w-4 h-4 mr-1" /> New Invoice
+            <a href="{{ route('invoices.create', ['clientId' => $project->client_id, 'projectId' => $project->id]) }}" class="btn btn-secondary btn-sm bg-slate-800 hover:bg-slate-700 text-white border-0 flex items-center gap-2" wire:navigate>
+                <x-icon-file-invoice class="w-4 h-4" />
+                <span>New Invoice</span>
             </a>
 
             <button 
                 @click="$dispatch('open-modal', { id: 'project-modal' })" 
                 wire:click="$dispatchTo('projects.project-form', 'open-project-modal', { id: {{ $project->id }} })" 
-                class="btn btn-soft btn-sm border-slate-200 bg-white">
-                <x-icon-edit class="w-4 h-4 mr-2" /> Edit Project
+                class="btn btn-soft btn-sm border-slate-200 bg-white flex items-center gap-2">
+                <x-icon-edit class="w-4 h-4" />
+                <span>Edit Project</span>
             </button>
         </div>
     </x-ui.page-header>

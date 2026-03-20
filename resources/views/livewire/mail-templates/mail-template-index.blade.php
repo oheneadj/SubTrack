@@ -30,7 +30,7 @@
                 <div class="mt-auto pt-4 border-t border-slate-100">
                         <button 
                             wire:click="edit({{ $template->id }})" 
-                            class="btn btn-primary btn-sm w-full"
+                            class="flex items-center gap-2 justify-center btn btn-primary btn-sm w-full"
                         >
                             <x-icon-edit class="mr-1 h-4 w-4" />
                             Edit Template

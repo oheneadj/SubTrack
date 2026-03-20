@@ -6,8 +6,9 @@
             <p class="text-sm text-slate-500 mt-0.5">{{ now()->format('l, F j, Y') }}</p>
         </div>
         <div class="flex items-center gap-2 mt-3 sm:mt-0">
-            <a href="{{ route('invoices.create') }}" class="btn btn-primary btn-sm" wire:navigate>
-                <x-icon-plus class="w-4 h-4 mr-1" /> New Invoice
+            <a href="{{ route('invoices.create') }}" class="btn btn-primary btn-sm flex items-center gap-2 whitespace-nowrap" wire:navigate>
+                <x-icon-plus class="w-4 h-4" />
+                <span>New Invoice</span>
             </a>
         </div>
     </div>

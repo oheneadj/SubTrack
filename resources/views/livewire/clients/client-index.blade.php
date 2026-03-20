@@ -1,7 +1,8 @@
 <div>
     <x-ui.page-header title="Clients" subtitle="Manage your client relationships and contact details">
-        <button wire:click="openCreate" class="btn btn-primary btn-sm">
-            <x-icon-plus class="w-4 h-4" /> Add Client
+        <button wire:click="openCreate" class="btn btn-primary btn-sm flex items-center gap-2 whitespace-nowrap">
+            <x-icon-plus class="w-4 h-4" />
+            <span>Add Client</span>
         </button>
     </x-ui.page-header>
 
@@ -60,7 +61,7 @@
                             editAction="edit({{ $client->id }})" 
                             deleteAction="openDeleteModal({{ $client->id }})" 
                         >
-                            <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="btn btn-soft btn-info btn-xs gap-1.5 h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors border-blue-100 text-blue-700" wire:navigate>
+                            <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="flex items-center gap-2 btn btn-soft btn-info btn-xs gap-1.5 h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors border-blue-100 text-blue-700" wire:navigate>
                                 <x-icon-mail class="w-3.5 h-3.5 text-blue-500" />
                                 <span class="font-bold uppercase tracking-tight text-[10px]">Email</span>
                             </a>

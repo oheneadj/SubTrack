@@ -9,8 +9,8 @@
 @if($shouldUnfold)
     <div class="flex items-center justify-end gap-2">
         @if($viewAction)
-            <a href="{{ $viewAction }}" class="btn btn-xs gap-1.5 h-8 px-3 rounded-lg text-slate-700 transition-colors border-slate-200" wire:navigate>
-                <x-icon-eye class="w-3.5 h-3.5 text-white" />
+            <a href="{{ $viewAction }}" class="flex items-center gap-2 btn btn-xs h-8 px-3 rounded-lg text-slate-700 transition-colors border-slate-200" wire:navigate>
+                <x-icon-eye class="w-3.5 h-3.5 text-slate-500" />
                 <span class="font-bold uppercase tracking-tight text-[10px]">View</span>
             </a>
         @endif
@@ -25,8 +25,8 @@
                 @if($editModalId)
                     @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
                 @endif
-                class="btn btn-info btn-xs gap-1.5 h-8 px-3 rounded-lg transition-colors border-blue-100 text-blue-700">
-                <x-icon-edit class="w-3.5 h-3.5 text-white" />
+                class="flex items-center gap-2 btn btn-info btn-xs h-8 px-3 rounded-lg transition-colors border-blue-100 text-blue-700">
+                <x-icon-edit class="w-3.5 h-3.5 text-blue-500" />
                 <span class="font-bold uppercase tracking-tight text-[10px]">Edit</span>
             </button>
         @endif
@@ -36,15 +36,15 @@
         @endif
 
         @if($deleteAction)
-            <button wire:click="{{ $deleteAction }}" class="btn btn-error btn-xs gap-1.5 h-8 px-3 rounded-lg transition-colors border-red-100 text-red-700">
-                <x-icon-trash class="w-3.5 h-3.5 text-white" />
+            <button wire:click="{{ $deleteAction }}" class="flex items-center gap-2 btn btn-error btn-xs h-8 px-3 rounded-lg transition-colors border-red-100 text-red-700">
+                <x-icon-trash class="w-3.5 h-3.5 text-red-500" />
                 <span class="font-bold uppercase tracking-tight text-[10px]">Delete</span>
             </button>
         @endif
     </div>
 @else
     <div class="dropdown {{ $align }} {{ $direction }}">
-        <button type="button" tabindex="0" class="btn btn-square btn-xs transition-colors dropdown-toggle" aria-haspopup="menu" aria-expanded="false">
+        <button type="button" tabindex="0" class="flex items-center gap-2 btn btn-square btn-xs transition-colors dropdown-toggle" aria-haspopup="menu" aria-expanded="false">
             <x-icon-dots-vertical class="w-4 h-4 text-secondary" />
         </button>
         

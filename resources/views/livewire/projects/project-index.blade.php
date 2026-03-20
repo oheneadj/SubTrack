@@ -3,8 +3,9 @@
         <button 
             @click="$dispatch('open-modal', { id: 'project-modal' })" 
             wire:click="$dispatchTo('projects.project-form', 'open-project-modal')" 
-            class="btn btn-primary btn-sm">
-            <x-icon-plus class="w-4 h-4" /> Add Project
+            class="btn btn-primary btn-sm !inline-flex !flex-row items-center gap-2 whitespace-nowrap">
+            <x-icon-plus class="w-4 h-4" />
+            <span>Add Project</span>
         </button>
     </x-ui.page-header>
 

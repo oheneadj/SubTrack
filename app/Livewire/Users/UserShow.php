@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Users;
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -13,7 +12,7 @@ use Livewire\Component;
 class UserShow extends Component
 {
     public User $user;
-    public bool $showResetModal = false;
+    public bool $passwordResetDone = false;
     public string $newPassword = '';
 
     public function mount(User $user): void
@@ -35,19 +34,21 @@ class UserShow extends Component
 
     public function initiatePasswordReset(): void
     {
-        $this->newPassword = Str::random(12);
-        $this->showResetModal = true;
+        $this->passwordResetDone = false;
+        $this->newPassword = '';
+        // Dispatch event to open the modal via project-standard Alpine event
+        $this->dispatch('open-modal', id: 'reset-password-modal');
     }
 
     public function confirmPasswordReset(): void
     {
+        $this->newPassword = Str::random(12);
         $this->user->update([
             'password' => Hash::make($this->newPassword),
         ]);
 
-        $this->showResetModal = false;
-        session()->flash('success', "Password has been reset successfully. New password: {$this->newPassword}");
-        // In a real app, we'd email this, but for now we'll show it in the flash message.
+        $this->passwordResetDone = true;
+        session()->flash('success', "Password has been reset successfully.");
     }
 
     public function render()

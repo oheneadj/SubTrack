@@ -1,7 +1,8 @@
 <div>
     <x-ui.page-header title="User Management" subtitle="Invite, manage, and control access for your team">
-        <button wire:click="openInvite" class="btn btn-primary btn-sm">
-            <x-icon-plus class="w-4 h-4 mr-1" /> Invite User
+        <button wire:click="openInvite" class="btn btn-primary btn-sm flex items-center gap-2">
+            <x-icon-plus class="w-4 h-4" />
+            <span>Invite User</span>
         </button>
     </x-ui.page-header>
 
@@ -88,13 +89,13 @@
                                 </a>
                                 @if($user->id !== auth()->id())
                                     <x-ui.action-menu deleteAction="confirmDelete({{ $user->id }})">
-                                        <button wire:click="resendInvite({{ $user->id }})" class="btn btn-ghost btn-xs text-slate-600 justify-start">
-                                            <x-icon-refresh class="w-3 h-3 mr-2" />
-                                            Resend Invite
+                                        <button wire:click="resendInvite({{ $user->id }})" class="btn btn-ghost btn-xs text-slate-600 flex items-center gap-2 justify-start">
+                                            <x-icon-refresh class="w-3 h-3" />
+                                            <span>Resend Invite</span>
                                         </button>
-                                        <button wire:click="openToggleModal({{ $user->id }})" class="btn btn-ghost btn-xs {{ $user->is_active ? 'text-error' : 'text-success' }} justify-start">
-                                            <x-icon-alert-triangle class="w-3 h-3 mr-2" />
-                                            {{ $user->is_active ? 'Disable' : 'Enable' }}
+                                        <button wire:click="openToggleModal({{ $user->id }})" class="btn btn-ghost btn-xs {{ $user->is_active ? 'text-error' : 'text-success' }} flex items-center gap-2 justify-start">
+                                            <x-icon-alert-triangle class="w-3 h-3" />
+                                            <span>{{ $user->is_active ? 'Disable' : 'Enable' }}</span>
                                         </button>
                                     </x-ui.action-menu>
                                 @endif

@@ -1,8 +1,9 @@
 <div>
     <x-ui.page-header :title="$user->name" subtitle="View and manage user details">
         <div class="flex items-center gap-2">
-            <a href="{{ route('users.index') }}" class="btn btn-sm btn-outline">
-                <x-icon-arrow-left class="w-4 h-4 mr-1" /> Back to Users
+            <a href="{{ route('users.index') }}" class="btn btn-sm btn-outline flex items-center gap-2">
+                <x-icon-arrow-left class="w-4 h-4" />
+                <span>Back to Users</span>
             </a>
             <button wire:click="toggleActive" class="btn btn-sm {{ $user->is_active ? 'btn-error' : 'btn-success' }}">
                 {{ $user->is_active ? 'Disable Account' : 'Enable Account' }}
@@ -117,24 +118,37 @@
     </div>
 
     <!-- Password Reset Modal -->
-    <x-ui.modal wire:model="showResetModal" title="Confirm Password Reset">
+    <x-ui.modal id="reset-password-modal" title="Confirm Password Reset">
         <div class="py-4">
-            <p class="mb-4">Are you sure you want to reset the password for <strong>{{ $user->name }}</strong>?</p>
-            <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <p class="text-xs font-semibold text-slate-400 uppercase mb-2">Generated New Password:</p>
-                <div class="flex items-center justify-between">
-                    <code class="text-lg font-bold text-primary">{{ $newPassword }}</code>
-                    <button type="button" class="btn btn-ghost btn-xs" onclick="navigator.clipboard.writeText('{{ $newPassword }}')">Copy</button>
+            @if(!$passwordResetDone)
+                <p class="mb-4">Are you sure you want to reset the password for <strong>{{ $user->name }}</strong>?</p>
+                <p class="text-sm text-slate-500 mb-6">A new random password will be generated and displayed for you to share with the user.</p>
+                
+                <div class="flex justify-end gap-3">
+                    <button @click="$dispatch('close-modal', { id: 'reset-password-modal' })" class="btn btn-ghost btn-sm">Cancel</button>
+                    <button wire:click="confirmPasswordReset" class="btn btn-primary btn-sm">Generate New Password</button>
                 </div>
-            </div>
-            <p class="mt-4 text-xs text-error">
-                <x-icon-info-circle class="w-4 h-4 inline mr-1" />
-                This will take effect immediately. Please share the new password with the user.
-            </p>
+            @else
+                <div class="p-4 bg-green-50 rounded-lg border border-green-200 mb-6">
+                    <div class="flex items-center gap-2 text-green-700 font-bold mb-2">
+                        <x-icon-check class="w-5 h-5" />
+                        <span>Password Reset Successful!</span>
+                    </div>
+                    <p class="text-xs text-green-600">Please copy the new password below and share it with the user.</p>
+                </div>
+
+                <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                    <p class="text-xs font-semibold text-slate-400 uppercase mb-2">Generated New Password:</p>
+                    <div class="flex items-center justify-between">
+                        <code class="text-lg font-bold text-primary">{{ $newPassword }}</code>
+                        <button type="button" class="btn btn-ghost btn-xs" onclick="navigator.clipboard.writeText('{{ $newPassword }}')">Copy</button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button @click="$dispatch('close-modal', { id: 'reset-password-modal' })" class="btn btn-primary btn-sm">Done</button>
+                </div>
+            @endif
         </div>
-        <x-slot name="actions">
-            <button wire:click="$set('showResetModal', false)" class="btn btn-ghost">Cancel</button>
-            <button wire:click="confirmPasswordReset" class="btn btn-primary">Confirm Reset</button>
-        </x-slot>
     </x-ui.modal>
 </div>

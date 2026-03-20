@@ -38,7 +38,7 @@
                 </div>
             @else
                 <p>Hello,</p>
-                <p>This is an automated notification regarding your service for <strong>{{ $subscription->project->project_name }}</strong>.</p>
+                <p>This is an automated notification regarding your service for <strong>{{ $subscription->project?->project_name ?? 'your project' }}</strong>.</p>
             @endif
 
             <div class="details-box">
@@ -48,7 +48,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Provider:</span>
-                    <span>{{ $subscription->provider }}</span>
+                    <span>{{ $subscription->provider?->name ?? 'N/A' }}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Expiry Date:</span>

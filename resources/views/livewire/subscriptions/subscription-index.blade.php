@@ -1,7 +1,8 @@
 <div>
     <x-ui.page-header title="Subscriptions" subtitle="Manage domains, hosting, and service expiries">
-        <a href="{{ route('subscriptions.create') }}" class="btn btn-primary btn-sm" wire:navigate>
-            <x-icon-plus class="w-4 h-4 mr-1" /> Add Subscription
+        <a href="{{ route('subscriptions.create') }}" class="btn btn-primary btn-sm flex items-center gap-2" wire:navigate>
+            <x-icon-plus class="w-4 h-4" />
+            <span>Add Subscription</span>
         </a>
     </x-ui.page-header>
 

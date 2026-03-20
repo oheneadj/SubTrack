@@ -1,11 +1,13 @@
 <div>
     <x-ui.page-header :title="$provider->name" subtitle="Provider Details & Subscriptions">
         <div class="flex gap-2">
-            <a href="{{ route('providers.index') }}" class="btn btn-ghost btn-sm" wire:navigate>
-                <x-icon-arrow-left class="w-4 h-4 mr-1" /> Back to Providers
+            <a href="{{ route('providers.index') }}" class="btn btn-ghost btn-sm flex items-center gap-2" wire:navigate>
+                <x-icon-arrow-left class="w-4 h-4" />
+                <span>Back to Providers</span>
             </a>
-            <a href="{{ route('subscriptions.create') }}" class="btn btn-primary btn-sm" wire:navigate>
-                <x-icon-plus class="w-4 h-4 mr-1" /> Add Subscription
+            <a href="{{ route('subscriptions.create') }}" class="btn btn-primary btn-sm flex items-center gap-2" wire:navigate>
+                <x-icon-plus class="w-4 h-4" />
+                <span>Add Subscription</span>
             </a>
         </div>
     </x-ui.page-header>

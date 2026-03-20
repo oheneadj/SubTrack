@@ -71,21 +71,21 @@
                     <td class="text-right">
                         <div class="flex items-center justify-end gap-1">
                             <a href="{{ route('mail-mailer.index', ['clientId' => $sub->project?->client_id, 'subscriptionId' => $sub->id, 'template' => 'subscription-reminder']) }}" 
-                               class="btn btn-ghost btn-square btn-sm hover:text-orange-500" title="Send Renewal Reminder" wire:navigate>
-                                <x-icon-bell class="w-4 h-4" />
+                               class="flex items-center gap-2 btn btn-ghost btn-sm hover:text-orange-500" title="Send Renewal Reminder" wire:navigate>
+                                <x-icon-bell class="w-4 h-4" /> Reminder
                             </a>
                             <a href="{{ route('mail-mailer.index', ['clientId' => $sub->project?->client_id, 'subscriptionId' => $sub->id]) }}" 
-                               class="btn btn-ghost btn-square btn-sm hover:text-blue-500" title="Send Custom Email" wire:navigate>
-                                <x-icon-mail class="w-4 h-4" />
+                               class="flex items-center gap-2 btn btn-ghost btn-sm hover:text-blue-500" title="Send Custom Email" wire:navigate>
+                                <x-icon-mail class="w-4 h-4" /> Custom Email
                             </a>
                             <button 
                                 type="button"
                                 wire:click="openRenewalModal({{ $sub->id }})" 
-                                class="btn btn-sm btn-primary ml-1"
+                                class="btn btn-sm btn-primary ml-1 flex items-center gap-2"
                             >
-                                <x-icon-refresh class="w-4 h-4 mr-1" wire:loading.remove wire:target="openRenewalModal({{ $sub->id }})" />
-                                <span class="loading loading-spinner loading-xs mr-1" wire:loading wire:target="openRenewalModal({{ $sub->id }})"></span>
-                                Renew
+                                <x-icon-refresh class="w-4 h-4" wire:loading.remove wire:target="openRenewalModal({{ $sub->id }})" />
+                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="openRenewalModal({{ $sub->id }})"></span>
+                                <span>Renew</span>
                             </button>
                         </div>
                     </td>

@@ -1,7 +1,8 @@
 <div>
     <x-ui.page-header title="Providers" subtitle="Manage external service providers and vendors">
-        <button wire:click="openCreate" class="btn btn-primary btn-sm">
-            <x-icon-plus class="w-4 h-4 mr-1" /> Add Provider
+        <button wire:click="openCreate" class="btn btn-primary btn-sm flex items-center gap-2">
+            <x-icon-plus class="w-4 h-4" />
+            <span>Add Provider</span>
         </button>
     </x-ui.page-header>
 
@@ -34,7 +35,10 @@
                 message="{{ $search ? 'Try adjusting your search query.' : 'Add your first provider.' }}"
             >
                 @if(!$search)
-                    <button wire:click="openCreate" class="btn btn-primary btn-sm mt-2">Add Provider</button>
+                    <button wire:click="openCreate" class="btn btn-primary btn-sm mt-2 flex items-center gap-2">
+                        <x-icon-plus class="w-4 h-4" />
+                        <span>Add Provider</span>
+                    </button>
                 @endif
             </x-ui.empty-state>
         @else

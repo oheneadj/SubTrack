@@ -2,8 +2,9 @@
     {{-- Page Header --}}
     <x-ui.page-header :title="$client->name" :subtitle="'Relationship overview for ' . ($client->company_name ?? $client->name)">
         <div class="flex items-center gap-3">
-            <a href="{{ route('clients.index') }}" class="btn btn-ghost btn-sm">
-                <x-icon-arrow-left class="w-4 h-4 mr-1" /> Back to List
+            <a href="{{ route('clients.index') }}" class="btn btn-ghost btn-sm flex items-center gap-2">
+                <x-icon-arrow-left class="w-4 h-4" />
+                <span>Back to List</span>
             </a>
 
             @if(session('success'))
@@ -13,8 +14,9 @@
             @endif
 
             <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" type="button" class="btn btn-soft btn-sm bg-white hover:bg-slate-50 border-slate-200">
-                    <x-icon-mail class="w-4 h-4 mr-2 text-blue-500" /> Communication
+                <button @click="open = !open" type="button" class="btn btn-soft btn-sm bg-white hover:bg-slate-50 border-slate-200 flex items-center gap-2">
+                    <x-icon-mail class="w-4 h-4 text-blue-500" />
+                    <span>Communication</span>
                 </button>
                 <ul x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-[1] menu p-2 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2">
                     <li>
@@ -34,9 +36,10 @@
 
             <button 
                 onclick="window.location.href='{{ route('clients.index') }}?edit={{ $client->id }}'"
-                class="btn btn-soft btn-sm border-slate-200 bg-white"
+                class="btn btn-soft btn-sm border-slate-200 bg-white flex items-center gap-2"
             >
-                <x-icon-edit class="w-4 h-4 mr-2" /> Edit Client
+                <x-icon-edit class="w-4 h-4" />
+                <span>Edit Client</span>
             </button>
         </div>
     </x-ui.page-header>
@@ -80,8 +83,9 @@
                         <button 
                             @click="$dispatch('open-modal', { id: 'project-modal' })" 
                             wire:click="$dispatchTo('projects.project-form', 'open-project-modal', { clientId: {{ $client->id }} })" 
-                            class="btn btn-primary btn-sm">
-                            <x-icon-plus class="w-4 h-4 mr-1" /> New Project
+                            class="btn btn-primary btn-sm flex items-center gap-2">
+                            <x-icon-plus class="w-4 h-4" />
+                            <span>New Project</span>
                         </button>
                     </div>
                     
@@ -124,8 +128,9 @@
                 <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-slate-800">Recent Invoices</h3>
-                        <a href="{{ route('invoices.create', ['clientId' => $client->id]) }}" class="btn btn-primary btn-sm">
-                            <x-icon-plus class="w-4 h-4 mr-1" /> New Invoice
+                        <a href="{{ route('invoices.create', ['clientId' => $client->id]) }}" class="btn btn-primary btn-sm flex items-center gap-2">
+                            <x-icon-plus class="w-4 h-4" />
+                            <span>New Invoice</span>
                         </a>
                     </div>
     

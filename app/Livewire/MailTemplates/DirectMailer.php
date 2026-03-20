@@ -47,7 +47,7 @@ class DirectMailer extends Component
     #[Computed]
     public function clients()
     {
-        return Client::search($this->search)->orderBy('name')->get();
+        return Client::search($this->search)->orderBy('name')->paginate(6);
     }
 
     #[Computed]

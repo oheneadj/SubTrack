@@ -1,7 +1,8 @@
 <div>
     <x-ui.page-header title="Invoices" subtitle="Manage client billing and payment status">
-        <a href="{{ route('invoices.create') }}" class="btn btn-primary btn-sm">
-            <x-icon-plus class="w-4 h-4 mr-1" /> Create Invoice
+        <a href="{{ route('invoices.create') }}" class="btn btn-primary btn-sm flex items-center gap-2">
+            <x-icon-plus class="w-4 h-4" />
+            <span>Create Invoice</span>
         </a>
     </x-ui.page-header>
 
