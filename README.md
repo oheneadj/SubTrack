@@ -1,6 +1,6 @@
 # SubTrack — Client Subscription & Asset Manager
 
-![SubTrack Dashboard](/home/oheneadj/server/subtrack/public/subtrack.png)
+![SubTrack Dashboard](subtrack.png)
 
 SubTrack is a private internal tool for web agencies to track client subscriptions (domains, hosting, SSL, maintenance), automate renewal reminders, and generate professional USD invoices.
 
