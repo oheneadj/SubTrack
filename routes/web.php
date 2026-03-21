@@ -4,8 +4,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('password/force-change', \App\Livewire\Auth\ForcePasswordChange::class)->name('password.force-change');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', \App\Livewire\Dashboard\OverviewDashboard::class)->name('dashboard');
     Route::get('finances', \App\Livewire\Dashboard\FinanceDashboard::class)->name('finances.index');
     Route::get('/components-preview', \App\Livewire\Dev\ComponentsPreview::class)->name('components-preview');

@@ -21,7 +21,7 @@ class ForcePasswordChange extends Component
 
         $user = auth()->user();
         $user->update([
-            'password' => $this->password, 
+            'password' => Hash::make($this->password), 
             'requires_password_change' => false,
         ]);
 
