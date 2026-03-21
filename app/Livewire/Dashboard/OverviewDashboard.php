@@ -21,11 +21,13 @@ class OverviewDashboard extends Component
 {
     public array $revenueData    = [];
     public array $revenueChange  = [];
+    public array $comparisonData = [];
 
     public function mount(RevenueService $revenue): void
     {
-        $this->revenueData   = $revenue->lastSixMonths();
-        $this->revenueChange = $revenue->monthOverMonthChange();
+        $this->revenueData    = $revenue->lastSixMonths();
+        $this->revenueChange  = $revenue->monthOverMonthChange();
+        $this->comparisonData = $revenue->comparisonData(12);
     }
 
     #[Computed]

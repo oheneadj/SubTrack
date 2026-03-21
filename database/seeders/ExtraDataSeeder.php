@@ -34,25 +34,25 @@ class ExtraDataSeeder extends Seeder
         $letsEncrypt = Provider::where('name', "Let's Encrypt")->first();
 
         // New Providers
-        $linode = Provider::create(['name' => 'Linode (Akamai)', 'website' => 'https://www.linode.com', 'support_email' => 'support@linode.com']);
-        $netlify = Provider::create(['name' => 'Netlify', 'website' => 'https://www.netlify.com', 'support_email' => 'support@netlify.com']);
-        $siteground = Provider::create(['name' => 'SiteGround', 'website' => 'https://www.siteground.com', 'support_email' => 'support@siteground.com']);
-        $ovh = Provider::create(['name' => 'OVHcloud', 'website' => 'https://www.ovhcloud.com', 'support_email' => 'support@ovhcloud.com']);
-        $porkbun = Provider::create(['name' => 'Porkbun', 'website' => 'https://porkbun.com', 'support_email' => 'support@porkbun.com']);
+        $linode = Provider::firstOrCreate(['name' => 'Linode (Akamai)'], ['website' => 'https://www.linode.com', 'support_email' => 'support@linode.com']);
+        $netlify = Provider::firstOrCreate(['name' => 'Netlify'], ['website' => 'https://www.netlify.com', 'support_email' => 'support@netlify.com']);
+        $siteground = Provider::firstOrCreate(['name' => 'SiteGround'], ['website' => 'https://www.siteground.com', 'support_email' => 'support@siteground.com']);
+        $ovh = Provider::firstOrCreate(['name' => 'OVHcloud'], ['website' => 'https://www.ovhcloud.com', 'support_email' => 'support@ovhcloud.com']);
+        $porkbun = Provider::firstOrCreate(['name' => 'Porkbun'], ['website' => 'https://porkbun.com', 'support_email' => 'support@porkbun.com']);
 
         // ─── More Clients ───────────────────────────────────────────
-        $c9  = Client::create(['name' => 'Kofi Adjei',         'email' => 'kofi@adjeitech.com',        'phone' => '+233 24 887 3210', 'company_name' => 'Adjei Tech Solutions']);
-        $c10 = Client::create(['name' => 'Grace Nkrumah',      'email' => 'grace@goldenstitch.com',     'phone' => '+233 50 112 4455', 'company_name' => 'Golden Stitch Fashion House']);
-        $c11 = Client::create(['name' => 'Emmanuel Tetteh',    'email' => 'emmanuel@tetraengr.com',     'phone' => '+233 20 667 8901', 'company_name' => 'Tetra Engineering Ltd']);
-        $c12 = Client::create(['name' => 'Abigail Mensah',     'email' => 'abigail@kumasibrews.com',    'phone' => '+233 27 998 3344', 'company_name' => 'Kumasi Craft Brews']);
-        $c13 = Client::create(['name' => 'Samuel Darko',       'email' => 'samuel@darkoauto.com',       'phone' => '+233 54 776 2288', 'company_name' => 'Darko Auto Group']);
-        $c14 = Client::create(['name' => 'Priscilla Boateng',  'email' => 'priscilla@eduvault.com',     'phone' => '+233 26 334 5566', 'company_name' => 'EduVault Online Academy']);
-        $c15 = Client::create(['name' => 'Nana Yaw Owusu',     'email' => 'nana@owusuagritech.com',     'phone' => '+233 24 556 7890', 'company_name' => 'Owusu AgriTech']);
-        $c16 = Client::create(['name' => 'Akua Frimpong',      'email' => 'akua@healthplusgh.com',      'phone' => '+233 50 889 1122', 'company_name' => 'HealthPlus Pharmacy']);
-        $c17 = Client::create(['name' => 'Yaw Boadu',          'email' => 'yaw@boadu-events.com',       'phone' => '+233 20 443 2211', 'company_name' => 'Boadu Events & Catering']);
-        $c18 = Client::create(['name' => 'Linda Agyapong',     'email' => 'linda@sunrisehotels.com',    'phone' => '+233 27 667 9988', 'company_name' => 'Sunrise Hotels & Resorts']);
-        $c19 = Client::create(['name' => 'Richard Ampofo',     'email' => 'richard@ampofolaw.com',      'phone' => '+233 54 223 4455', 'company_name' => 'Ampofo Legal Chambers']);
-        $c20 = Client::create(['name' => 'Cecilia Antwi',      'email' => 'cecilia@pixelarts.com.gh',   'phone' => '+233 26 112 6677', 'company_name' => 'PixelArts Design Studio']);
+        $c9  = Client::firstOrCreate(['email' => 'kofi@adjeitech.com'],      ['name' => 'Kofi Adjei',         'phone' => '+233 24 887 3210', 'company_name' => 'Adjei Tech Solutions']);
+        $c10 = Client::firstOrCreate(['email' => 'grace@goldenstitch.com'],   ['name' => 'Grace Nkrumah',      'phone' => '+233 50 112 4455', 'company_name' => 'Golden Stitch Fashion House']);
+        $c11 = Client::firstOrCreate(['email' => 'emmanuel@tetraengr.com'],   ['name' => 'Emmanuel Tetteh',    'phone' => '+233 20 667 8901', 'company_name' => 'Tetra Engineering Ltd']);
+        $c12 = Client::firstOrCreate(['email' => 'abigail@kumasibrews.com'],  ['name' => 'Abigail Mensah',     'phone' => '+233 27 998 3344', 'company_name' => 'Kumasi Craft Brews']);
+        $c13 = Client::firstOrCreate(['email' => 'samuel@darkoauto.com'],     ['name' => 'Samuel Darko',       'phone' => '+233 54 776 2288', 'company_name' => 'Darko Auto Group']);
+        $c14 = Client::firstOrCreate(['email' => 'priscilla@eduvault.com'],   ['name' => 'Priscilla Boateng',  'phone' => '+233 26 334 5566', 'company_name' => 'EduVault Online Academy']);
+        $c15 = Client::firstOrCreate(['email' => 'nana@owusuagritech.com'],   ['name' => 'Nana Yaw Owusu',     'phone' => '+233 24 556 7890', 'company_name' => 'Owusu AgriTech']);
+        $c16 = Client::firstOrCreate(['email' => 'akua@healthplusgh.com'],    ['name' => 'Akua Frimpong',      'phone' => '+233 50 889 1122', 'company_name' => 'HealthPlus Pharmacy']);
+        $c17 = Client::firstOrCreate(['email' => 'yaw@boadu-events.com'],     ['name' => 'Yaw Boadu',          'phone' => '+233 20 443 2211', 'company_name' => 'Boadu Events & Catering']);
+        $c18 = Client::firstOrCreate(['email' => 'linda@sunrisehotels.com'],  ['name' => 'Linda Agyapong',     'phone' => '+233 27 667 9988', 'company_name' => 'Sunrise Hotels & Resorts']);
+        $c19 = Client::firstOrCreate(['email' => 'richard@ampofolaw.com'],    ['name' => 'Richard Ampofo',     'phone' => '+233 54 223 4455', 'company_name' => 'Ampofo Legal Chambers']);
+        $c20 = Client::firstOrCreate(['email' => 'cecilia@pixelarts.com.gh'], ['name' => 'Cecilia Antwi',      'phone' => '+233 26 112 6677', 'company_name' => 'PixelArts Design Studio']);
 
         // ─── More Projects ──────────────────────────────────────────
         $p13 = Project::create(['client_id' => $c9->id,  'project_name' => 'Adjei Tech Corporate Site',       'description' => 'Technology consultancy website with services, blog, and client case studies.']);

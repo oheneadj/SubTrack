@@ -24,7 +24,7 @@
     @endif
 
     {{-- Stats Row (6 columns) --}}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-6 gap-4 mb-8">
         <x-ui.stat-card
             label="Critical"
             :value="$this->stats['critical']"
@@ -74,34 +74,32 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {{-- Revenue Chart Card --}}
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between" x-data="revenueChart({{ json_encode($revenueData) }})">
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between" x-data="comparisonChart({{ json_encode($comparisonData) }})">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="font-bold text-slate-800">Revenue Trend</h3>
-                    <p class="text-xs text-slate-500">Last 6 months</p>
+                    <h3 class="font-bold text-slate-800">Revenue vs. Expenses</h3>
+                    <p class="text-xs text-slate-500">Performance over the last 12 months</p>
                 </div>
-                <div class="text-right">
-                    <div class="text-lg font-black text-primary">
-                        @php
-                            $currentMonth = collect($revenueData)->last()['total'] ?? 0;
-                            $prevMonth = collect($revenueData)->reverse()->values()->get(1)['total'] ?? 0;
-                            $diff = $currentMonth - $prevMonth;
-                        @endphp
-                        ${{ number_format($currentMonth, 2) }}
-                    </div>
-                    <div class="flex items-center justify-end gap-1 text-[10px] font-bold {{ $diff >= 0 ? 'text-success' : 'text-error' }}">
-                        @if($diff >= 0) <x-icon-trending-up class="w-3 h-3" /> @else <x-icon-trending-down class="w-3 h-3" /> @endif
-                        {{ $diff >= 0 ? '+' : '' }}{{ number_format($diff, 2) }} vs last mo.
+                <div class="flex flex-col items-end gap-2">
+                    <div class="flex items-center gap-3 text-[10px] font-bold">
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                            <span class="text-slate-500 uppercase">Revenue</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                            <span class="text-slate-500 uppercase">Expenses</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="h-[140px] w-full relative">
+            <div class="h-[180px] w-full relative">
                 <canvas x-ref="canvas"></canvas>
             </div>
         </div>
 
         {{-- Mini Stats Column --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+        <div class="grid grid-cols-1 row-span-2 gap-4">
             <x-ui.stat-card
                 label="Total Revenue"
                 value="${{ number_format($this->financeStats['total_revenue'], 2) }}"
@@ -119,7 +117,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
         <x-ui.stat-card
             label="Est. MRR"
             value="${{ number_format($this->financeStats['mrr'], 2) }}"
@@ -324,35 +322,46 @@
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-function revenueChart(data) {
+function comparisonChart(data) {
     return {
         init() {
             const labels = data.map(d => d.label);
-            const values = data.map(d => d.total);
+            const revenue = data.map(d => d.revenue);
+            const expenses = data.map(d => d.expenses);
             const ctx = this.$refs.canvas.getContext('2d');
             
-            // Create gradient for modern finance look
-            let gradient = ctx.createLinearGradient(0, 0, 0, 140);
-            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); // blue-500 fading out
-            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
-
-            new Chart(this.$refs.canvas, {
+            new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels,
-                    datasets: [{
-                        data: values,
-                        borderColor: '#2563eb', // blue-600
-                        backgroundColor: gradient,
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4, // Smooth curves
-                        pointRadius: 0,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#2563eb',
-                        pointBorderWidth: 2,
-                    }]
+                    datasets: [
+                        {
+                            label: 'Revenue',
+                            data: revenue,
+                            borderColor: '#2563eb', // blue-600
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 2,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#2563eb',
+                            pointBorderWidth: 2,
+                        },
+                        {
+                            label: 'Expenses',
+                            data: expenses,
+                            borderColor: '#94a3b8', // slate-400
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -364,19 +373,32 @@ function revenueChart(data) {
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1e293b', // slate-800
-                            titleColor: '#94a3b8', // slate-400
-                            bodyFont: { weight: 'bold' },
-                            padding: 10,
-                            displayColors: false,
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            bodySpacing: 4,
                             callbacks: {
-                                label: ctx => ' $' + ctx.raw.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.raw.toLocaleString()
                             }
                         }
                     },
                     scales: {
-                        x: { display: false }, // Hide fully for clean sparkline look
-                        y: { display: false, min: 0 }
+                        x: {
+                            grid: { display: false },
+                            ticks: { 
+                                font: { size: 9 },
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 6
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                font: { size: 9 },
+                                callback: value => '$' + value.toLocaleString()
+                            }
+                        }
                     }
                 }
             });

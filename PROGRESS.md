@@ -12,9 +12,9 @@
 
 ## 📍 Current Status
 
-**Current Status:** Finance Dashboard Complete
-**Last Completed Task:** Implemented the Finance Dashboard with metric cards and recent transactions.
-**Next Task:** Awaiting user feedback on Finance Dashboard functionality.
+**Current Status:** Phase 12 Enhancements (Dashboard Chart)
+**Last Completed Task:** Replaced 6-month Revenue Trend with 12-month Revenue vs. Expenses comparison chart on the main dashboard.
+**Next Task:** Awaiting further instructions or project maintenance tasks.
 **Blockers:** None
 
 ---
@@ -351,6 +351,8 @@
 | 23 | 2026-03-21 | UI Enhancement: Implemented universal table sorting functionality using a new `WithSorting` Livewire trait. Applied custom default sorting per section constraints. | Handover |
 | 24 | 2026-03-21 | New Feature: Built the Finance Dashboard (`/finances`) with core revenue, MRR, and cost metrics, plus recent payments and upcoming renewals components. | Handover |
 | 25 | 2026-03-21 | Phase 12 Enhancements: Interactive revenue charts, CSV exports, bulk subscription actions, and UI polish with loading indicators. | Phase 12 end |
+| 26 | 2026-03-21 | Database Seeding Fix: Refactored seeders to use `firstOrCreate` to prevent unique constraint violations on re-runs. | Final handover |
+| 27 | 2026-03-21 | Dashboard Enhancement: Migrated the "Revenue vs. Expenses" comparison chart from Finance to Overview Dashboard. | Handover |
 
 ---
 

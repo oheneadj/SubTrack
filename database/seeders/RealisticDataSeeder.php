@@ -32,7 +32,7 @@ class RealisticDataSeeder extends Seeder
             ['name' => "Let's Encrypt",    'website' => 'https://letsencrypt.org',          'support_email' => null],
             ['name' => 'Vercel',           'website' => 'https://vercel.com',               'support_email' => 'support@vercel.com'],
             ['name' => 'Hostinger',        'website' => 'https://www.hostinger.com',        'support_email' => 'support@hostinger.com'],
-        ])->map(fn ($p) => Provider::create($p));
+        ])->map(fn ($p) => Provider::firstOrCreate(['name' => $p['name']], $p));
 
         $namecheap    = $providers[0];
         $cloudflare   = $providers[1];
@@ -57,7 +57,7 @@ class RealisticDataSeeder extends Seeder
             ['name' => 'Daniel Quaye',      'email' => 'daniel@accraproptech.com',     'phone' => '+233 26 444 5678', 'company_name' => 'Accra PropTech Solutions'],
         ];
 
-        $clients = collect($clientsData)->map(fn ($c) => Client::create($c));
+        $clients = collect($clientsData)->map(fn ($c) => Client::firstOrCreate(['email' => $c['email']], $c));
 
         // ─── Projects ───────────────────────────────────────────────
         $projects = collect([

@@ -13,12 +13,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name'     => 'Super Admin',
-            'email'    => 'admin@admin.com',
-            'password' => bcrypt('password'),
-            'role'     => \App\Enums\UserRole::SuperAdmin,
-        ]);
+        \App\Models\User::firstOrCreate(
+            ['email'    => 'admin@admin.com'],
+            [
+                'name'     => 'Super Admin',
+                'password' => bcrypt('password'),
+                'role'     => \App\Enums\UserRole::SuperAdmin,
+            ]
+        );
 
         $defaults = [
             'business_name'       => '',
