@@ -8,9 +8,17 @@
 @endphp
 <title>{{ filled($title ?? null) ? $title.' - '.$brandingName : $brandingName }}</title>
 
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+@php
+    $logoPath = \App\Models\Setting::get('logo_path');
+@endphp
+@if($logoPath)
+    <link rel="icon" href="{{ Storage::url($logoPath) }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ Storage::url($logoPath) }}">
+@else
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+@endif
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

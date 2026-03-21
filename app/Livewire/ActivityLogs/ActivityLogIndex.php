@@ -17,6 +17,10 @@ class ActivityLogIndex extends Component
 
     public string $search = '';
     public string $actionFilter = '';
+    public int $perPage = 15;
+
+    public bool $showDetailModal = false;
+    public ?int $selectedLogId = null;
 
     protected $queryString = [
         'search'       => ['except' => ''],
@@ -33,6 +37,23 @@ class ActivityLogIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
+
+    public function viewDetails(int $id): void
+    {
+        $this->selectedLogId = $id;
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetail(): void
+    {
+        $this->showDetailModal = false;
+        $this->selectedLogId = null;
+    }
+
     public function render(): View
     {
         $logs = ActivityLog::with('user')
@@ -44,7 +65,7 @@ class ActivityLogIndex extends Component
             })
             ->when($this->actionFilter, fn($q) => $q->where('action', $this->actionFilter));
 
-        $logs = $this->applySorting($logs)->paginate(25);
+        $logs = $this->applySorting($logs)->paginate($this->perPage);
 
         $actions = ActivityLog::select('action')->distinct()->pluck('action');
 
