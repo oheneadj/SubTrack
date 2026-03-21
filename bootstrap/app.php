@@ -13,11 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+            'password_change' => \App\Http\Middleware\EnsurePasswordChanged::class,
         ]);
 
         $middleware->web(append: [
             \App\Http\Middleware\EnsureUserIsActive::class,
-            \App\Http\Middleware\EnsurePasswordChanged::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

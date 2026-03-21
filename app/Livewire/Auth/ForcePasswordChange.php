@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Auth;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -10,24 +12,37 @@ use Livewire\Component;
 #[Layout('layouts.auth')]
 class ForcePasswordChange extends Component
 {
-    #[Validate('required|string|min:8|confirmed')]
     public string $password = '';
-
     public string $password_confirmation = '';
 
     public function save()
     {
-        $this->validate();
-
-        $user = auth()->user();
-        $user->update([
-            'password' => Hash::make($this->password), 
-            'requires_password_change' => false,
+        $this->validate([
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        session()->flash('success', 'Your password has been secured successfully. Welcome to your dashboard!');
-
-        return redirect()->route('dashboard');
+        $user = Auth::user();
+        
+        try {
+            // Force a fresh instance to ensure no stale data
+            $user = $user->fresh();
+            
+            $user->password = Hash::make($this->password);
+            $user->requires_password_change = false;
+            $user->save();
+            
+            // Re-login to refresh the session guard state
+            Auth::login($user);
+            
+            Log::info('Password changed for user: ' . $user->email . '. Flag is now: ' . $user->requires_password_change);
+            
+            session()->flash('success', 'Your password has been secured successfully. Welcome to your dashboard!');
+            return redirect()->route('dashboard');
+            
+        } catch (\Exception $e) {
+            Log::error('Password change failed: ' . $e->getMessage());
+            session()->flash('error', 'There was a problem updating your password. Please try again.');
+        }
     }
 
     public function render()
