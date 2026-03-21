@@ -85,7 +85,6 @@
                 {{ $providers->links() }}
             </div>
         @endif
-    </div>
 
     {{-- Create/Edit Modal --}}
     @if($showModal)
