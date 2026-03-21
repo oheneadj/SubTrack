@@ -69,6 +69,39 @@
         />
     </div>
 
+    {{-- Finance Summary Section --}}
+    <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-4">Finance Summary</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <x-ui.stat-card
+            label="Total Revenue"
+            value="${{ number_format($this->financeStats['total_revenue'], 2) }}"
+            icon="currency-dollar"
+            variant="healthy"
+            :href="route('finances.index')"
+        />
+        <x-ui.stat-card
+            label="Outstanding"
+            value="${{ number_format($this->financeStats['outstanding'], 2) }}"
+            icon="file-invoice"
+            variant="warning"
+            :href="route('finances.index')"
+        />
+        <x-ui.stat-card
+            label="Est. MRR"
+            value="${{ number_format($this->financeStats['mrr'], 2) }}"
+            icon="calculator"
+            variant="info"
+            :href="route('finances.index')"
+        />
+        <x-ui.stat-card
+            label="Annual Costs"
+            value="${{ number_format($this->financeStats['costs'], 2) }}"
+            icon="credit-card"
+            variant="critical"
+            :href="route('finances.index')"
+        />
+    </div>
+
     {{-- Two Column Section: Critical + Warning Tables --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Critical Expirations --}}
@@ -193,7 +226,7 @@
     </div>
 
     {{-- Three Column Section: Invoices + Revenue + Activity --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Recent Invoices (wider) --}}
         <section class="lg:col-span-1 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
@@ -219,35 +252,6 @@
                     @endforeach
                 </div>
             @endif
-        </section>
-
-        {{-- Monthly Revenue Chart --}}
-        <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-slate-800 text-sm">Monthly Revenue</h3>
-                <div class="flex items-center gap-1.5">
-                    @if($revenueChange['direction'] === 'up')
-                        <span class="text-green-600 text-xs font-bold flex items-center gap-0.5">
-                            <x-icon-arrow-up class="w-3 h-3" /> {{ $revenueChange['percentage'] }}%
-                        </span>
-                    @else
-                        <span class="text-red-600 text-xs font-bold flex items-center gap-0.5">
-                            <x-icon-arrow-down class="w-3 h-3" /> {{ abs($revenueChange['percentage']) }}%
-                        </span>
-                    @endif
-                    <span class="text-[10px] text-slate-400">vs last month</span>
-                </div>
-            </div>
-            <p class="text-2xl font-bold text-slate-900 mb-4">${{ number_format($revenueChange['current'], 2) }}</p>
-
-            <div
-                x-data="revenueChart({{ Js::from($revenueData) }})"
-                x-init="init()"
-            >
-                <div style="position:relative; height:120px;">
-                    <canvas x-ref="canvas"></canvas>
-                </div>
-            </div>
         </section>
 
         {{-- Recent Activity Feed --}}
@@ -291,35 +295,54 @@ function revenueChart(data) {
         init() {
             const labels = data.map(d => d.label);
             const values = data.map(d => d.total);
-            const last   = values.length - 1;
+            const ctx = this.$refs.canvas.getContext('2d');
+            
+            // Create gradient for modern finance look
+            let gradient = ctx.createLinearGradient(0, 0, 0, 140);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); // blue-500 fading out
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
 
             new Chart(this.$refs.canvas, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels,
                     datasets: [{
                         data: values,
-                        backgroundColor: values.map((_, i) =>
-                            i === last ? '#2563eb' : 'rgba(37,99,235,0.10)'
-                        ),
-                        borderRadius: 6,
-                        borderSkipped: false,
+                        borderColor: '#2563eb', // blue-600
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4, // Smooth curves
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#2563eb',
+                        pointBorderWidth: 2,
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
+                            backgroundColor: '#1e293b', // slate-800
+                            titleColor: '#94a3b8', // slate-400
+                            bodyFont: { weight: 'bold' },
+                            padding: 10,
+                            displayColors: false,
                             callbacks: {
-                                label: ctx => ' $' + ctx.raw.toLocaleString()
+                                label: ctx => ' $' + ctx.raw.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                             }
                         }
                     },
                     scales: {
-                        x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } },
-                        y: { display: false }
+                        x: { display: false }, // Hide fully for clean sparkline look
+                        y: { display: false, min: 0 }
                     }
                 }
             });

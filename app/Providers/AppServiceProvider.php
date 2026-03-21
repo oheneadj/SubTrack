@@ -37,6 +37,30 @@ class AppServiceProvider extends ServiceProvider
 
         Client::observe(ClientObserver::class);
         Invoice::observe(InvoiceObserver::class);
+
+        $this->configureDynamicMail();
+    }
+
+    /**
+     * Dynamically override mail configuration with App Settings.
+     */
+    protected function configureDynamicMail(): void
+    {
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                $fromEmail = \App\Models\Setting::get('contact_email') ?: \App\Models\Setting::get('business_email');
+                $fromName  = \App\Models\Setting::get('sender_name') ?: \App\Models\Setting::get('business_name') ?: \App\Models\Setting::get('app_name');
+
+                if ($fromEmail) {
+                    \Illuminate\Support\Facades\Config::set('mail.from.address', $fromEmail);
+                }
+                if ($fromName) {
+                    \Illuminate\Support\Facades\Config::set('mail.from.name', $fromName);
+                }
+            }
+        } catch (\Exception $e) {
+            // Silently fail if database is offline or migrating
+        }
     }
 
     /**

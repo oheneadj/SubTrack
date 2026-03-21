@@ -18,7 +18,7 @@
                     <x-icon-mail class="w-4 h-4 text-blue-500" />
                     <span>Communication</span>
                 </button>
-                <ul x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-[1] menu p-2 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2">
+                <ul x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-50 menu p-2 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2">
                     <li>
                         <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
                             <x-icon-send class="w-4 h-4 text-blue-400" />
@@ -36,7 +36,7 @@
 
             <button 
                 onclick="window.location.href='{{ route('clients.index') }}?edit={{ $client->id }}'"
-                class="btn btn-soft btn-sm border-slate-200 bg-white flex items-center gap-2"
+                class="btn btn-primary btn-sm border-slate-200 bg-white flex items-center gap-2"
             >
                 <x-icon-edit class="w-4 h-4" />
                 <span>Edit Client</span>
@@ -213,7 +213,7 @@
                             <x-ui.badge-status :status="$sub->status->value" />
                         </div>
                     @endforeach
-                    <a href="{{ route('subscriptions.index') }}" class="btn btn-ghost btn-xs w-full">View all subscriptions</a>
+                    <a href="{{ route('subscriptions.index') }}" class="btn btn-primary btn-sm w-full">View all subscriptions</a>
                 </div>
             </section>
             @endif

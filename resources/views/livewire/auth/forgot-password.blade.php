@@ -28,7 +28,7 @@
                         required 
                         autofocus 
                         placeholder="name@company.com"
-                        class="input input-bordered w-full pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('email') input-error @enderror"
+                        class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('email') input-error @enderror"
                     />
                 </div>
                 @error('email')

@@ -31,7 +31,7 @@
                         autofocus
                         autocomplete="current-password" 
                         placeholder="••••••••"
-                        class="input input-bordered w-full pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('password') input-error @enderror"
+                        class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('password') input-error @enderror"
                     />
                 </div>
                 @error('password')

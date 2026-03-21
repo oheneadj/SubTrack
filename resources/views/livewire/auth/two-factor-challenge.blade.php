@@ -53,7 +53,7 @@
                             inputmode="numeric"
                             autocomplete="one-time-code"
                             placeholder="000000"
-                            class="input input-bordered w-full pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 text-center tracking-[0.5em] font-bold text-lg"
+                            class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 text-center tracking-[0.5em] font-bold text-lg"
                         />
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                             x-ref="recovery_code"
                             autocomplete="one-time-code"
                             placeholder="abcdef-123456"
-                            class="input input-bordered w-full pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 font-mono text-center"
+                            class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 font-mono text-center"
                         />
                     </div>
                 </div>

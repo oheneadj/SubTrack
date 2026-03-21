@@ -104,15 +104,15 @@ class MailTemplateIndex extends Component
         $defaults = [
             'user-invite' => [
                 'subject' => "You've been invited to " . config('app.name'),
-                'body' => "You've been invited to join {app_name}. Here are your login credentials:\n\nEmail: {user_email}\nPassword: {password}\n\nFor security, please change your password after your first login. If you did not expect this invitation, you can safely ignore this email.\n\nBest regards,\n{company_name}",
+                'body' => "You've been invited to join {app_name}. In order to access your new account, please use the temporary login credentials provided below:",
             ],
             'subscription-reminder' => [
                 'subject' => 'Service Renewal Reminder — {service_name}',
-                'body' => "This is an automated notification regarding your service for {project_name}.\n\nService: {service_name}\nProvider: {provider}\nExpiry Date: {expiry_date}\nTime Remaining: {days_remaining}\n\nTo ensure continued service and avoid any potential downtime, please arrange for renewal as soon as possible.\n\nThank you for choosing {company_name}.",
+                'body' => "This is an automated notification regarding the active service attached to your project: {project_name}.",
             ],
             'invoice-mail' => [
                 'subject' => 'New Invoice: {invoice_number} from ' . config('app.name'),
-                'body' => "Please find attached the invoice for your project: {project_name}.\n\nInvoice Number: {invoice_number}\nDue Date: {due_date}\nTotal Amount: {total_amount}\n\nYou can find the full breakdown in the attached PDF file.\n\nIf you have any questions regarding this invoice, please don't hesitate to reach out to us at {company_email}.\n\nBest regards,\n{company_name} Team",
+                'body' => "Please find the summary of your latest invoice attached for your project: {project_name}.",
             ],
         ];
 

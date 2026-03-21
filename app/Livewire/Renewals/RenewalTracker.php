@@ -6,13 +6,17 @@ use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
 use App\Models\Renewal;
 use App\Models\Subscription;
+use App\Traits\WithSorting;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class RenewalTracker extends Component
 {
-    use WithPagination;
+    use WithPagination, WithSorting;
+
+    public string $sortColumn = 'created_at';
+    public string $sortDirection = 'desc';
 
     public string $search = '';
     public string $statusFilter = '';
@@ -26,7 +30,7 @@ class RenewalTracker extends Component
     #[Computed]
     public function subscriptions()
     {
-        return Subscription::with(['project.client', 'provider'])
+        $query = Subscription::with(['project.client', 'provider'])
             ->where('status', '!=', SubscriptionStatus::Cancelled)
             ->when($this->search, function ($query) {
                 $query->where('domain_name', 'like', '%' . $this->search . '%')
@@ -37,9 +41,9 @@ class RenewalTracker extends Component
             })
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);
-            })
-            ->orderBy('expiry_date', 'asc')
-            ->paginate(15);
+            });
+
+        return $this->applySorting($query)->paginate(15);
     }
 
     public function openRenewalModal(int $subscriptionId): void

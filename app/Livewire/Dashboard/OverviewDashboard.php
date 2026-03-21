@@ -67,6 +67,19 @@ class OverviewDashboard extends Component
     }
 
     #[Computed]
+    public function financeStats(): array
+    {
+        $annualRecurring = Subscription::where('status', \App\Enums\SubscriptionStatus::Active)->sum('renewal_cost_usd');
+
+        return [
+            'total_revenue' => Invoice::where('status', \App\Enums\InvoiceStatus::Paid)->sum('total_amount'),
+            'outstanding'   => Invoice::whereIn('status', [\App\Enums\InvoiceStatus::Sent, \App\Enums\InvoiceStatus::Overdue])->sum('total_amount'),
+            'mrr'           => $annualRecurring / 12,
+            'costs'         => $annualRecurring,
+        ];
+    }
+
+    #[Computed]
     public function stats(): array
     {
         return [

@@ -27,13 +27,13 @@ class SubscriptionReminderMail extends Mailable
     public function envelope(): Envelope
     {
         $template = MailTemplate::getBySlug('subscription-reminder');
-        $name = $this->subscription->domain_name ?? $this->subscription->service_type->label();
+        $name = $this->subscription->domain_name ?: ($this->subscription->service_type?->label() ?? 'Service');
         
         $subject = $template ? $template->render([
-            '{client_name}'    => $this->subscription->project->client->name,
-            '{project_name}'   => $this->subscription->project->name,
+            '{client_name}'    => $this->subscription->project?->client?->name ?? 'Client',
+            '{project_name}'   => $this->subscription->project?->project_name ?? 'Project',
             '{service_name}'   => $name,
-            '{provider}'       => $this->subscription->provider,
+            '{provider}'       => $this->subscription->provider?->name ?? 'Provider',
             '{expiry_date}'    => $this->subscription->expiry_date->format('F d, Y'),
             '{days_remaining}' => $this->subscription->days_until_expiry,
             '{app_name}'       => config('app.name'),
@@ -50,13 +50,13 @@ class SubscriptionReminderMail extends Mailable
     public function content(): Content
     {
         $template = MailTemplate::getBySlug('subscription-reminder');
-        $name = $this->subscription->domain_name ?? $this->subscription->service_type->label();
+        $name = $this->subscription->domain_name ?: ($this->subscription->service_type?->label() ?? 'Service');
 
         $body = $template ? $template->render([
-            '{client_name}'    => $this->subscription->project->client->name,
-            '{project_name}'   => $this->subscription->project->name,
+            '{client_name}'    => $this->subscription->project?->client?->name ?? 'Client',
+            '{project_name}'   => $this->subscription->project?->project_name ?? 'Project',
             '{service_name}'   => $name,
-            '{provider}'       => $this->subscription->provider,
+            '{provider}'       => $this->subscription->provider?->name ?? 'Provider',
             '{expiry_date}'    => $this->subscription->expiry_date->format('F d, Y'),
             '{days_remaining}' => $this->subscription->days_until_expiry,
             '{app_name}'       => config('app.name'),

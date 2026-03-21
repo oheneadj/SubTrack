@@ -10,7 +10,7 @@
     <div class="flex items-center justify-end gap-2">
         @if($viewAction)
             <a href="{{ $viewAction }}" class="flex items-center gap-2 btn btn-xs h-8 px-3 rounded-lg text-slate-700 transition-colors border-slate-200" wire:navigate>
-                <x-icon-eye class="w-3.5 h-3.5 text-slate-500" />
+                <x-icon-eye class="w-3.5 h-3.5 text-white" />
                 <span class="font-bold uppercase tracking-tight text-[10px]">View</span>
             </a>
         @endif
@@ -26,7 +26,7 @@
                     @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
                 @endif
                 class="flex items-center gap-2 btn btn-info btn-xs h-8 px-3 rounded-lg transition-colors border-blue-100 text-blue-700">
-                <x-icon-edit class="w-3.5 h-3.5 text-blue-500" />
+                <x-icon-edit class="w-3.5 h-3.5 text-white" />
                 <span class="font-bold uppercase tracking-tight text-[10px]">Edit</span>
             </button>
         @endif
@@ -37,7 +37,7 @@
 
         @if($deleteAction)
             <button wire:click="{{ $deleteAction }}" class="flex items-center gap-2 btn btn-error btn-xs h-8 px-3 rounded-lg transition-colors border-red-100 text-red-700">
-                <x-icon-trash class="w-3.5 h-3.5 text-red-500" />
+                <x-icon-trash class="w-3.5 h-3.5 text-white" />
                 <span class="font-bold uppercase tracking-tight text-[10px]">Delete</span>
             </button>
         @endif

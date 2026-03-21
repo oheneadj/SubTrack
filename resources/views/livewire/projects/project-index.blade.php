@@ -45,7 +45,7 @@
                 class="btn btn-primary btn-sm">Add Project</button>
         </x-ui.empty-state>
     @else
-        <x-ui.data-table :headers="['Project Name', 'Client', 'Subscriptions', 'Created', '']">
+        <x-ui.data-table :headers="['project_name' => 'Project Name', 'Client', 'Subscriptions', 'created_at' => 'Created', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
             @foreach($projects as $project)
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td>

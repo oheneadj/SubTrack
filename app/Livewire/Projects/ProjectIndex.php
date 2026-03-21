@@ -6,12 +6,15 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
 use App\Models\Project;
-
+use App\Traits\WithSorting;
 use Livewire\Attributes\On;
 
 class ProjectIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithSorting;
+
+    public string $sortColumn = 'created_at';
+    public string $sortDirection = 'desc';
 
     public string $search = '';
     public bool $confirmDelete = false;
@@ -52,15 +55,14 @@ class ProjectIndex extends Component
     public function render()
     {
         return view('livewire.projects.project-index', [
-            'projects' => Project::with('client')
+            'projects' => $this->applySorting(Project::with('client')
                 ->where(function($query) {
                     $query->where('project_name', 'like', "%{$this->search}%")
                         ->orWhereHas('client', function($q) {
                             $q->where('name', 'like', "%{$this->search}%");
                         });
                 })
-                ->whereHas('client') // Only show projects with active (non-deleted) clients
-                ->latest()
+                ->whereHas('client')) // Only show projects with active (non-deleted) clients
                 ->paginate(15),
         ]);
     }

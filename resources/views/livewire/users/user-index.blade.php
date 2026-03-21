@@ -89,11 +89,11 @@
                                 </a>
                                 @if($user->id !== auth()->id())
                                     <x-ui.action-menu deleteAction="confirmDelete({{ $user->id }})">
-                                        <button wire:click="resendInvite({{ $user->id }})" class="btn btn-ghost btn-xs text-slate-600 flex items-center gap-2 justify-start">
+                                        <button wire:click="resendInvite({{ $user->id }})" class="btn btn-primary btn-xs text-white flex items-center gap-2 justify-start">
                                             <x-icon-refresh class="w-3 h-3" />
                                             <span>Resend Invite</span>
                                         </button>
-                                        <button wire:click="openToggleModal({{ $user->id }})" class="btn btn-ghost btn-xs {{ $user->is_active ? 'text-error' : 'text-success' }} flex items-center gap-2 justify-start">
+                                        <button wire:click="openToggleModal({{ $user->id }})" class="btn {{ $user->is_active ? 'btn-warning' : 'btn-success' }} btn-xs flex items-center gap-2 justify-start">
                                             <x-icon-alert-triangle class="w-3 h-3" />
                                             <span>{{ $user->is_active ? 'Disable' : 'Enable' }}</span>
                                         </button>

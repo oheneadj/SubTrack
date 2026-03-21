@@ -7,8 +7,8 @@
     </x-ui.page-header>
 
 
-    <div class="flex flex-col md:flex-row gap-4 mb-6">
-        <div class="relative flex-1">
+    <div class="flex flex-col md:flex-row gap-4 mb-6 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+        <div class="w-full">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <x-icon-search class="w-4 h-4 text-slate-400" />
             </div>
@@ -32,7 +32,7 @@
             message="Create your first invoice to start billing clients."
         />
     @else
-        <x-ui.data-table :headers="['Invoice #', 'Client', 'Date / Due', 'Total', 'Status', 'Actions']">
+        <x-ui.data-table :headers="['invoice_number' => 'Invoice #', 'Client', 'issued_date' => 'Date / Due', 'total_usd' => 'Total', 'status' => 'Status', 'Actions']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
             @foreach($this->invoices as $invoice)
                 <tr>
                     <td class="font-bold text-blue-600">
@@ -58,19 +58,19 @@
                         </td>
                     <td class="text-right">
                         <div class="flex gap-1 justify-end">
-                            <button wire:click="downloadPdf({{ $invoice->id }})" title="Download PDF" class="btn btn-square btn-soft btn-sm">
-                                <x-icon-photo class="w-4 h-4 text-blue-500" />
+                            <button wire:click="downloadPdf({{ $invoice->id }})" title="Download PDF" class="btn btn-primary btn-xs text-white">
+                                <x-icon-photo class="w-4 h-4 text-white" />Download
                             </button>
-                            <button wire:click="sendInvoice({{ $invoice->id }})" title="Send to Client" class="btn btn-square btn-soft btn-sm">
-                                <x-icon-mail class="w-4 h-4 text-blue-500" />
+                            <button wire:click="sendInvoice({{ $invoice->id }})" title="Send to Client" class="btn btn-info btn-xs text-white">
+                                <x-icon-mail class="w-4 h-4 text-white" />Send
                             </button>
                             @if($invoice->status !== 'Paid')
-                                <button wire:click="markAsPaid({{ $invoice->id }})" title="Mark as Paid" class="btn btn-square btn-soft btn-sm">
-                                    <x-icon-circle-check class="w-4 h-4 text-green-500" />
+                                <button wire:click="markAsPaid({{ $invoice->id }})" title="Mark as Paid" class="btn btn-success btn-xs text-white">
+                                    <x-icon-circle-check class="w-4 h-4 text-white" />Paid
                                 </button>
                             @endif
-                            <a href="{{ route('invoices.edit', $invoice) }}" title="Edit" class="btn btn-square btn-soft btn-sm">
-                                <x-icon-edit class="w-4 h-4 text-slate-600" />
+                            <a href="{{ route('invoices.edit', $invoice) }}" title="Edit" class="btn btn-warning btn-xs text-white">
+                                <x-icon-edit class="w-4 h-4 text-white" />Edit
                             </a>
                         </div>
                     </td>

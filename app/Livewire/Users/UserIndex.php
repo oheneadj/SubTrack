@@ -72,6 +72,7 @@ class UserIndex extends Component
             'password' => $plainPassword,
             'role'     => $this->inviteRole,
             'is_active' => true,
+            'requires_password_change' => true,
         ]);
 
         Mail::to($user->email)->send(new UserInviteMail(
@@ -128,7 +129,10 @@ class UserIndex extends Component
         $user = User::findOrFail($userId);
 
         $plainPassword = Str::random(12);
-        $user->update(['password' => $plainPassword]);
+        $user->update([
+            'password' => $plainPassword,
+            'requires_password_change' => true,
+        ]);
 
         Mail::to($user->email)->send(new UserInviteMail(
             userName: $user->name,

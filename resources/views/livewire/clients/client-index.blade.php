@@ -34,7 +34,7 @@
             <button wire:click="openCreate" class="btn btn-primary btn-sm">Add Client</button>
         </x-ui.empty-state>
     @else
-        <x-ui.data-table :headers="['Client Name', 'Email', 'Projects', 'Registered', '']">
+        <x-ui.data-table :headers="['name' => 'Client Name', 'email' => 'Email', 'projects_count' => 'Projects', 'created_at' => 'Registered', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
             @foreach($clients as $client)
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td>
@@ -61,8 +61,8 @@
                             editAction="edit({{ $client->id }})" 
                             deleteAction="openDeleteModal({{ $client->id }})" 
                         >
-                            <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="flex items-center gap-2 btn btn-soft btn-info btn-xs gap-1.5 h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors border-blue-100 text-blue-700" wire:navigate>
-                                <x-icon-mail class="w-3.5 h-3.5 text-blue-500" />
+                            <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="flex items-center gap-2 btn btn-primary btn-xs gap-1.5 h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors border-blue-100 text-blue-700" wire:navigate>
+                                <x-icon-mail class="w-3.5 h-3.5 text-white" />
                                 <span class="font-bold uppercase tracking-tight text-[10px]">Email</span>
                             </a>
                         </x-ui.action-menu>

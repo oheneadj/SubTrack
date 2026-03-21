@@ -7,10 +7,14 @@ use Livewire\WithPagination;
 use App\Models\Client;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use App\Traits\WithSorting;
 
 class ClientIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithSorting;
+
+    public string $sortColumn = 'name';
+    public string $sortDirection = 'asc';
 
     // Table state
     public string $search = '';
@@ -140,9 +144,8 @@ class ClientIndex extends Component
     public function render()
     {
         return view('livewire.clients.client-index', [
-            'clients' => Client::search($this->search)
-                ->withCount('projects')
-                ->latest()
+            'clients' => $this->applySorting(Client::search($this->search)
+                ->withCount('projects'))
                 ->paginate(15),
         ])->layout('layouts.app');
     }

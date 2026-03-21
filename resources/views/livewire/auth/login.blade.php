@@ -11,7 +11,6 @@
 
         <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-5">
             @csrf
-
             <!-- Email Address -->
             <div class="form-control w-full">
                 <label class="label py-1">
@@ -29,7 +28,7 @@
                         autofocus 
                         autocomplete="email" 
                         placeholder="name@company.com"
-                        class="input input-bordered w-full pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('email') input-error @enderror"
+                        class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('email') input-error @enderror"
                     />
                 </div>
                 @error('email')
@@ -61,7 +60,7 @@
                         required 
                         autocomplete="current-password" 
                         placeholder="••••••••"
-                        class="input input-bordered w-full pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('password') input-error @enderror"
+                        class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('password') input-error @enderror"
                     />
                 </div>
                 @error('password')
@@ -73,7 +72,7 @@
 
             <!-- Remember Me -->
             <div class="form-control">
-                <label class="label cursor-pointer justify-start gap-3 py-1">
+                <label class="flex items-center label cursor-pointer justify-start gap-3 py-1">
                     <input type="checkbox" name="remember" class="checkbox checkbox-primary checkbox-sm rounded-md" {{ old('remember') ? 'checked' : '' }} />
                     <span class="label-text text-sm font-medium text-slate-600">{{ __('Stay logged in') }}</span>
                 </label>

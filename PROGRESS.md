@@ -12,9 +12,9 @@
 
 ## 📍 Current Status
 
-**Current Status:** UI Hardening & Documentation Complete
-**Last Completed Task:** Added product image to README.md.
-**Next Task:** Awaiting user feedback on recent enhancements.
+**Current Status:** Finance Dashboard Complete
+**Last Completed Task:** Implemented the Finance Dashboard with metric cards and recent transactions.
+**Next Task:** Awaiting user feedback on Finance Dashboard functionality.
 **Blockers:** None
 
 ---
@@ -347,6 +347,8 @@
 | 20 | 2026-03-20 | Bug Fixes & UI Hardening: Fixed `UserShow.php` parse error, resolved email rendering issues, fixed modal visibility, and completed application-wide button alignment fix. | Handover |
 | 21 | 2026-03-20 | Direct Mailer Redesign: Transformed the mailer into a premium 2-column interface with avatars, templates, and interactive placeholders. | Handover |
 | 22 | 2026-03-20 | Documentation: Added product dashboard image to the root `README.md`. | Handover |
+| 23 | 2026-03-21 | UI Enhancement: Implemented universal table sorting functionality using a new `WithSorting` Livewire trait. Applied custom default sorting per section constraints. | Handover |
+| 24 | 2026-03-21 | New Feature: Built the Finance Dashboard (`/finances`) with core revenue, MRR, and cost metrics, plus recent payments and upcoming renewals components. | Handover |
 
 ---
 

@@ -7,8 +7,8 @@
     </x-ui.page-header>
 
 
-    <div class="flex flex-col md:flex-row gap-4 mb-6">
-        <div class="relative flex-1">
+    <div class="flex flex-col md:flex-row gap-4 mb-6 bg-white p-6 border border-slate-200 rounded-lg">
+        <div class="w-full">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <x-icon-search class="h-4 w-4 text-slate-400" />
             </div>
@@ -39,7 +39,7 @@
             icon="icon-calendar-off"
         />
     @else
-        <x-ui.data-table :headers="['Project / Client', 'Service / Domain', 'Type', 'Expiry', 'Status', '']">
+        <x-ui.data-table :headers="['Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
             @foreach($this->subscriptions as $sub)
                 <tr>
                     <td>

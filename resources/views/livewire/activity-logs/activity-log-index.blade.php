@@ -20,11 +20,38 @@
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-slate-500">
                         <th class="py-4 px-6 font-semibold">User</th>
-                        <th class="py-4 px-6 font-semibold">Action</th>
+                        <th class="py-4 px-6 font-semibold">
+                            <button type="button" wire:click="sortBy('action')" class="group flex items-center gap-1 hover:text-primary transition-colors focus:outline-none">
+                                Action
+                                @if($sortColumn === 'action')
+                                    <span class="text-primary"><x-icon-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }} class="w-3 h-3" /></span>
+                                @else
+                                    <span class="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"><x-icon-arrow-up class="w-3 h-3" /></span>
+                                @endif
+                            </button>
+                        </th>
                         <th class="py-4 px-6 font-semibold">Description</th>
                         <th class="py-4 px-6 font-semibold">Subject</th>
-                        <th class="py-4 px-6 font-semibold">IP Address</th>
-                        <th class="py-4 px-6 font-semibold">Date</th>
+                        <th class="py-4 px-6 font-semibold">
+                            <button type="button" wire:click="sortBy('ip_address')" class="group flex items-center gap-1 hover:text-primary transition-colors focus:outline-none">
+                                IP Address
+                                @if($sortColumn === 'ip_address')
+                                    <span class="text-primary"><x-icon-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }} class="w-3 h-3" /></span>
+                                @else
+                                    <span class="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"><x-icon-arrow-up class="w-3 h-3" /></span>
+                                @endif
+                            </button>
+                        </th>
+                        <th class="py-4 px-6 font-semibold">
+                            <button type="button" wire:click="sortBy('created_at')" class="group flex items-center gap-1 hover:text-primary transition-colors focus:outline-none">
+                                Date
+                                @if($sortColumn === 'created_at')
+                                    <span class="text-primary"><x-icon-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }} class="w-3 h-3" /></span>
+                                @else
+                                    <span class="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"><x-icon-arrow-up class="w-3 h-3" /></span>
+                                @endif
+                            </button>
+                        </th>
                         <th class="py-4 px-6 font-semibold text-right">Details</th>
                     </tr>
                 </thead>

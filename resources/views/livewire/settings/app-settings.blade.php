@@ -28,25 +28,65 @@
                     <div class="space-y-4">
                         <x-ui.form-input label="Application Name" model="appName" placeholder="e.g. SubTrack" :error="$errors->first('appName')" />
 
-                        <div class="space-y-3">
-                            <label class="label">
-                                <span class="label-text font-semibold text-primary text-sm">Company Logo</span>
-                            </label>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="label p-0">
+                                    <span class="label-text font-semibold text-primary text-sm">Company Logo</span>
+                                </label>
+                                <p class="text-[10px] text-secondary">PNG, JPG, SVG. Max 1MB.</p>
+                            </div>
 
-                            <div class="flex items-center gap-4">
-                                @if ($logo)
-                                    <img src="{{ $logo->temporaryUrl() }}" class="w-16 h-16 rounded-xl object-contain bg-slate-50 border border-slate-200 p-2">
-                                @elseif ($currentLogo)
-                                    <img src="{{ Storage::url($currentLogo) }}" class="w-16 h-16 rounded-xl object-contain bg-slate-50 border border-slate-200 p-2">
-                                @else
-                                    <div class="w-16 h-16 rounded-xl bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center">
-                                        <x-icon-photo class="w-6 h-6 text-slate-400" />
+                            <div class="flex flex-col gap-4">
+                                {{-- Preview Box --}}
+                                <div class="flex items-center gap-4 p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+                                    @if ($logo)
+                                        <img src="{{ $logo->temporaryUrl() }}" class="w-16 h-16 rounded-lg object-contain bg-white border border-slate-200 p-2 shadow-sm">
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-semibold text-slate-700">New Logo File</span>
+                                            <span class="text-xs text-slate-500">Ready to save</span>
+                                        </div>
+                                    @elseif ($currentLogo)
+                                        <img src="{{ Storage::url($currentLogo) }}" class="w-16 h-16 rounded-lg object-contain bg-white border border-slate-200 p-2 shadow-sm">
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-semibold text-slate-700">Current Saved Logo</span>
+                                            <span class="text-xs text-slate-500">Active</span>
+                                        </div>
+                                    @else
+                                        <div class="w-16 h-16 rounded-lg bg-white border border-dashed border-slate-300 flex items-center justify-center shadow-sm">
+                                            <x-icon-photo class="w-6 h-6 text-slate-400" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-semibold text-slate-700">No Logo</span>
+                                            <span class="text-xs text-slate-500">Upload one below</span>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- Dropzone --}}
+                                <div class="w-full" wire:ignore>
+                                    <div
+                                        x-data
+                                        x-init="
+                                            FilePond.registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType, FilePondPluginFileValidateSize);
+                                            const pond = FilePond.create($refs.input, {
+                                                allowMultiple: false,
+                                                allowImagePreview: false,
+                                                labelIdle: `Drag & Drop your new logo or <span class='filepond--label-action font-semibold text-blue-500'>Browse</span>`,
+                                                acceptedFileTypes: ['image/png', 'image/jpeg','image/webp', 'image/svg+xml'],
+                                                maxFileSize: '1MB',
+                                                server: {
+                                                    process: (fieldName, file, metadata, load, error, progress, abort, transfer, options) => {
+                                                        @this.upload('logo', file, load, error, progress)
+                                                    },
+                                                    revert: (filename, load) => {
+                                                        @this.removeUpload('logo', filename, load)
+                                                    },
+                                                },
+                                            });
+                                        "
+                                    >
+                                        <input type="file" x-ref="input">
                                     </div>
-                                @endif
-
-                                <div class="flex-1">
-                                    <input type="file" wire:model="logo" class="file-input file-input-bordered file-input-primary file-input-sm w-full" />
-                                    <p class="text-[10px] text-secondary mt-1">PNG, JPG, SVG. Max 1MB.</p>
                                 </div>
                             </div>
                             @error('logo') <span class="text-error text-xs">{{ $message }}</span> @enderror
@@ -143,3 +183,20 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+<style>
+    .filepond--root { margin-bottom: 0; font-family: inherit; }
+    .filepond--panel-root { background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; }
+    .filepond--drop-label { color: #64748b; font-size: 14px; }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+<script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+@endpush

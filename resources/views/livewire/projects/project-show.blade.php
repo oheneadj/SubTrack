@@ -62,7 +62,7 @@
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                     <h3 class="text-lg font-bold text-slate-800">Project Subscriptions</h3>
                 </div>
-                
+            </section>     
                 @if($this->subscriptions->isEmpty())
                     <x-ui.empty-state 
                         icon="list-details" 

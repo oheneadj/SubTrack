@@ -28,13 +28,21 @@
                 <p class="mb-4 flex-1 text-sm text-slate-500 leading-relaxed">{{ $template->description }}</p>
                 
                 <div class="mt-auto pt-4 border-t border-slate-100">
-                        <button 
-                            wire:click="edit({{ $template->id }})" 
-                            class="flex items-center gap-2 justify-center btn btn-primary btn-sm w-full"
-                        >
-                            <x-icon-edit class="mr-1 h-4 w-4" />
-                            Edit Template
-                        </button>
+                        <div class="flex flex-row gap-2">
+                            <a 
+                                href="{{ route('mail-templates.preview', $template->slug) }}" 
+                                target="_blank"
+                                class="flex flex-1 items-center gap-2 justify-center btn btn-outline btn-sm bg-white"
+                            >
+                                Preview
+                            </a>
+                            <button 
+                                wire:click="edit({{ $template->id }})" 
+                                class="flex flex-1 items-center gap-2 justify-center btn btn-primary btn-sm"
+                            >
+                                Edit
+                            </button>
+                        </div>
                 </div>
             </div>
         @endforeach

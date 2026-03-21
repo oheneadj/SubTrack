@@ -3,13 +3,17 @@
 namespace App\Livewire\ActivityLogs;
 
 use App\Models\ActivityLog;
+use App\Traits\WithSorting;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\View\View;
 
 class ActivityLogIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithSorting;
+
+    public string $sortColumn = 'created_at';
+    public string $sortDirection = 'desc';
 
     public string $search = '';
     public string $actionFilter = '';
@@ -38,9 +42,9 @@ class ActivityLogIndex extends Component
                     ->orWhere('subject_type', 'like', '%' . $this->search . '%')
                     ->orWhere('ip_address', 'like', '%' . $this->search . '%');
             })
-            ->when($this->actionFilter, fn($q) => $q->where('action', $this->actionFilter))
-            ->latest()
-            ->paginate(25);
+            ->when($this->actionFilter, fn($q) => $q->where('action', $this->actionFilter));
+
+        $logs = $this->applySorting($logs)->paginate(25);
 
         $actions = ActivityLog::select('action')->distinct()->pluck('action');
 

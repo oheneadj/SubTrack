@@ -27,7 +27,7 @@
     </div>
 
     {{-- Main Content --}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+  
         @if($providers->isEmpty())
             <x-ui.empty-state 
                 icon="world" 

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'requires_password_change',
         'role',
         'is_active',
         'invitation_accepted_at',
@@ -44,6 +45,7 @@ class User extends Authenticatable
         return [
             'email_verified_at'      => 'datetime',
             'password'               => 'hashed',
+            'requires_password_change' => 'boolean',
             'role'                   => UserRole::class,
             'is_active'              => 'boolean',
             'invitation_accepted_at' => 'datetime',

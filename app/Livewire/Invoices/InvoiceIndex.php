@@ -12,15 +12,17 @@ use Illuminate\Support\Facades\Storage;
 
 class InvoiceIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, \App\Traits\WithSorting;
 
     public string $search = '';
     public string $statusFilter = '';
+    public string $sortColumn = 'created_at';
+    public string $sortDirection = 'desc';
 
     #[Computed]
     public function invoices()
     {
-        return Invoice::with(['client', 'project'])
+        $query = Invoice::with(['client', 'project'])
             ->whereHas('client') // Ensure client is not soft-deleted
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -33,9 +35,9 @@ class InvoiceIndex extends Component
             })
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            });
+
+        return $this->applySorting($query)->paginate(15);
     }
 
     public function downloadPdf(int $invoiceId, InvoicePdfService $pdfService)

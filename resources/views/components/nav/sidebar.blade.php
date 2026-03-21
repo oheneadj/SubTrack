@@ -1,11 +1,21 @@
 <aside class="w-64 bg-slate-900 text-slate-400 flex-shrink-0 flex flex-col h-full border-r border-slate-800 hidden lg:flex">
-    <div class="p-6 flex items-center gap-3">
-        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold">S</div>
-        <span class="text-xl font-bold text-white tracking-tight">SubTrack</span>
+    <div class="p-6 flex items-center gap-3 overflow-hidden">
+        @php
+            $brandingName = \App\Models\Setting::get('business_name') ?: \App\Models\Setting::get('app_name') ?: config('app.name', 'SubTrack');
+            $logoPath = \App\Models\Setting::get('logo_path');
+        @endphp
+        
+        @if($logoPath)
+            <img src="{{ Storage::url($logoPath) }}" class="w-8 h-8 rounded-lg object-contain">
+        @else
+            <div class="w-8 h-8 bg-blue-500 shrink-0 rounded-lg flex items-center justify-center text-white font-bold">{{ substr($brandingName, 0, 1) }}</div>
+        @endif
+        <span class="text-xl font-bold text-white tracking-tight truncate">{{ $brandingName }}</span>
     </div>
 
     <nav class="flex-1 px-4 py-4 space-y-1">
         <x-nav.item href="{{ route('dashboard') }}" label="Dashboard" icon="layout-dashboard" :active="request()->routeIs('dashboard')" />
+        <x-nav.item href="{{ route('finances.index') }}" label="Finances" icon="currency-dollar" :active="request()->routeIs('finances.*')" />
         
         <div class="pt-4 pb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Management</div>
         

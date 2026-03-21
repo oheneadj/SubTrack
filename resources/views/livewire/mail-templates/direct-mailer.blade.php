@@ -53,14 +53,14 @@
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             {{ count($selectedClients) }} Selected
                         </span>
-                        <label class="label cursor-pointer gap-2 p-0">
+                        <label class="flex items-center gap-2 p-0">
                             <span class="label-text font-bold text-slate-500 text-[11px] uppercase tracking-wider">Select All</span>
                             <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-primary checkbox-xs rounded" />
                         </label>
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto divide-y divide-base-50">
+                <div class="flex-1 overflow-y-auto divide-y divide-slate-200">
                     @forelse($this->clients as $client)
                         <label class="flex items-center gap-4 p-4 hover:bg-blue-50/40 cursor-pointer transition-all group">
                             <input type="checkbox" wire:model.live="selectedClients" value="{{ $client->id }}" 
