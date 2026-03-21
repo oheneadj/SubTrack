@@ -11,8 +11,8 @@ class RevenueService
     {
         $months = collect(range(5, 0))->map(function ($monthsAgo) {
             $date  = now()->subMonths($monthsAgo);
-            $total = Invoice::where('status', InvoiceStatus::Paid)
-                ->whereYear('issued_date', $date->year)
+            $total = Invoice::where('status', '=', InvoiceStatus::Paid)
+                ->whereYear('issued_date', '=', $date->year)
                 ->whereMonth('issued_date', $date->month)
                 ->sum('total_amount');
 
@@ -57,5 +57,32 @@ class RevenueService
             'percentage' => $pct,
             'direction'  => $diff >= 0 ? 'up' : 'down',
         ];
+    }
+
+    public function comparisonData(int $months = 12): array
+    {
+        $data = collect(range($months - 1, 0))->map(function ($monthsAgo) {
+            $date = now()->subMonths($monthsAgo);
+            
+            // Revenue: Paid Invoices for that month
+            $revenue = (float) Invoice::where('status', InvoiceStatus::Paid)
+                ->whereYear('issued_date', $date->year)
+                ->whereMonth('issued_date', $date->month)
+                ->sum('total_amount');
+
+            // Expenses: Estimated monthly provider costs (calculated from active subscriptions' renewal_cost_usd / 12)
+            // Note: This is an "Expected Monthly Cost" baseline rather than literal expense tracking
+            $expenses = (float) \App\Models\Subscription::where('status', \App\Enums\SubscriptionStatus::Active)
+                // We use established costs as a baseline for the line chart comparison
+                ->sum('renewal_cost_usd') / 12;
+
+            return [
+                'label'    => $date->format('M Y'),
+                'revenue'  => $revenue,
+                'expenses' => round($expenses, 2),
+            ];
+        });
+
+        return $data->toArray();
     }
 }

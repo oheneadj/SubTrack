@@ -28,6 +28,29 @@
         />
     </div>
 
+    {{-- Comparison Chart Section --}}
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-8 shadow-sm" x-data="comparisonChart({{ json_encode($comparisonData) }})">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="font-bold text-slate-800 text-lg">Revenue vs. Expenses</h3>
+                <p class="text-sm text-slate-500">Historical performance over the last 12 months</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-blue-600"></span>
+                    <span class="text-slate-600">Revenue</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-slate-300"></span>
+                    <span class="text-slate-600">Expenses (Baseline)</span>
+                </div>
+            </div>
+        </div>
+        <div class="h-[300px] w-full relative">
+            <canvas x-ref="canvas"></canvas>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {{-- Recent Revenue --}}
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -114,3 +137,92 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+function comparisonChart(data) {
+    return {
+        init() {
+            const labels = data.map(d => d.label);
+            const revenue = data.map(d => d.revenue);
+            const expenses = data.map(d => d.expenses);
+            const ctx = this.$refs.canvas.getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Revenue',
+                            data: revenue,
+                            borderColor: '#2563eb', // blue-600
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#2563eb',
+                            pointBorderWidth: 2,
+                        },
+                        {
+                            label: 'Expenses',
+                            data: expenses,
+                            borderColor: '#94a3b8', // slate-400
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            bodySpacing: 4,
+                            callbacks: {
+                                label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.raw.toLocaleString()
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { 
+                                font: { size: 10 },
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 6
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                font: { size: 10 },
+                                callback: value => '$' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+}
+</script>
+@endpush

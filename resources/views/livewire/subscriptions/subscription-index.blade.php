@@ -30,7 +30,35 @@
                 <option value="{{ $status->value }}">{{ $status->label() }}</option>
             @endforeach
         </select>
+
+        <button wire:click="export" class="btn btn-soft btn-secondary btn-sm flex items-center gap-2">
+            <x-icon-file-invoice class="w-4 h-4" />
+            <span>Export CSV</span>
+        </button>
     </div>
+
+    @if(count($selectedSubscriptions) > 0)
+        <div class="flex items-center justify-between bg-primary/10 border border-primary/20 p-4 rounded-xl mb-6 animate-in fade-in slide-in-from-top-4">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-bold text-primary">{{ count($selectedSubscriptions) }} selected</span>
+                <div class="h-4 w-px bg-primary/20"></div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bulk Actions:</span>
+                    <button wire:click="applyBulkStatus('Active')" wire:loading.attr="disabled" class="btn btn-xs btn-success font-bold text-white">
+                        <span wire:loading.remove>Mark Active</span>
+                        <span wire:loading><span class="loading loading-spinner loading-xs"></span></span>
+                    </button>
+                    <button wire:click="applyBulkStatus('Cancelled')" wire:loading.attr="disabled" class="btn btn-xs btn-error font-bold text-white">
+                        <span wire:loading.remove>Mark Cancelled</span>
+                        <span wire:loading><span class="loading loading-spinner loading-xs"></span></span>
+                    </button>
+                </div>
+            </div>
+            <button @click="$wire.set('selectedSubscriptions', [])" class="btn btn-ghost btn-circle btn-xs text-slate-400 hover:text-error">
+                <x-icon-x class="w-4 h-4" />
+            </button>
+        </div>
+    @endif
 
     @if($this->subscriptions->isEmpty())
         <x-ui.empty-state 
@@ -39,9 +67,12 @@
             icon="icon-calendar-off"
         />
     @else
-        <x-ui.data-table :headers="['Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
+        <x-ui.data-table :headers="['Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection" :selectable="true">
             @foreach($this->subscriptions as $sub)
-                <tr>
+                <tr class="{{ in_array($sub->id, $selectedSubscriptions) ? 'bg-primary/5' : '' }}">
+                    <td class="w-10 px-4">
+                        <input type="checkbox" wire:model.live="selectedSubscriptions" value="{{ $sub->id }}" class="checkbox checkbox-sm checkbox-primary" />
+                    </td>
                     <td>
                         <div class="flex flex-col">
                             @if($sub->project)

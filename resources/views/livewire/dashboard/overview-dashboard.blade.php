@@ -71,21 +71,55 @@
 
     {{-- Finance Summary Section --}}
     <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-4">Finance Summary</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <x-ui.stat-card
-            label="Total Revenue"
-            value="${{ number_format($this->financeStats['total_revenue'], 2) }}"
-            icon="currency-dollar"
-            variant="healthy"
-            :href="route('finances.index')"
-        />
-        <x-ui.stat-card
-            label="Outstanding"
-            value="${{ number_format($this->financeStats['outstanding'], 2) }}"
-            icon="file-invoice"
-            variant="warning"
-            :href="route('finances.index')"
-        />
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {{-- Revenue Chart Card --}}
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between" x-data="revenueChart({{ json_encode($revenueData) }})">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-slate-800">Revenue Trend</h3>
+                    <p class="text-xs text-slate-500">Last 6 months</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-lg font-black text-primary">
+                        @php
+                            $currentMonth = collect($revenueData)->last()['total'] ?? 0;
+                            $prevMonth = collect($revenueData)->reverse()->values()->get(1)['total'] ?? 0;
+                            $diff = $currentMonth - $prevMonth;
+                        @endphp
+                        ${{ number_format($currentMonth, 2) }}
+                    </div>
+                    <div class="flex items-center justify-end gap-1 text-[10px] font-bold {{ $diff >= 0 ? 'text-success' : 'text-error' }}">
+                        @if($diff >= 0) <x-icon-trending-up class="w-3 h-3" /> @else <x-icon-trending-down class="w-3 h-3" /> @endif
+                        {{ $diff >= 0 ? '+' : '' }}{{ number_format($diff, 2) }} vs last mo.
+                    </div>
+                </div>
+            </div>
+            <div class="h-[140px] w-full relative">
+                <canvas x-ref="canvas"></canvas>
+            </div>
+        </div>
+
+        {{-- Mini Stats Column --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+            <x-ui.stat-card
+                label="Total Revenue"
+                value="${{ number_format($this->financeStats['total_revenue'], 2) }}"
+                icon="currency-dollar"
+                variant="healthy"
+                :href="route('finances.index')"
+            />
+            <x-ui.stat-card
+                label="Outstanding"
+                value="${{ number_format($this->financeStats['outstanding'], 2) }}"
+                icon="file-invoice"
+                variant="warning"
+                :href="route('finances.index')"
+            />
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
         <x-ui.stat-card
             label="Est. MRR"
             value="${{ number_format($this->financeStats['mrr'], 2) }}"

@@ -1,10 +1,15 @@
-@props(['headers' => [], 'sortColumn' => null, 'sortDirection' => 'asc'])
+@props(['headers' => [], 'sortColumn' => null, 'sortDirection' => 'asc', 'selectable' => false])
 
 <div {{ $attributes->merge(['class' => 'bg-white rounded-xl border border-slate-200 shadow-sm']) }}>
     <div class="overflow-x-auto">
         <table class="table w-full">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200">
+                    @if($selectable)
+                        <th class="w-10 px-4 py-3">
+                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm checkbox-primary" />
+                        </th>
+                    @endif
                     @foreach($headers as $key => $label)
                         <th class="text-xs font-semibold text-secondary uppercase tracking-wider px-4 py-3">
                             @if(is_string($key))

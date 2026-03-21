@@ -10,8 +10,9 @@ use Livewire\Component;
 
 class FinanceDashboard extends Component
 {
-    public function render()
+    public function render(\App\Services\RevenueService $revenue)
     {
+        $comparisonData = $revenue->comparisonData(12);
         $totalRevenue = Invoice::where('status', InvoiceStatus::Paid)->sum('total_amount');
         
         $outstandingRevenue = Invoice::whereIn('status', [
@@ -47,6 +48,7 @@ class FinanceDashboard extends Component
             'totalCosts' => $totalCosts,
             'recentInvoices' => $recentInvoices,
             'upcomingRenewals' => $upcomingRenewals,
+            'comparisonData' => $comparisonData,
         ])->layout('components.layouts.app');
     }
 }

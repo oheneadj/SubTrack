@@ -23,6 +23,11 @@
             <option value="Paid">Paid</option>
             <option value="Overdue">Overdue</option>
         </select>
+
+        <button wire:click="export" class="btn btn-soft btn-secondary btn-sm flex items-center gap-2">
+            <x-icon-file-invoice class="w-4 h-4" />
+            <span>Export CSV</span>
+        </button>
     </div>
 
     @if($this->invoices->isEmpty())
@@ -58,15 +63,30 @@
                         </td>
                     <td class="text-right">
                         <div class="flex gap-1 justify-end">
-                            <button wire:click="downloadPdf({{ $invoice->id }})" title="Download PDF" class="btn btn-primary btn-xs text-white">
-                                <x-icon-photo class="w-4 h-4 text-white" />Download
+                            <button wire:click="downloadPdf({{ $invoice->id }})" wire:loading.attr="disabled" title="Download PDF" class="btn btn-primary btn-xs text-white">
+                                <span wire:loading.remove class="flex items-center gap-1">
+                                    <x-icon-photo class="w-4 h-4 text-white" />Download
+                                </span>
+                                <span wire:loading>
+                                    <span class="loading loading-spinner loading-xs"></span>
+                                </span>
                             </button>
-                            <button wire:click="sendInvoice({{ $invoice->id }})" title="Send to Client" class="btn btn-info btn-xs text-white">
-                                <x-icon-mail class="w-4 h-4 text-white" />Send
+                            <button wire:click="sendInvoice({{ $invoice->id }})" wire:loading.attr="disabled" title="Send to Client" class="btn btn-info btn-xs text-white">
+                                <span wire:loading.remove class="flex items-center gap-1">
+                                    <x-icon-mail class="w-4 h-4 text-white" />Send
+                                </span>
+                                <span wire:loading>
+                                    <span class="loading loading-spinner loading-xs"></span>
+                                </span>
                             </button>
                             @if($invoice->status !== 'Paid')
-                                <button wire:click="markAsPaid({{ $invoice->id }})" title="Mark as Paid" class="btn btn-success btn-xs text-white">
-                                    <x-icon-circle-check class="w-4 h-4 text-white" />Paid
+                                <button wire:click="markAsPaid({{ $invoice->id }})" wire:loading.attr="disabled" title="Mark as Paid" class="btn btn-success btn-xs text-white">
+                                    <span wire:loading.remove class="flex items-center gap-1">
+                                        <x-icon-circle-check class="w-4 h-4 text-white" />Paid
+                                    </span>
+                                    <span wire:loading>
+                                        <span class="loading loading-spinner loading-xs"></span>
+                                    </span>
                                 </button>
                             @endif
                             <a href="{{ route('invoices.edit', $invoice) }}" title="Edit" class="btn btn-warning btn-xs text-white">

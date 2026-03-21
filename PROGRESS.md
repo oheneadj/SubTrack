@@ -32,6 +32,7 @@
 - [X] Phase 9 — Polish & QA
 - [X] Phase 10 — Activity Logging (Custom)
 - [X] Phase 11 — Notifications System (Real-time)
+- [X] Phase 12 — Enhancements & Polish (Post-Launch)
 
 ---
 
@@ -349,6 +350,7 @@
 | 22 | 2026-03-20 | Documentation: Added product dashboard image to the root `README.md`. | Handover |
 | 23 | 2026-03-21 | UI Enhancement: Implemented universal table sorting functionality using a new `WithSorting` Livewire trait. Applied custom default sorting per section constraints. | Handover |
 | 24 | 2026-03-21 | New Feature: Built the Finance Dashboard (`/finances`) with core revenue, MRR, and cost metrics, plus recent payments and upcoming renewals components. | Handover |
+| 25 | 2026-03-21 | Phase 12 Enhancements: Interactive revenue charts, CSV exports, bulk subscription actions, and UI polish with loading indicators. | Phase 12 end |
 
 ---
 

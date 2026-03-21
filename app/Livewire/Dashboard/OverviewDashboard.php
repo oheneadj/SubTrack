@@ -69,10 +69,10 @@ class OverviewDashboard extends Component
     #[Computed]
     public function financeStats(): array
     {
-        $annualRecurring = Subscription::where('status', \App\Enums\SubscriptionStatus::Active)->sum('renewal_cost_usd');
+        $annualRecurring = Subscription::where('status', '=', \App\Enums\SubscriptionStatus::Active)->sum('renewal_cost_usd');
 
         return [
-            'total_revenue' => Invoice::where('status', \App\Enums\InvoiceStatus::Paid)->sum('total_amount'),
+            'total_revenue' => Invoice::where('status', '=', \App\Enums\InvoiceStatus::Paid)->sum('total_amount'),
             'outstanding'   => Invoice::whereIn('status', [\App\Enums\InvoiceStatus::Sent, \App\Enums\InvoiceStatus::Overdue])->sum('total_amount'),
             'mrr'           => $annualRecurring / 12,
             'costs'         => $annualRecurring,
@@ -86,8 +86,8 @@ class OverviewDashboard extends Component
             'critical'       => Subscription::critical()->count(),
             'warning'        => Subscription::warning()->count(),
             'healthy'        => Subscription::healthy()->count(),
-            'awaiting'       => Renewal::where('payment_status', PaymentStatus::Invoiced)->count(),
-            'overdue'        => Invoice::where('status', InvoiceStatus::Overdue)->count(),
+            'awaiting'       => Renewal::where('payment_status', '=', PaymentStatus::Invoiced)->count(),
+            'overdue'        => Invoice::where('status', '=', InvoiceStatus::Overdue)->count(),
             'total_clients'  => Client::count(),
         ];
     }
