@@ -21,5 +21,8 @@ Schedule::command('queue:work --stop-when-empty --max-time=55')
 // Check subscription expiries and send reminders daily at 8 AM
 Schedule::command('subtrack:check-expiries')->dailyAt('08:00');
 
+// Fallback for missed/late payment webhooks — polls gateways directly
+Schedule::command('payments:poll-pending')->everyFiveMinutes()->withoutOverlapping();
+
 // Housekeeping: prune old logs weekly
 Schedule::command('log:clear')->weekly();

@@ -26,7 +26,7 @@
                 <option value="">All Statuses</option>
                 @foreach(\App\Enums\SubscriptionStatus::cases() as $status)
                     @if($status !== \App\Enums\SubscriptionStatus::Cancelled)
-                        <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                        <option wire:key="status-{{ $status->value }}" value="{{ $status->value }}">{{ $status->label() }}</option>
                     @endif
                 @endforeach
             </select>
@@ -44,19 +44,21 @@
             @foreach($this->subscriptions as $sub)
                 <tr wire:key="sub-{{ $sub->id }}">
                     <td>
-                        <div class="font-bold">
-                            @if($sub->project)
-                                <a href="{{ route('projects.show', $sub->project_id) }}" class="hover:text-primary hover:underline transition-colors block" wire:navigate>
-                                    {{ $sub->project->project_name }}
-                                </a>
-                            @else
-                                <span class="text-slate-400 italic">No Project</span>
-                            @endif
-                        </div>
-                        <div class="text-xs text-slate-500">{{ $sub->domain_name ?: $sub->service_type->label() }}</div>
+                        @if($sub->project)
+                            <a href="{{ route('projects.show', $sub->project) }}" class="font-bold hover:text-primary hover:underline transition-colors block" wire:navigate>
+                                {{ $sub->project->project_name }}
+                            </a>
+                        @elseif($sub->effective_client)
+                            <a href="{{ route('clients.show', $sub->effective_client) }}" class="font-bold hover:text-primary hover:underline transition-colors block" wire:navigate>
+                                {{ $sub->effective_client->name }}
+                            </a>
+                        @endif
+                        <a href="{{ route('subscriptions.show', $sub) }}" class="text-xs text-slate-500 hover:text-primary hover:underline transition-colors" wire:navigate>
+                            {{ $sub->domain_name ?: $sub->service_type->label() }}
+                        </a>
                     </td>
                     <td>{{ $sub->provider?->name }}</td>
-                    <td>${{ number_format($sub->renewal_cost_usd, 2) }}</td>
+                    <td>{{ $sub->formatted_renewal_cost_usd }}</td>
                     <td>
                         <div class="{{ $sub->days_until_expiry <= 7 ? 'text-red-600 font-bold' : ($sub->days_until_expiry <= 30 ? 'text-orange-500' : '') }}">
                             {{ $sub->expiry_date->format('M d, Y') }}
@@ -69,23 +71,23 @@
                         <x-ui.badge-status :status="$sub->status" />
                     </td>
                     <td class="text-right">
-                        <div class="flex items-center justify-end gap-1">
-                            <a href="{{ route('mail-mailer.index', ['clientId' => $sub->project?->client_id, 'subscriptionId' => $sub->id, 'template' => 'subscription-reminder']) }}" 
-                               class="flex items-center gap-2 btn btn-warning btn-xs hover:text-orange-500" title="Send Renewal Reminder" wire:navigate>
-                                <x-icon-bell class="w-4 h-4" /> Reminder
+                        <div class="flex items-center justify-end gap-1.5">
+                            <a href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid, 'template' => 'subscription-reminder']) }}"
+                               class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-colors" title="Send Renewal Reminder" wire:navigate>
+                                <x-icon-bell class="w-3.5 h-3.5" /> Reminder
                             </a>
-                            <a href="{{ route('mail-mailer.index', ['clientId' => $sub->project?->client_id, 'subscriptionId' => $sub->id]) }}" 
-                               class="flex items-center gap-2 btn btn-ghost btn-xs hover:text-blue-500" title="Send Custom Email" wire:navigate>
-                                <x-icon-mail class="w-4 h-4" /> Custom Email
+                            <a href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid]) }}"
+                               class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors" title="Send Custom Email" wire:navigate>
+                                <x-icon-mail class="w-3.5 h-3.5" /> Email
                             </a>
-                            <button 
+                            <button
                                 type="button"
-                                wire:click="openRenewalModal({{ $sub->id }})" 
-                                class="btn btn-xs btn-primary ml-1 flex items-center gap-2"
+                                wire:click="openRenewalModal('{{ $sub->ulid }}')"
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                             >
-                                <x-icon-refresh class="w-4 h-4" wire:loading.remove wire:target="openRenewalModal({{ $sub->id }})" />
-                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="openRenewalModal({{ $sub->id }})"></span>
-                                <span>Renew</span>
+                                <x-icon-refresh class="w-3.5 h-3.5" wire:loading.remove wire:target="openRenewalModal('{{ $sub->ulid }}')" />
+                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="openRenewalModal('{{ $sub->ulid }}')"></span>
+                                Renew
                             </button>
                         </div>
                     </td>
@@ -113,14 +115,10 @@
                         <button wire:click="$set('showRenewalModal', false)" class="btn btn-sm btn-circle btn-ghost"><x-icon-x class="w-4 h-4" /></button>
                     </div>
                     <div class="p-6 space-y-6">
-                        @php 
-                            $subToRenew = $renewingSubscriptionId ? collect($this->subscriptions->items())->firstWhere('id', $renewingSubscriptionId) : null; 
-                        @endphp
-                        
-                        @if($subToRenew)
+                        @if($this->subscriptionToRenew)
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                <p class="text-sm font-bold text-slate-800">{{ $subToRenew->domain_name ?: $subToRenew->service_type->label() }}</p>
-                                <p class="text-xs text-slate-500 mt-1">Current Expiry: <span class="font-semibold text-slate-700">{{ $subToRenew->expiry_date->format('M d, Y') }}</span></p>
+                                <p class="text-sm font-bold text-slate-800">{{ $this->subscriptionToRenew->domain_name ?: $this->subscriptionToRenew->service_type->label() }}</p>
+                                <p class="text-xs text-slate-500 mt-1">Current Expiry: <span class="font-semibold text-slate-700">{{ $this->subscriptionToRenew->expiry_date->format('M d, Y') }}</span></p>
                             </div>
                         @endif
 

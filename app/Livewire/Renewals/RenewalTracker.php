@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Renewals;
 
 use App\Enums\PaymentStatus;
@@ -7,6 +9,7 @@ use App\Enums\SubscriptionStatus;
 use App\Models\Renewal;
 use App\Models\Subscription;
 use App\Traits\WithSorting;
+use Carbon\Carbon;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,27 +19,44 @@ class RenewalTracker extends Component
     use WithPagination, WithSorting;
 
     public string $sortColumn = 'created_at';
+
     public string $sortDirection = 'desc';
 
     public string $search = '';
+
     public string $statusFilter = '';
 
     public bool $showRenewalModal = false;
+
     public ?int $renewingSubscriptionId = null;
+
     public string $renewalMode = 'years';
+
     public int $renewalYears = 1;
+
     public string $customExpiryDate = '';
+
+    /** The subscription currently open in the renewal modal, or null if none is selected. */
+    #[Computed]
+    public function subscriptionToRenew(): ?Subscription
+    {
+        if (! $this->renewingSubscriptionId) {
+            return null;
+        }
+
+        return collect($this->subscriptions->items())->firstWhere('id', $this->renewingSubscriptionId);
+    }
 
     #[Computed]
     public function subscriptions()
     {
-        $query = Subscription::with(['project.client', 'provider'])
+        $query = Subscription::with(['client', 'project.client', 'provider'])
             ->where('status', '!=', SubscriptionStatus::Cancelled)
             ->when($this->search, function ($query) {
-                $query->where('domain_name', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('provider', fn($p) => $p->where('name', 'like', '%' . $this->search . '%'))
+                $query->where('domain_name', 'like', '%'.$this->search.'%')
+                    ->orWhereHas('provider', fn ($p) => $p->where('name', 'like', '%'.$this->search.'%'))
                     ->orWhereHas('project', function ($q) {
-                        $q->where('project_name', 'like', '%' . $this->search . '%');
+                        $q->where('project_name', 'like', '%'.$this->search.'%');
                     });
             })
             ->when($this->statusFilter, function ($query) {
@@ -46,19 +66,15 @@ class RenewalTracker extends Component
         return $this->applySorting($query)->paginate(15);
     }
 
-    public function openRenewalModal(int $subscriptionId): void
+    public function openRenewalModal(string $subscriptionUlid): void
     {
-        $this->renewingSubscriptionId = $subscriptionId;
+        $sub = Subscription::where('ulid', $subscriptionUlid)->firstOrFail();
+        $this->renewingSubscriptionId = $sub->id;
         $this->renewalMode = 'years';
         $this->renewalYears = 1;
-        
-        $sub = Subscription::find($subscriptionId);
-        if ($sub && $sub->expiry_date) {
-            $this->customExpiryDate = $sub->expiry_date->copy()->addYear()->format('Y-m-d');
-        } else {
-            $this->customExpiryDate = now()->addYear()->format('Y-m-d');
-        }
-
+        $this->customExpiryDate = $sub->expiry_date
+            ? $sub->expiry_date->copy()->addYear()->format('Y-m-d')
+            : now()->addYear()->format('Y-m-d');
         $this->showRenewalModal = true;
     }
 
@@ -70,22 +86,24 @@ class RenewalTracker extends Component
             'customExpiryDate' => 'required_if:renewalMode,date|date',
         ]);
 
-        if (!$this->renewingSubscriptionId) return;
+        if (! $this->renewingSubscriptionId) {
+            return;
+        }
 
         $subscription = Subscription::findOrFail($this->renewingSubscriptionId);
-        
+
         $oldExpiry = $subscription->expiry_date;
-        
+
         if ($this->renewalMode === 'years') {
             $newExpiry = $oldExpiry->copy()->addYears($this->renewalYears);
             $clientCost = ($subscription->renewal_cost_usd ?? 0) * $this->renewalYears;
             $note = "Automated renewal. Expiry rolled from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} (+{$this->renewalYears} years).";
         } else {
-            $newExpiry = \Carbon\Carbon::parse($this->customExpiryDate);
+            $newExpiry = Carbon::parse($this->customExpiryDate);
             $clientCost = $subscription->renewal_cost_usd ?? 0;
             $note = "Manual date renewal. Expiry set from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')}.";
         }
-        
+
         Renewal::create([
             'subscription_id' => $subscription->id,
             'due_date' => $oldExpiry,

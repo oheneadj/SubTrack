@@ -1,34 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\MailTemplates;
 
+use App\Mail\GenericClientMail;
 use App\Models\Client;
 use App\Models\MailTemplate;
-use App\Mail\GenericClientMail;
-use Livewire\Component;
-use Livewire\Attributes\Computed;
+use App\Models\Subscription;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 class DirectMailer extends Component
 {
     public array $selectedClients = [];
+
     public ?string $selectedTemplate = null;
+
     public ?int $selectedSubscriptionId = null;
+
     public string $subject = '';
+
     public string $body = '';
+
     public string $search = '';
+
     public bool $selectAll = false;
 
     public function mount()
     {
-        $clientId = request()->query('clientId');
-        if ($clientId) {
-            $this->selectedClients = [(string)$clientId];
+        $clientUlid = request()->query('clientId');
+        if ($clientUlid) {
+            $this->selectedClients = [$clientUlid];
         }
 
-        $subscriptionId = request()->query('subscriptionId');
-        if ($subscriptionId) {
-            $this->selectedSubscriptionId = (int)$subscriptionId;
+        $subscriptionUlid = request()->query('subscriptionId');
+        if ($subscriptionUlid) {
+            $sub = Subscription::where('ulid', $subscriptionUlid)->first();
+            $this->selectedSubscriptionId = $sub?->id;
         }
 
         $templateSlug = request()->query('template');
@@ -56,6 +67,13 @@ class DirectMailer extends Component
         return MailTemplate::orderBy('name')->get();
     }
 
+    /** The clients currently selected as recipients, keyed by ulid — used to render the recipient avatar stack. */
+    #[Computed]
+    public function selectedClientModels()
+    {
+        return Client::whereIn('ulid', $this->selectedClients)->get()->keyBy('ulid');
+    }
+
     public function updatedSelectedTemplate($slug)
     {
         if ($slug) {
@@ -70,7 +88,7 @@ class DirectMailer extends Component
     public function updatedSelectAll($value)
     {
         if ($value) {
-            $this->selectedClients = $this->clients->pluck('id')->map(fn($id) => (string)$id)->toArray();
+            $this->selectedClients = $this->clients->pluck('ulid')->toArray();
         } else {
             $this->selectedClients = [];
         }
@@ -81,8 +99,8 @@ class DirectMailer extends Component
         $this->validate();
 
         $count = 0;
-        $clients = Client::whereIn('id', $this->selectedClients)->get();
-        $subscription = $this->selectedSubscriptionId ? \App\Models\Subscription::find($this->selectedSubscriptionId) : null;
+        $clients = Client::whereIn('ulid', $this->selectedClients)->get();
+        $subscription = $this->selectedSubscriptionId ? Subscription::find($this->selectedSubscriptionId) : null;
 
         foreach ($clients as $client) {
             try {
@@ -102,7 +120,7 @@ class DirectMailer extends Component
         session()->flash('success', "Successfully sent emails to {$count} clients.");
     }
 
-    #[\Livewire\Attributes\Layout('components.layouts.app')]
+    #[Layout('components.layouts.app')]
     public function render()
     {
         return view('livewire.mail-templates.direct-mailer');

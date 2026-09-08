@@ -1,19 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\InvoiceStatus;
+use App\Traits\HasPublicUlid;
 use App\Traits\LogsActivity;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $ulid
+ * @property string $invoice_number
+ * @property int $client_id
+ * @property int $project_id
+ * @property string|null $pdf_path
+ * @property string|null $notes
+ * @property float $tax_rate
+ * @property int $tax_amount
+ * @property int $subtotal
+ * @property int $total_amount
+ * @property string $formatted_subtotal
+ * @property string $formatted_tax_amount
+ * @property string $formatted_total_amount
+ * @property InvoiceStatus $status
+ * @property CarbonImmutable $issued_date
+ * @property CarbonImmutable $due_date
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
+ * @property-read Client|null $client
+ * @property-read Project|null $project
+ * @property-read Collection<int, InvoiceItem> $items
+ * @property-read Collection<int, Renewal> $renewals
+ * @property-read Collection<int, Payment> $payments
+ */
 class Invoice extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, HasPublicUlid, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'client_id', 'project_id', 'invoice_number', 'issued_date',
@@ -23,13 +53,36 @@ class Invoice extends Model
 
     protected $casts = [
         'issued_date' => 'date',
-        'due_date'    => 'date',
-        'status'      => InvoiceStatus::class,
-        'tax_rate'    => 'float',
-        'tax_amount'  => 'float',
-        'subtotal'    => 'float',
-        'total_amount'=> 'float',
+        'due_date' => 'date',
+        'status' => InvoiceStatus::class,
+        'tax_rate' => 'float',
+        'tax_amount' => 'integer',
+        'subtotal' => 'integer',
+        'total_amount' => 'integer',
     ];
+
+    /** Frees the unique `invoice_number` value on soft delete so it can be reused by a new invoice. */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $invoice): void {
+            $invoice->forceFill(['invoice_number' => "{$invoice->invoice_number}-deleted-{$invoice->id}"])->saveQuietly();
+        });
+    }
+
+    public function getFormattedSubtotalAttribute(): string
+    {
+        return '$'.number_format($this->subtotal / 100, 2);
+    }
+
+    public function getFormattedTaxAmountAttribute(): string
+    {
+        return '$'.number_format($this->tax_amount / 100, 2);
+    }
+
+    public function getFormattedTotalAmountAttribute(): string
+    {
+        return '$'.number_format($this->total_amount / 100, 2);
+    }
 
     public function client(): BelongsTo
     {
@@ -51,12 +104,23 @@ class Invoice extends Model
         return $this->hasMany(Renewal::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /** True when the invoice has been marked as paid. */
+    public function isPaid(): bool
+    {
+        return $this->status === InvoiceStatus::Paid;
+    }
+
     public function recalculateTotals(): void
     {
         $subtotal = $this->items()->sum('amount_usd');
         $this->update([
             'subtotal_usd' => $subtotal,
-            'total_usd'    => $subtotal,
+            'total_usd' => $subtotal,
         ]);
     }
 }
