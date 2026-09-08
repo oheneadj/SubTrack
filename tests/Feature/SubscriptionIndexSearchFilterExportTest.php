@@ -44,20 +44,6 @@ test('search matches by client name and project name', function () {
     expect($component->subscriptions->pluck('id'))->toContain($subB->id)->not->toContain($subA->id);
 });
 
-test('client filter narrows results to that client only', function () {
-    $user = User::factory()->create();
-    $provider = Provider::create(['name' => 'Test Provider']);
-    $clientA = Client::create(['name' => 'Acme Corp', 'email' => 'acme@test.test']);
-    $clientB = Client::create(['name' => 'Beta Inc', 'email' => 'beta@test.test']);
-
-    $subA = makeSubscription($clientA, $provider);
-    $subB = makeSubscription($clientB, $provider);
-
-    $component = Livewire::actingAs($user)->test(SubscriptionIndex::class)->set('filterClientId', $clientA->id);
-
-    expect($component->subscriptions->pluck('id'))->toContain($subA->id)->not->toContain($subB->id);
-});
-
 test('sorting by client name orders subscriptions by their effective client, ascending or descending', function () {
     $user = User::factory()->create();
     $provider = Provider::create(['name' => 'Test Provider']);

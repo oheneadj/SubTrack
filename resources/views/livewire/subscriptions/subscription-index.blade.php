@@ -7,31 +7,24 @@
     </x-ui.page-header>
 
     <x-ui.toolbar searchModel="search" searchPlaceholder="Search domain, provider, client, or project...">
-        <select wire:model.live="filterService" class="select select-bordered w-full md:w-48">
+        <select wire:model.live="filterService" class="select select-bordered shrink-0 w-full md:w-44">
             <option value="">All Services</option>
             @foreach(\App\Enums\ServiceType::cases() as $type)
                 <option wire:key="type-{{ $type->value }}" value="{{ $type->value }}">{{ $type->label() }}</option>
             @endforeach
         </select>
 
-        <select wire:model.live="filterStatus" class="select select-bordered w-full md:w-48">
+        <select wire:model.live="filterStatus" class="select select-bordered shrink-0 w-full md:w-44">
             <option value="">All Statuses</option>
             @foreach(\App\Enums\SubscriptionStatus::cases() as $status)
                 <option wire:key="status-{{ $status->value }}" value="{{ $status->value }}">{{ $status->label() }}</option>
             @endforeach
         </select>
 
-        <select wire:model.live="filterClientId" class="select select-bordered w-full md:w-48">
-            <option value="">All Clients</option>
-            @foreach($this->filterableClients as $client)
-                <option wire:key="client-{{ $client->id }}" value="{{ $client->id }}">{{ $client->name }}</option>
-            @endforeach
-        </select>
+        <input type="date" wire:model.live="filterRenewalFrom" class="input input-bordered shrink-0 w-full md:w-36" title="Renewal date from">
+        <input type="date" wire:model.live="filterRenewalTo" class="input input-bordered shrink-0 w-full md:w-36" title="Renewal date to">
 
-        <input type="date" wire:model.live="filterRenewalFrom" class="input input-bordered w-full md:w-40" title="Renewal date from">
-        <input type="date" wire:model.live="filterRenewalTo" class="input input-bordered w-full md:w-40" title="Renewal date to">
-
-        <x-ui.button variant="secondary" soft wire:click="export">
+        <x-ui.button variant="secondary" soft wire:click="export" class="shrink-0 whitespace-nowrap">
             <x-icon-file-invoice class="w-4 h-4" />
             <span>Export CSV</span>
         </x-ui.button>

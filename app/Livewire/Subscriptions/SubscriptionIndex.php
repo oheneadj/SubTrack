@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Subscriptions;
 
-use App\Models\Client;
 use App\Models\Subscription;
 use App\Traits\WithSorting;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,8 +28,6 @@ class SubscriptionIndex extends Component
 
     public ?string $filterStatus = null;
 
-    public ?int $filterClientId = null;
-
     public string $filterRenewalFrom = '';
 
     public string $filterRenewalTo = '';
@@ -46,7 +43,6 @@ class SubscriptionIndex extends Component
         'search' => ['except' => ''],
         'filterService' => ['except' => null],
         'filterStatus' => ['except' => null],
-        'filterClientId' => ['except' => null],
         'filterRenewalFrom' => ['except' => ''],
         'filterRenewalTo' => ['except' => ''],
     ];
@@ -74,9 +70,6 @@ class SubscriptionIndex extends Component
             ))
             ->when($this->filterService, fn ($q) => $q->where('service_type', $this->filterService))
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
-            ->when($this->filterClientId, fn ($q) => $q->where(fn ($cq) => $cq->where('client_id', $this->filterClientId)
-                ->orWhereHas('project', fn ($p) => $p->where('client_id', $this->filterClientId))
-            ))
             ->when($this->filterRenewalFrom, fn ($q) => $q->whereDate('expiry_date', '>=', $this->filterRenewalFrom))
             ->when($this->filterRenewalTo, fn ($q) => $q->whereDate('expiry_date', '<=', $this->filterRenewalTo));
     }
@@ -111,13 +104,6 @@ class SubscriptionIndex extends Component
             ->leftJoin('projects', 'projects.id', '=', 'subscriptions.project_id')
             ->leftJoin('clients as project_clients', 'project_clients.id', '=', 'projects.client_id')
             ->orderByRaw("COALESCE(clients.name, project_clients.name) {$direction}");
-    }
-
-    /** Clients available in the client filter dropdown. */
-    #[Computed]
-    public function filterableClients()
-    {
-        return Client::orderBy('name')->get();
     }
 
     public function confirmDelete(string $ulid): void

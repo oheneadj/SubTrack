@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Removed
+- Client filter dropdown on the subscriptions list (`filterClientId`, `filterableClients`) — sorting by client name (added earlier) covers browsing by client without a separate filter
+
+### Fixed
+- Toolbar layout: filter selects/date inputs no longer get squeezed by flexbox alongside the search box (`shrink-0` on fixed-width filters, `flex-1` on the search input), and the Export CSV button no longer wraps its label onto two lines (`whitespace-nowrap`)
+
 ### Added
 - Three new reusable Blade components, per CLAUDE.md §10 (check for a reusable component before building new UI): `<x-ui.card>` (title/actions-slot header, `:padding` toggle for table-wrapping cards), `<x-ui.button>` (`as="a"|"button"`, `variant`, `size`, `circle`, `full`, `soft` props — covers every button/link shape used on the subscription pages), `<x-ui.toolbar>` (the search-input-plus-filters bar above a data table; also fixes a pre-existing bug where the search icon wasn't positioned relative to its wrapper)
 
