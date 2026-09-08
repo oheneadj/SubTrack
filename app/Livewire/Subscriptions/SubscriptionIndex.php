@@ -1,34 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Subscriptions;
 
+use App\Models\Client;
 use App\Models\Subscription;
 use App\Traits\WithSorting;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/** Subscriptions list — search, filters, bulk actions, and CSV export. */
 class SubscriptionIndex extends Component
 {
     use WithPagination, WithSorting;
 
     public string $sortColumn = 'created_at';
+
     public string $sortDirection = 'desc';
 
     public string $search = '';
+
     public ?string $filterService = null;
+
     public ?string $filterStatus = null;
+
+    public ?int $filterClientId = null;
+
+    public string $filterRenewalFrom = '';
+
+    public string $filterRenewalTo = '';
+
     public ?int $selectedSubscriptionId = null;
-    
+
     // Bulk Actions
     public array $selectedSubscriptions = [];
+
     public bool $selectAll = false;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'filterService' => ['except' => null],
         'filterStatus' => ['except' => null],
+        'filterClientId' => ['except' => null],
+        'filterRenewalFrom' => ['except' => ''],
+        'filterRenewalTo' => ['except' => ''],
     ];
 
     public function updatingSearch(): void
@@ -36,25 +56,47 @@ class SubscriptionIndex extends Component
         $this->resetPage();
     }
 
+    /**
+     * The filtered/searched subscriptions query, shared by the paginated
+     * list and the CSV export so both always see identical results.
+     *
+     * @return Builder<Subscription>
+     */
+    private function filteredQuery(): Builder
+    {
+        return Subscription::query()
+            ->with(['client', 'project.client', 'provider'])
+            ->when($this->search, fn ($q) => $q->where(fn ($sq) => $sq->where('domain_name', 'like', "%{$this->search}%")
+                ->orWhereHas('provider', fn ($p) => $p->where('name', 'like', "%{$this->search}%"))
+                ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$this->search}%"))
+                ->orWhereHas('project', fn ($p) => $p->where('project_name', 'like', "%{$this->search}%"))
+                ->orWhereHas('project.client', fn ($c) => $c->where('name', 'like', "%{$this->search}%"))
+            ))
+            ->when($this->filterService, fn ($q) => $q->where('service_type', $this->filterService))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterClientId, fn ($q) => $q->where(fn ($cq) => $cq->where('client_id', $this->filterClientId)
+                ->orWhereHas('project', fn ($p) => $p->where('client_id', $this->filterClientId))
+            ))
+            ->when($this->filterRenewalFrom, fn ($q) => $q->whereDate('expiry_date', '>=', $this->filterRenewalFrom))
+            ->when($this->filterRenewalTo, fn ($q) => $q->whereDate('expiry_date', '<=', $this->filterRenewalTo));
+    }
+
     #[Computed]
     public function subscriptions()
     {
-        $query = Subscription::query()
-            ->with(['project.client', 'provider'])
-            ->whereHas('project.client') // Ensure project and client are not soft-deleted
-            ->when($this->search, fn($q) => $q->where(fn($sq) => 
-                $sq->where('domain_name', 'like', "%{$this->search}%")
-                   ->orWhereHas('provider', fn($p) => $p->where('name', 'like', "%{$this->search}%"))
-            ))
-            ->when($this->filterService, fn($q) => $q->where('service_type', $this->filterService))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus));
-
-        return $this->applySorting($query)->paginate(15);
+        return $this->applySorting($this->filteredQuery())->paginate(15);
     }
 
-    public function confirmDelete(int $id): void
+    /** Clients available in the client filter dropdown. */
+    #[Computed]
+    public function filterableClients()
     {
-        $this->selectedSubscriptionId = $id;
+        return Client::orderBy('name')->get();
+    }
+
+    public function confirmDelete(string $ulid): void
+    {
+        $this->selectedSubscriptionId = Subscription::where('ulid', $ulid)->firstOrFail()->id;
         $this->dispatch('open-modal', 'confirm-delete-subscription');
     }
 
@@ -70,7 +112,7 @@ class SubscriptionIndex extends Component
     public function updatedSelectAll($value): void
     {
         if ($value) {
-            $this->selectedSubscriptions = $this->subscriptions->pluck('id')->map(fn($id) => (string)$id)->toArray();
+            $this->selectedSubscriptions = $this->subscriptions->pluck('ulid')->toArray();
         } else {
             $this->selectedSubscriptions = [];
         }
@@ -82,46 +124,48 @@ class SubscriptionIndex extends Component
             return;
         }
 
-        Subscription::whereIn('id', $this->selectedSubscriptions)->update(['status' => $status]);
-        
+        Subscription::whereIn('ulid', $this->selectedSubscriptions)->update(['status' => $status]);
+
         $this->selectedSubscriptions = [];
         $this->selectAll = false;
-        
+
         session()->flash('success', 'Selected subscriptions updated successfully.');
     }
 
-    public function export()
+    /**
+     * Stream a CSV of the currently filtered/searched subscriptions.
+     * Columns: client name/email, subscription name, renewal type,
+     * subscription (purchase) date, renewal (expiry) date, and status.
+     */
+    public function export(): StreamedResponse
     {
-        $query = Subscription::query()
-            ->with(['project.client', 'provider'])
-            ->when($this->search, fn($q) => $q->where('domain_name', 'like', "%{$this->search}%"))
-            ->when($this->filterService, fn($q) => $q->where('service_type', $this->filterService))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus));
+        $query = $this->filteredQuery();
 
         $headers = [
-            'Content-type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename=subscriptions-export-' . now()->format('Y-m-d') . '.csv',
-            'Pragma'              => 'no-cache',
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires'             => '0'
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=subscriptions-export-'.now()->format('Y-m-d').'.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ];
 
-        $callback = function() use ($query) {
+        $callback = function () use ($query) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['ID', 'Client', 'Project', 'Service', 'Provider', 'Domain', 'Expiry Date', 'Renewal Cost', 'Status']);
+            fputcsv($file, [
+                'Client Name', 'Client Email', 'Subscription Name', 'Renewal Type',
+                'Subscription Date', 'Renewal Date', 'Status',
+            ]);
 
-            $query->chunk(100, function($subscriptions) use ($file) {
+            $query->chunk(100, function ($subscriptions) use ($file) {
                 foreach ($subscriptions as $sub) {
                     fputcsv($file, [
-                        $sub->id,
-                        $sub->project?->client?->name ?? 'N/A',
-                        $sub->project?->project_name ?? 'N/A',
-                        $sub->service_type->value,
-                        $sub->provider?->name ?? 'N/A',
-                        $sub->domain_name,
+                        $sub->effective_client?->name ?? 'N/A',
+                        $sub->effective_client?->email ?? 'N/A',
+                        $sub->domain_name ?: $sub->service_type->label(),
+                        $sub->renewal_type->label(),
+                        $sub->purchase_date->format('Y-m-d'),
                         $sub->expiry_date->format('Y-m-d'),
-                        $sub->renewal_cost_usd,
-                        $sub->status->value
+                        $sub->status->value,
                     ]);
                 }
             });

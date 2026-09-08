@@ -12,24 +12,34 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <x-icon-search class="h-4 w-4 text-slate-400" />
             </div>
-            <input type="text" wire:model.live.debounce.300ms="search" 
-                class="input input-bordered w-full pl-10" 
-                placeholder="Search domain or provider...">
+            <input type="text" wire:model.live.debounce.300ms="search"
+                class="input input-bordered w-full pl-10"
+                placeholder="Search domain, provider, client, or project...">
         </div>
-        
+
         <select wire:model.live="filterService" class="select select-bordered w-full md:w-48">
             <option value="">All Services</option>
             @foreach(\App\Enums\ServiceType::cases() as $type)
-                <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                <option wire:key="type-{{ $type->value }}" value="{{ $type->value }}">{{ $type->label() }}</option>
             @endforeach
         </select>
 
         <select wire:model.live="filterStatus" class="select select-bordered w-full md:w-48">
             <option value="">All Statuses</option>
             @foreach(\App\Enums\SubscriptionStatus::cases() as $status)
-                <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                <option wire:key="status-{{ $status->value }}" value="{{ $status->value }}">{{ $status->label() }}</option>
             @endforeach
         </select>
+
+        <select wire:model.live="filterClientId" class="select select-bordered w-full md:w-48">
+            <option value="">All Clients</option>
+            @foreach($this->filterableClients as $client)
+                <option wire:key="client-{{ $client->id }}" value="{{ $client->id }}">{{ $client->name }}</option>
+            @endforeach
+        </select>
+
+        <input type="date" wire:model.live="filterRenewalFrom" class="input input-bordered w-full md:w-40" title="Renewal date from">
+        <input type="date" wire:model.live="filterRenewalTo" class="input input-bordered w-full md:w-40" title="Renewal date to">
 
         <button wire:click="export" class="btn btn-soft btn-secondary btn-sm flex items-center gap-2">
             <x-icon-file-invoice class="w-4 h-4" />
@@ -69,9 +79,9 @@
     @else
         <x-ui.data-table :headers="['Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection" :selectable="true">
             @foreach($this->subscriptions as $sub)
-                <tr class="{{ in_array($sub->id, $selectedSubscriptions) ? 'bg-primary/5' : '' }}">
+                <tr wire:key="sub-{{ $sub->ulid }}" class="{{ in_array($sub->ulid, $selectedSubscriptions) ? 'bg-primary/5' : '' }}">
                     <td class="w-10 px-4">
-                        <input type="checkbox" wire:model.live="selectedSubscriptions" value="{{ $sub->id }}" class="checkbox checkbox-sm checkbox-primary" />
+                        <input type="checkbox" wire:model.live="selectedSubscriptions" value="{{ $sub->ulid }}" class="checkbox checkbox-sm checkbox-primary" />
                     </td>
                     <td>
                         <div class="flex flex-col">
@@ -79,23 +89,21 @@
                                 <a href="{{ route('projects.show', $sub->project) }}" class="font-bold text-primary hover:text-blue-600 hover:underline transition-colors w-fit" wire:navigate>
                                     {{ $sub->project->project_name }}
                                 </a>
-                                @if($sub->project->client)
-                                    <a href="{{ route('clients.show', $sub->project->client) }}" class="text-xs text-secondary hover:text-blue-600 hover:underline transition-colors w-fit mt-0.5" wire:navigate>
-                                        {{ $sub->project->client->name }}
-                                    </a>
-                                @else
-                                    <span class="text-xs text-secondary mt-0.5 italic">Unknown Client</span>
-                                @endif
                             @else
-                                <span class="font-bold text-slate-400">Project Not Found</span>
+                                <span class="font-bold text-slate-400 w-fit">Unrelated</span>
+                            @endif
+                            @if($sub->effective_client)
+                                <a href="{{ route('clients.show', $sub->effective_client) }}" class="text-xs text-secondary hover:text-blue-600 hover:underline transition-colors w-fit mt-0.5" wire:navigate>
+                                    {{ $sub->effective_client->name }}
+                                </a>
                             @endif
                         </div>
                     </td>
                     <td>
-                        <div class="flex flex-col">
-                            <span class="font-medium text-slate-900">{{ $sub->domain_name ?? 'N/A' }}</span>
+                        <a href="{{ route('subscriptions.show', $sub) }}" class="flex flex-col group" wire:navigate>
+                            <span class="font-medium text-slate-900 group-hover:text-primary group-hover:underline transition-colors">{{ $sub->domain_name ?? 'N/A' }}</span>
                             <span class="text-xs text-slate-500">{{ $sub->provider?->name }}</span>
-                        </div>
+                        </a>
                     </td>
                     <td>
                         <span class="text-sm">{{ $sub->service_type->label() }}</span>
@@ -118,9 +126,10 @@
                         <x-ui.badge-status :status="$sub->status" />
                     </td>
                     <td class="text-right">
-                        <x-ui.action-menu 
-                            editRoute="{{ route('subscriptions.edit', $sub) }}"
-                            deleteAction="confirmDelete({{ $sub->id }})"
+                        <x-ui.action-menu
+                            viewAction="{{ route('subscriptions.show', $sub) }}"
+                            editAction="window.location.href='{{ route('subscriptions.edit', $sub) }}'"
+                            deleteAction="confirmDelete('{{ $sub->ulid }}')"
                         />
                     </td>
                 </tr>
