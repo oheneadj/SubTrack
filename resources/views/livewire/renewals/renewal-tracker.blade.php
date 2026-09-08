@@ -6,32 +6,16 @@
     </x-ui.page-header>
 
 
-    {{-- Filters --}}
-    <div class="mb-6 p-4 rounded-xl  flex flex-col md:flex-row items-center gap-4">
-        <div class="w-full md:flex-1 max-w-sm">
-            <x-ui.form-input 
-                label="" 
-                model="search" 
-                placeholder="Search domain, provider, or project..." 
-                class="input-sm"
-            >
-                <x-slot name="prefix">
-                    <x-icon-search class="w-4 h-4 text-slate-400" />
-                </x-slot>
-            </x-ui.form-input>
-        </div>
-        
-        <div class="w-full md:w-auto">
-            <select wire:model.live="statusFilter" class="select select-bordered select-sm w-full md:w-48">
-                <option value="">All Statuses</option>
-                @foreach(\App\Enums\SubscriptionStatus::cases() as $status)
-                    @if($status !== \App\Enums\SubscriptionStatus::Cancelled)
-                        <option wire:key="status-{{ $status->value }}" value="{{ $status->value }}">{{ $status->label() }}</option>
-                    @endif
-                @endforeach
-            </select>
-        </div>
-    </div>
+    <x-ui.toolbar searchModel="search" searchPlaceholder="Search domain, provider, or project...">
+        <select wire:model.live="statusFilter" class="select select-bordered shrink-0 w-full md:w-48">
+            <option value="">All Statuses</option>
+            @foreach(\App\Enums\SubscriptionStatus::cases() as $status)
+                @if($status !== \App\Enums\SubscriptionStatus::Cancelled)
+                    <option wire:key="status-{{ $status->value }}" value="{{ $status->value }}">{{ $status->label() }}</option>
+                @endif
+            @endforeach
+        </select>
+    </x-ui.toolbar>
 
     @if($this->subscriptions->isEmpty())
         <x-ui.empty-state 
@@ -112,7 +96,7 @@
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-slate-800">Process Renewal</h3>
-                        <button wire:click="$set('showRenewalModal', false)" class="btn btn-sm btn-circle btn-ghost"><x-icon-x class="w-4 h-4" /></button>
+                        <x-ui.button variant="ghost" circle wire:click="$set('showRenewalModal', false)"><x-icon-x class="w-4 h-4" /></x-ui.button>
                     </div>
                     <div class="p-6 space-y-6">
                         @if($this->subscriptionToRenew)
@@ -147,13 +131,13 @@
                     </div>
                     
                     <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
-                        <button wire:click="$set('showRenewalModal', false)" class="btn btn-ghost btn-sm">Cancel</button>
-                        <button wire:click="processRenewal" class="btn btn-primary btn-sm" wire:loading.attr="disabled">
+                        <x-ui.button variant="ghost" wire:click="$set('showRenewalModal', false)">Cancel</x-ui.button>
+                        <x-ui.button variant="primary" wire:click="processRenewal" wire:loading.attr="disabled">
                             <span wire:loading.remove>Confirm Renewal</span>
                             <span wire:loading>
                                 <span class="loading loading-spinner loading-xs"></span> Processing...
                             </span>
-                        </button>
+                        </x-ui.button>
                     </div>
                 </div>
             </div>
