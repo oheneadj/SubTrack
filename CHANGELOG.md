@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- "New Project" and "Edit Project" buttons on the projects list, project detail, and client detail pages never worked — they put a client-side `$dispatchTo(...)` JS call (used to tell the project-form modal's child component what to load) directly into `wire:click`, which only understands server-side PHP action calls. Combined it into the existing `@click` handler on each button instead
+- `action-menu.blade.php`'s `editAction` prop had the same bug baked in for any future caller passing a JS expression — it now detects a `$`-prefixed action and routes it to `@click` (merged with the existing `editModalId` modal-open dispatch) instead of always assuming `wire:click`
+- Removed a dead `$confirmDelete` boolean property on `ProjectIndex` that was never read anywhere but shadowed the `confirmDelete()` action method's name — confusing and pointless
+- Tests: `ActionMenuEditDispatchTest`
 - Delete-confirmation modals on the subscriptions and projects list pages never opened — `confirm-modal.blade.php` listens for the `open-modal` browser event and checks `$event.detail.id`, but both pages dispatched it as a bare string (`dispatch('open-modal', 'confirm-delete-subscription')`) or a positional array (`dispatch('open-modal', ['id' => '...'])`), neither of which produces a `.id` property on the event detail. Both now use Livewire's named-argument dispatch (`dispatch('open-modal', id: '...')`), matching the one call site that already worked (`UserShow`)
 - Tests: `DeleteConfirmationModalTest` — asserts the exact dispatched event shape so this can't silently regress again
 

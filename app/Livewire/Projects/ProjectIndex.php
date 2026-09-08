@@ -21,8 +21,6 @@ class ProjectIndex extends Component
 
     public string $search = '';
 
-    public bool $confirmDelete = false;
-
     public ?int $deletingId = null;
 
     protected $queryString = [
@@ -52,7 +50,6 @@ class ProjectIndex extends Component
             Project::findOrFail($this->deletingId)->delete();
             session()->flash('success', 'Project deleted successfully.');
         }
-        $this->confirmDelete = false;
         $this->deletingId = null;
     }
 

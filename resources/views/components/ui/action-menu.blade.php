@@ -1,33 +1,42 @@
-@props(['viewAction' => null, 'editAction' => null, 'deleteAction' => null, 'editModalId' => null, 'align' => 'dropdown-end', 'direction' => 'dropdown-bottom', 'slotCount' => 0])
+@props(['viewAction' => null, 'editAction' => null, 'deleteAction' => null, 'editModalId' => null, 'align' => 'right', 'slotCount' => 0])
 
 @php
     $namedActionsCount = count(array_filter([$viewAction, $editAction, $deleteAction]));
     $totalActions = $namedActionsCount + ($slotCount ?: ($slot->isNotEmpty() ? 1 : 0));
     $shouldUnfold = $totalActions < 5;
+
+    // editAction is usually a PHP method call meant for wire:click. But it's
+    // sometimes a client-side JS expression (e.g. "$dispatchTo(...)" to tell
+    // a modal's child component what to load) — that belongs in @click, never
+    // wire:click, which would try (and fail) to call it as a server action.
+    $editIsWindowLocation = $editAction && str_starts_with($editAction, 'window.location');
+    $editIsJsExpression = $editAction && str_starts_with($editAction, '$');
 @endphp
 
 @if($shouldUnfold)
     <div class="flex items-center justify-end gap-2">
         @if($viewAction)
-            <a href="{{ $viewAction }}" class="flex items-center gap-2 btn btn-xs h-8 px-3 rounded-lg text-slate-700 transition-colors border-slate-200" wire:navigate>
-                <x-icon-eye class="w-3.5 h-3.5 text-white" />
-                <span class="font-bold uppercase tracking-tight text-[10px]">View</span>
+            <a href="{{ $viewAction }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-tight rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors" wire:navigate>
+                <x-icon-eye class="w-3.5 h-3.5" />
+                <span>View</span>
             </a>
         @endif
 
         @if($editAction)
-            <button 
-                @if(str_starts_with($editAction, 'window.location'))
+            <button
+                @if($editIsWindowLocation)
                     onclick="{{ $editAction }}"
+                @elseif($editIsJsExpression)
+                    @click="{{ $editAction }}@if($editModalId); $dispatch('open-modal', { id: '{{ $editModalId }}' })@endif"
                 @else
                     wire:click="{{ $editAction }}"
+                    @if($editModalId)
+                        @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
+                    @endif
                 @endif
-                @if($editModalId)
-                    @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
-                @endif
-                class="flex items-center gap-2 btn btn-info btn-xs h-8 px-3 rounded-lg transition-colors border-blue-100 text-blue-700">
-                <x-icon-edit class="w-3.5 h-3.5 text-white" />
-                <span class="font-bold uppercase tracking-tight text-[10px]">Edit</span>
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-tight rounded-lg bg-sky-50 border border-sky-100 text-sky-700 hover:bg-sky-100 transition-colors">
+                <x-icon-edit class="w-3.5 h-3.5" />
+                <span>Edit</span>
             </button>
         @endif
 
@@ -36,44 +45,52 @@
         @endif
 
         @if($deleteAction)
-            <button wire:click="{{ $deleteAction }}" class="flex items-center gap-2 btn btn-error btn-xs h-8 px-3 rounded-lg transition-colors border-red-100 text-red-700">
-                <x-icon-trash class="w-3.5 h-3.5 text-white" />
-                <span class="font-bold uppercase tracking-tight text-[10px]">Delete</span>
+            <button wire:click="{{ $deleteAction }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-tight rounded-lg bg-red-50 border border-red-100 text-red-700 hover:bg-red-100 transition-colors">
+                <x-icon-trash class="w-3.5 h-3.5" />
+                <span>Delete</span>
             </button>
         @endif
     </div>
 @else
-    <div class="dropdown {{ $align }} {{ $direction }}">
-        <button type="button" tabindex="0" class="flex items-center gap-2 btn btn-square btn-xs transition-colors dropdown-toggle" aria-haspopup="menu" aria-expanded="false">
-            <x-icon-dots-vertical class="w-4 h-4 text-secondary" />
+    <div x-data="{ open: false }" class="relative flex justify-end">
+        <button type="button" @click="open = !open" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors focus:outline-none">
+            <x-icon-dots-vertical class="w-4 h-4" />
         </button>
-        
-        <ul tabindex="0" class="dropdown-menu dropdown-open:opacity-100 hidden p-2 shadow-xl bg-white border border-slate-200 rounded-xl z-50 w-48 mt-1" role="menu">
+
+        <div x-show="open"
+             @click.outside="open = false"
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             class="absolute right-0 mt-8 top-0 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50"
+             role="menu">
+
             @if($viewAction)
-                <li role="none">
-                    <a href="{{ $viewAction }}" class="dropdown-item flex items-center gap-2.5 py-2 px-3  rounded-lg text-sm text-slate-700 transition-colors" role="menuitem" wire:navigate>
-                        <x-icon-eye class="w-4 h-4 text-white" />
-                        <span class="font-medium">View Details</span>
-                    </a>
-                </li>
+                <a href="{{ $viewAction }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors" role="menuitem" wire:navigate>
+                    <x-icon-eye class="w-4 h-4 text-slate-400" />
+                    <span class="font-medium">View Details</span>
+                </a>
             @endif
 
             @if($editAction)
-                <li role="none">
-                    <button 
-                        @if(str_starts_with($editAction, 'window.location'))
-                            onclick="{{ $editAction }}"
-                        @else
-                            wire:click="{{ $editAction }}"
-                        @endif
+                <button
+                    @if($editIsWindowLocation)
+                        onclick="{{ $editAction }}"
+                    @elseif($editIsJsExpression)
+                        @click="{{ $editAction }}@if($editModalId); $dispatch('open-modal', { id: '{{ $editModalId }}' })@endif"
+                    @else
+                        wire:click="{{ $editAction }}"
                         @if($editModalId)
                             @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
                         @endif
-                        class="dropdown-item flex items-center gap-2.5 py-2 px-3 rounded-lg text-sm text-blue-700 transition-colors w-full text-left" role="menuitem">
-                        <x-icon-edit class="w-4 h-4 text-white" />
-                        <span class="font-medium">Edit Details</span>
-                    </button>
-                </li>
+                    @endif
+                    class="flex items-center gap-2.5 px-4 py-2 text-sm text-sky-700 hover:bg-slate-50 transition-colors w-full text-left" role="menuitem">
+                    <x-icon-edit class="w-4 h-4 text-sky-400" />
+                    <span class="font-medium">Edit Details</span>
+                </button>
             @endif
 
             @if(isset($slot) && $slot->isNotEmpty())
@@ -81,15 +98,12 @@
             @endif
 
             @if($deleteAction)
-                <div class="divider my-1"></div>
-                <li role="none">
-                    <button wire:click="{{ $deleteAction }}" class="dropdown-item flex items-center gap-2.5 py-2 px-3 ounded-lg text-sm text-error transition-colors w-full text-left" role="menuitem">
-                        <x-icon-trash class="w-4 h-4 text-white" />
-                        <span class="font-medium">Delete Item</span>
-                    </button>
-                </li>
+                <div class="my-1 border-t border-slate-100"></div>
+                <button wire:click="{{ $deleteAction }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left" role="menuitem">
+                    <x-icon-trash class="w-4 h-4 text-red-400" />
+                    <span class="font-medium">Delete Item</span>
+                </button>
             @endif
-        </ul>
+        </div>
     </div>
 @endif
-
