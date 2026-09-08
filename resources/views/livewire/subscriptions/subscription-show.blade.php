@@ -301,8 +301,8 @@
     {{-- Renewal Modal --}}
     @if($showRenewalModal)
     <div class="fixed inset-0 z-50" x-data @keydown.escape.window="$wire.set('showRenewalModal', false)">
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showRenewalModal', false)"></div>
-        <div class="fixed inset-0 overflow-y-auto">
+        <div class="fixed inset-0 z-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showRenewalModal', false)"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
@@ -385,8 +385,8 @@
     {{-- Receipt Modal --}}
     @if($showReceiptModal)
     <div class="fixed inset-0 z-50" x-data @keydown.escape.window="$wire.set('showReceiptModal', false)">
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showReceiptModal', false)"></div>
-        <div class="fixed inset-0 overflow-y-auto">
+        <div class="fixed inset-0 z-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showReceiptModal', false)"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">

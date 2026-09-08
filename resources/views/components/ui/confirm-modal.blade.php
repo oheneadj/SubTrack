@@ -25,7 +25,7 @@
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+             class="fixed inset-0 z-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
              @click="open = false"
              aria-hidden="true"></div>
 
@@ -39,7 +39,7 @@
              x-transition:leave="ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+             class="relative z-10 inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
 
             <div class="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-4">
                 <div class="sm:flex sm:items-start">
@@ -61,13 +61,13 @@
 
             <div class="bg-slate-50 px-6 py-4 sm:px-8 sm:flex sm:flex-row-reverse gap-3">
                 <button type="button"
-                        class="btn btn-error btn-sm w-full sm:w-auto"
+                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors w-full sm:w-auto"
                         wire:click="{{ $confirmAction }}"
                         @click="open = false">
                     Confirm Action
                 </button>
                 <button type="button"
-                        class="btn btn-ghost btn-sm w-full sm:w-auto mt-3 sm:mt-0"
+                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-transparent text-slate-600 hover:bg-slate-100 transition-colors w-full sm:w-auto mt-3 sm:mt-0"
                         @click="open = false">
                     Cancel
                 </button>

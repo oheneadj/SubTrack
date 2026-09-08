@@ -80,10 +80,10 @@
     @if($showModal)
     <div class="fixed inset-0 z-50 overflow-y-auto" x-data @keydown.escape.window="$wire.set('showModal', false)">
         {{-- Backdrop --}}
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showModal', false)"></div>
+        <div class="fixed inset-0 z-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showModal', false)"></div>
 
         {{-- Content --}}
-        <div class="fixed inset-0 overflow-y-auto">
+        <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
                     <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center justify-between">
@@ -130,10 +130,10 @@
     @if($showDeleteModal)
     <div class="fixed inset-0 z-50 overflow-y-auto" x-data @keydown.escape.window="$wire.set('showDeleteModal', false)">
         {{-- Backdrop --}}
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showDeleteModal', false)"></div>
+        <div class="fixed inset-0 z-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showDeleteModal', false)"></div>
 
         {{-- Content --}}
-        <div class="fixed inset-0 overflow-y-auto">
+        <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
                     <x-ui.button variant="ghost" circle wire:click="$set('showDeleteModal', false)" class="absolute right-4 top-4 text-slate-400">✕</x-ui.button>
