@@ -1,9 +1,9 @@
 <div>
     <x-ui.page-header title="Providers" subtitle="Manage external service providers and vendors">
-        <button wire:click="openCreate" class="btn btn-primary btn-sm flex items-center gap-2">
+        <x-ui.button wire:click="openCreate">
             <x-icon-plus class="w-4 h-4" />
             <span>Add Provider</span>
-        </button>
+        </x-ui.button>
     </x-ui.page-header>
 
     @if(session('success'))
@@ -13,32 +13,22 @@
         </div>
     @endif
 
-    {{-- Search --}}
-    <div class="mb-6 flex items-center justify-between gap-4">
-        <div class="w-full max-w-sm relative">
-            <x-icon-search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 mr-4" />
-            <input 
-                type="text" 
-                wire:model.live.debounce.300ms="search" 
-                placeholder="Search providers..." 
-                class="input input-bordered w-full pl-10 focus:input-primary transition-all duration-200"
-            >
-        </div>
-    </div>
+    <x-ui.toolbar searchModel="search" searchPlaceholder="Search providers...">
+    </x-ui.toolbar>
 
     {{-- Main Content --}}
-  
+
         @if($providers->isEmpty())
-            <x-ui.empty-state 
-                icon="world" 
-                title="No providers found" 
+            <x-ui.empty-state
+                icon="world"
+                title="No providers found"
                 message="{{ $search ? 'Try adjusting your search query.' : 'Add your first provider.' }}"
             >
                 @if(!$search)
-                    <button wire:click="openCreate" class="btn btn-primary btn-sm mt-2 flex items-center gap-2">
+                    <x-ui.button wire:click="openCreate" class="mt-2">
                         <x-icon-plus class="w-4 h-4" />
                         <span>Add Provider</span>
-                    </button>
+                    </x-ui.button>
                 @endif
             </x-ui.empty-state>
         @else
@@ -98,7 +88,7 @@
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
                     <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center justify-between">
                         <h3 class="font-bold text-lg text-slate-800">{{ $editingId ? 'Edit Provider' : 'Add New Provider' }}</h3>
-                        <button wire:click="$set('showModal', false)" class="btn btn-sm btn-circle btn-ghost text-slate-400 hover:text-slate-700">✕</button>
+                        <x-ui.button variant="ghost" circle wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-700">✕</x-ui.button>
                     </div>
                     
                     <div class="p-6 space-y-4">
@@ -122,13 +112,13 @@
                     </div>
 
                     <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
-                        <button wire:click="$set('showModal', false)" class="btn btn-ghost btn-sm">Cancel</button>
-                        <button wire:click="save" class="btn btn-primary btn-sm" wire:loading.attr="disabled">
+                        <x-ui.button variant="ghost" wire:click="$set('showModal', false)">Cancel</x-ui.button>
+                        <x-ui.button wire:click="save" wire:loading.attr="disabled">
                             <span wire:loading.remove>Save Provider</span>
                             <span wire:loading>
                                 <span class="loading loading-spinner loading-xs"></span> Saving...
                             </span>
-                        </button>
+                        </x-ui.button>
                     </div>
                 </div>
             </div>
@@ -146,7 +136,7 @@
         <div class="fixed inset-0 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
-                    <button wire:click="$set('showDeleteModal', false)" class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-slate-400">✕</button>
+                    <x-ui.button variant="ghost" circle wire:click="$set('showDeleteModal', false)" class="absolute right-4 top-4 text-slate-400">✕</x-ui.button>
                     <div class="flex flex-col items-center justify-center text-center pt-4">
                         <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
                             <x-icon-alert-triangle class="w-8 h-8 text-red-600" />
@@ -154,8 +144,8 @@
                         <h3 class="text-lg font-bold text-slate-800 mb-2">Delete Provider?</h3>
                         <p class="text-slate-500 mb-6 text-sm">Are you sure you want to delete this provider? This action cannot be undone.</p>
                         <div class="flex justify-center gap-3 w-full">
-                            <button wire:click="$set('showDeleteModal', false)" class="btn btn-ghost btn-sm flex-1">Cancel</button>
-                            <button wire:click="delete" class="btn btn-error btn-sm flex-1 text-white">Delete</button>
+                            <x-ui.button variant="ghost" wire:click="$set('showDeleteModal', false)" class="flex-1">Cancel</x-ui.button>
+                            <x-ui.button variant="error" wire:click="delete" class="flex-1 text-white">Delete</x-ui.button>
                         </div>
                     </div>
                 </div>

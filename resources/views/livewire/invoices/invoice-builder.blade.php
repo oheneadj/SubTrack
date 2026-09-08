@@ -1,8 +1,8 @@
 <div>
     <x-ui.page-header :title="$isEdit ? 'Edit Invoice' : 'Create Invoice'" subtitle="Build a project invoice and generate PDF">
-        <a href="{{ route('invoices.index') }}" class="btn btn-ghost btn-sm gap-2">
+        <x-ui.button as="a" variant="ghost" href="{{ route('invoices.index') }}">
             <x-icon-arrow-left class="w-4 h-4" /> Back to Invoices
-        </a>
+        </x-ui.button>
     </x-ui.page-header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -10,7 +10,7 @@
         <div class="lg:col-span-2 space-y-6">
 
             {{-- Client & Project --}}
-            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <x-ui.card :padding="false">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -36,10 +36,10 @@
                         </x-ui.form-select>
                     </div>
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Invoice Items --}}
-            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <x-ui.card :padding="false">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex justify-between items-center">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
@@ -50,9 +50,9 @@
                             <p class="text-xs text-slate-400">{{ count($items) }} {{ \Illuminate\Support\Str::plural('item', count($items)) }}</p>
                         </div>
                     </div>
-                    <button type="button" wire:click="addItem" class="btn btn-sm btn-primary gap-1">
+                    <x-ui.button type="button" wire:click="addItem" class="gap-1">
                         <x-icon-plus class="w-3.5 h-3.5" /> Add Item
-                    </button>
+                    </x-ui.button>
                 </div>
                 <div class="p-6">
                     @if(count($items) === 0)
@@ -103,11 +103,12 @@
                                                 <span class="font-bold text-slate-800 text-sm tabular-nums">${{ number_format($item['total'], 2) }}</span>
                                             </td>
                                             <td class="py-2 pl-2 text-right">
-                                                <button type="button" wire:click="removeItem({{ $index }})"
-                                                    class="btn btn-ghost btn-square btn-xs text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
+                                                <x-ui.button type="button" wire:click="removeItem({{ $index }})"
+                                                    variant="ghost" circle size="xs"
+                                                    class="text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
                                                     title="Remove item">
                                                     <x-icon-trash class="w-4 h-4" />
-                                                </button>
+                                                </x-ui.button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -127,10 +128,10 @@
                         </div>
                     @endif
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Notes --}}
-            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <x-ui.card :padding="false">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
@@ -142,14 +143,14 @@
                 <div class="p-6">
                     <x-ui.form-textarea model="notes" wire:model="notes" placeholder="Add internal notes or terms that will appear on the invoice PDF..." />
                 </div>
-            </div>
+            </x-ui.card>
         </div>
 
         {{-- ═══════════════════════ RIGHT: Sidebar ═══════════════════════ --}}
         <div class="space-y-6">
 
             {{-- Invoice Settings --}}
-            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <x-ui.card :padding="false">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">
@@ -173,10 +174,10 @@
                         <option value="Overdue">Overdue</option>
                     </x-ui.form-select>
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Summary & Total --}}
-            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <x-ui.card :padding="false">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -216,17 +217,17 @@
                     </div>
 
                     {{-- Action --}}
-                    <button wire:click="save" wire:loading.attr="disabled" class="btn btn-primary w-full mt-6 gap-2">
+                    <x-ui.button wire:click="save" wire:loading.attr="disabled" full class="mt-6 gap-2">
                         <span wire:loading.remove wire:target="save">
-                          
+
                             {{ $isEdit ? 'Update Invoice' : 'Generate Invoice' }}
                         </span>
                         <span wire:loading wire:target="save" class="flex items-center gap-2">
                             <span class="loading loading-spinner loading-xs"></span> Saving...
                         </span>
-                    </button>
+                    </x-ui.button>
                 </div>
-            </div>
+            </x-ui.card>
 
         </div>
     </div>

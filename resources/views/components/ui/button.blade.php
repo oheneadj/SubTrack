@@ -16,6 +16,7 @@
         'error' => 'btn-error',
         'success' => 'btn-success',
         'warning' => 'btn-warning',
+        'info' => 'btn-info',
         'secondary' => 'btn-secondary',
         default => 'btn-primary',
     };
@@ -24,6 +25,7 @@
         'xs' => 'btn-xs',
         'sm' => 'btn-sm',
         'md' => '',
+        'lg' => 'btn-lg',
         default => 'btn-sm',
     };
 

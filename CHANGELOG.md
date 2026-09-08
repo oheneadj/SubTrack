@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Rolled out `<x-ui.card>`, `<x-ui.button>`, `<x-ui.toolbar>` (introduced for the subscriptions pages) across the rest of the admin app: clients, dashboard, invoices, mail templates, projects, providers, users, activity logs, settings, and the notification list — 23 pages converted from repeated raw markup to the shared components
+- `button` component gained `info` and `lg` variants/sizes to cover the two button shapes the rollout needed that didn't exist yet (Send-to-client invoice action, the mail composer's large send button)
+- `AdminPagesSmokeTest` — most of these 23 pages had zero test coverage before this rollout; this smoke test renders every one of them (via `Livewire::test()`) so a broken Blade/component tag anywhere in the admin app fails loudly instead of silently
+
+### Fixed
+- Two `<x-ui.button>` usages had a raw `@if`/`@endif` (and one `@disabled`) directive embedded directly in the component tag's attribute list, which Blade's component-tag compiler cannot parse (it silently mis-compiled the whole file into unbalanced PHP) — both rewritten using the `:disabled="..."` boolean-attribute binding Blade actually supports there
+- A "Close" button in the activity log detail modal had been mapped to the solid-background `secondary` button variant during the rollout instead of the visually-equivalent unstyled/`ghost` variant — fixed to `ghost` to preserve the original look
+
 ### Removed
 - Client filter dropdown on the subscriptions list (`filterClientId`, `filterableClients`) — sorting by client name (added earlier) covers browsing by client without a separate filter
 

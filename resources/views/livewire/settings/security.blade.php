@@ -3,27 +3,27 @@
 
     <x-settings.layout :heading="__('Update Password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
         <form wire:submit="updatePassword" class="space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
+            <x-ui.card>
                 <x-ui.form-input label="Current Password" model="current_password" type="password" placeholder="Enter current password" :error="$errors->first('current_password')" />
                 <x-ui.form-input label="New Password" model="password" type="password" placeholder="Enter new password" :error="$errors->first('password')" />
                 <x-ui.form-input label="Confirm Password" model="password_confirmation" type="password" placeholder="Confirm new password" :error="$errors->first('password_confirmation')" />
 
                 <div class="flex items-center gap-4 pt-2">
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-primary btn-sm">
+                    <x-ui.button type="submit" wire:loading.attr="disabled">
                         <span wire:loading.remove>Update Password</span>
                         <span wire:loading><span class="loading loading-spinner loading-xs"></span> Saving...</span>
-                    </button>
+                    </x-ui.button>
 
                     <x-action-message class="text-sm text-green-600 font-medium" on="password-updated">
                         {{ __('Saved.') }}
                     </x-action-message>
                 </div>
-            </div>
+            </x-ui.card>
         </form>
 
         @if ($canManageTwoFactor)
             <div class="mt-8">
-                <div class="bg-white rounded-2xl border border-slate-200 p-6">
+                <x-ui.card>
                     <h3 class="text-lg font-bold text-primary mb-1">{{ __('Two-Factor Authentication') }}</h3>
                     <p class="text-sm text-secondary mb-6">{{ __('Add additional security to your account using two-factor authentication.') }}</p>
 
@@ -37,22 +37,22 @@
                                 <p class="text-sm text-secondary">
                                     {{ __('You will be prompted for a secure, random pin during login, which you can retrieve from your TOTP-supported authenticator app.') }}
                                 </p>
-                                <button wire:click="disable" class="btn btn-error btn-sm">
+                                <x-ui.button variant="error" wire:click="disable">
                                     {{ __('Disable 2FA') }}
-                                </button>
+                                </x-ui.button>
                             </div>
                         @else
                             <div class="space-y-4">
                                 <p class="text-sm text-secondary">
                                     {{ __('When enabled, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.') }}
                                 </p>
-                                <button wire:click="enable" class="btn btn-primary btn-sm">
+                                <x-ui.button wire:click="enable">
                                     {{ __('Enable 2FA') }}
-                                </button>
+                                </x-ui.button>
                             </div>
                         @endif
                     </div>
-                </div>
+                </x-ui.card>
             </div>
 
             {{-- 2FA Setup Modal --}}
@@ -68,8 +68,8 @@
                                 <x-ui.form-input label="Verification Code" model="code" placeholder="Enter 6-digit code" :error="$errors->first('code')" />
                             </div>
                             <div class="flex gap-3">
-                                <button wire:click="resetVerification" class="btn btn-ghost btn-sm flex-1">{{ __('Back') }}</button>
-                                <button wire:click="confirmTwoFactor" class="btn btn-primary btn-sm flex-1" x-bind:disabled="$wire.code.length < 6">{{ __('Confirm') }}</button>
+                                <x-ui.button variant="ghost" class="flex-1" wire:click="resetVerification">{{ __('Back') }}</x-ui.button>
+                                <x-ui.button class="flex-1" wire:click="confirmTwoFactor" x-bind:disabled="$wire.code.length < 6">{{ __('Confirm') }}</x-ui.button>
                             </div>
                         </div>
                     @else
@@ -99,9 +99,9 @@
                         </div>
                         @endif
 
-                        <button wire:click="showVerificationIfNecessary" class="btn btn-primary btn-sm w-full" @disabled($errors->has('setupData'))>
+                        <x-ui.button full wire:click="showVerificationIfNecessary" :disabled="$errors->has('setupData')">
                             {{ $this->modalConfig['buttonText'] }}
-                        </button>
+                        </x-ui.button>
                     @endif
                 </div>
             </div>

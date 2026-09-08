@@ -2,10 +2,10 @@
     {{-- Page Header --}}
     <x-ui.page-header :title="$client->name" :subtitle="'Relationship overview for ' . ($client->company_name ?? $client->name)">
         <div class="flex items-center gap-3">
-            <a href="{{ route('clients.index') }}" class="btn btn-ghost btn-sm flex items-center gap-2">
+            <x-ui.button as="a" variant="ghost" href="{{ route('clients.index') }}">
                 <x-icon-arrow-left class="w-4 h-4" />
                 <span>Back to List</span>
-            </a>
+            </x-ui.button>
 
             @if(session('success'))
                 <div class="alert alert-success py-2 px-4 mb-0 text-sm">
@@ -14,10 +14,10 @@
             @endif
 
             <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" type="button" class="btn btn-soft btn-sm bg-white hover:bg-slate-50 border-slate-200 flex items-center gap-2">
+                <x-ui.button @click="open = !open" type="button" soft class="bg-white hover:bg-slate-50 border-slate-200">
                     <x-icon-mail class="w-4 h-4 text-blue-500" />
                     <span>Communication</span>
-                </button>
+                </x-ui.button>
                 <ul x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-50 menu p-2 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2">
                     <li>
                         <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
@@ -34,13 +34,13 @@
                 </ul>
             </div>
 
-            <button 
+            <x-ui.button
                 onclick="window.location.href='{{ route('clients.index') }}?edit={{ $client->id }}'"
-                class="btn btn-primary btn-sm border-slate-200 bg-white flex items-center gap-2"
+                class="border-slate-200 bg-white"
             >
                 <x-icon-edit class="w-4 h-4" />
                 <span>Edit Client</span>
-            </button>
+            </x-ui.button>
         </div>
     </x-ui.page-header>
 
@@ -77,18 +77,19 @@
             <div class="lg:col-span-2 space-y-8">
                 
                 {{-- Projects Section --}}
-                <section class="bg-white rounded-2xl border border-slate-200">
-                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-slate-800">Projects</h3>
-                        <button 
-                            @click="$dispatch('open-modal', { id: 'project-modal' })" 
-                            wire:click="$dispatchTo('projects.project-form', 'open-project-modal', { clientId: {{ $client->id }} })" 
-                            class="btn btn-primary btn-sm flex items-center gap-2">
+                <x-ui.card :padding="false">
+                    <x-slot:actions>
+                        <x-ui.button
+                            @click="$dispatch('open-modal', { id: 'project-modal' })"
+                            wire:click="$dispatchTo('projects.project-form', 'open-project-modal', { clientId: {{ $client->id }} })">
                             <x-icon-plus class="w-4 h-4" />
                             <span>New Project</span>
-                        </button>
+                        </x-ui.button>
+                    </x-slot:actions>
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-800">Projects</h3>
                     </div>
-                    
+
                     @if($this->projects->isEmpty())
                         <div class="p-12 text-center">
                             <x-icon-folder class="w-12 h-12 text-slate-200 mx-auto mb-4" />
@@ -111,29 +112,31 @@
                                         {{ $project->created_at->format('M d, Y') }}
                                     </td>
                                     <td class="text-right">
-                                        <button 
-                                            @click="$dispatch('open-modal', { id: 'project-modal' })" 
-                                            wire:click="$dispatchTo('projects.project-form', 'open-project-modal', { id: {{ $project->id }} })" 
-                                            class="btn btn-ghost btn-square btn-sm" title="Edit Project">
+                                        <x-ui.button
+                                            @click="$dispatch('open-modal', { id: 'project-modal' })"
+                                            wire:click="$dispatchTo('projects.project-form', 'open-project-modal', { id: {{ $project->id }} })"
+                                            variant="ghost" circle title="Edit Project">
                                             <x-icon-edit class="w-4 h-4" />
-                                        </button>
+                                        </x-ui.button>
                                     </td>
                                 </tr>
                             @endforeach
                         </x-ui.data-table>
                     @endif
-                </section>
-    
+                </x-ui.card>
+
                 {{-- Recent Invoices Section --}}
-                <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-slate-800">Recent Invoices</h3>
-                        <a href="{{ route('invoices.create', ['clientId' => $client->id]) }}" class="btn btn-primary btn-sm flex items-center gap-2">
+                <x-ui.card :padding="false">
+                    <x-slot:actions>
+                        <x-ui.button as="a" href="{{ route('invoices.create', ['clientId' => $client->id]) }}">
                             <x-icon-plus class="w-4 h-4" />
                             <span>New Invoice</span>
-                        </a>
+                        </x-ui.button>
+                    </x-slot:actions>
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-800">Recent Invoices</h3>
                     </div>
-    
+
                     @if($this->invoices->isEmpty())
                         <div class="p-12 text-center">
                             <x-icon-file-invoice class="w-12 h-12 text-slate-200 mx-auto mb-4" />
@@ -150,9 +153,9 @@
                                 </td>
                                 <td class="text-secondary text-sm">{{ $invoice->issued_date->format('M d, Y') }}</td>
                                 <td class="text-right">
-                                    <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-ghost btn-square btn-sm">
+                                    <x-ui.button as="a" variant="ghost" circle href="{{ route('invoices.edit', $invoice) }}">
                                         <x-icon-edit class="w-4 h-4" />
-                                    </a>
+                                    </x-ui.button>
                                 </td>
                             </tr>
                         @endforeach
@@ -161,14 +164,12 @@
                         {{ $this->invoices->links() }}
                     </div>
                 @endif
-            </section>
+            </x-ui.card>
         </div>
 
         {{-- Right Column: Contact info & Quick details --}}
         <div class="space-y-8">
-            <section class="bg-white rounded-2xl border border-slate-200 p-6">
-                <h3 class="text-lg font-bold text-slate-800 mb-6">Contact Information</h3>
-                
+            <x-ui.card title="Contact Information">
                 <div class="space-y-6">
                     <div>
                         <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Company</label>
@@ -198,11 +199,10 @@
                         <p class="text-slate-800">{{ $client->created_at->format('F d, Y') }}</p>
                     </div>
                 </div>
-            </section>
+            </x-ui.card>
 
             @if(!$this->subscriptions->isEmpty())
-            <section class="bg-white rounded-2xl border border-slate-200 p-6">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Active Subscriptions</h3>
+            <x-ui.card title="Active Subscriptions">
                 <div class="space-y-4">
                     @foreach($this->subscriptions->where('status', 'Active')->take(5) as $sub)
                         <div class="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
@@ -213,9 +213,9 @@
                             <x-ui.badge-status :status="$sub->status->value" />
                         </div>
                     @endforeach
-                    <a href="{{ route('subscriptions.index') }}" class="btn btn-primary btn-sm w-full">View all subscriptions</a>
+                    <x-ui.button as="a" full href="{{ route('subscriptions.index') }}">View all subscriptions</x-ui.button>
                 </div>
-            </section>
+            </x-ui.card>
             @endif
         </div>
     </div>

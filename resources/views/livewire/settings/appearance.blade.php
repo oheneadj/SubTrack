@@ -2,7 +2,7 @@
     @include('partials.settings-heading')
 
     <x-settings.layout :heading="__('Appearance')" :subheading="__('Customize how the application looks for you')">
-        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <x-ui.card>
             <p class="text-sm text-secondary mb-4">{{ __('Theme preference') }}</p>
 
             <div class="grid grid-cols-3 gap-4" x-data="{ theme: localStorage.getItem('theme') || 'light' }">
@@ -27,6 +27,6 @@
                     <span class="text-sm font-medium text-primary">System</span>
                 </button>
             </div>
-        </div>
+        </x-ui.card>
     </x-settings.layout>
 </section>

@@ -1,9 +1,9 @@
 <div>
     <x-ui.page-header title="User Management" subtitle="Invite, manage, and control access for your team">
-        <button wire:click="openInvite" class="btn btn-primary btn-sm flex items-center gap-2">
+        <x-ui.button wire:click="openInvite">
             <x-icon-plus class="w-4 h-4" />
             <span>Invite User</span>
-        </button>
+        </x-ui.button>
     </x-ui.page-header>
 
     {{-- Flash Messages --}}
@@ -21,10 +21,8 @@
         </div>
     @endif
 
-    {{-- Search --}}
-    <div class="mb-6">
-        <x-ui.form-input model="search" placeholder="Search by name or email..." />
-    </div>
+    <x-ui.toolbar searchModel="search" searchPlaceholder="Search by name or email...">
+    </x-ui.toolbar>
 
     {{-- Users Table --}}
     @if($this->users->isEmpty())
@@ -84,19 +82,19 @@
                         </td>
                         <td>
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('users.show', $user) }}" class="btn btn-ghost btn-xs text-blue-600 hover:bg-blue-50">
+                                <x-ui.button as="a" variant="ghost" size="xs" href="{{ route('users.show', $user) }}" class="text-blue-600 hover:bg-blue-50">
                                     Details
-                                </a>
+                                </x-ui.button>
                                 @if($user->id !== auth()->id())
                                     <x-ui.action-menu deleteAction="confirmDelete({{ $user->id }})">
-                                        <button wire:click="resendInvite({{ $user->id }})" class="btn btn-primary btn-xs text-white flex items-center gap-2 justify-start">
+                                        <x-ui.button variant="primary" size="xs" wire:click="resendInvite({{ $user->id }})" class="text-white justify-start">
                                             <x-icon-refresh class="w-3 h-3" />
                                             <span>Resend Invite</span>
-                                        </button>
-                                        <button wire:click="openToggleModal({{ $user->id }})" class="btn {{ $user->is_active ? 'btn-warning' : 'btn-success' }} btn-xs flex items-center gap-2 justify-start">
+                                        </x-ui.button>
+                                        <x-ui.button :variant="$user->is_active ? 'warning' : 'success'" size="xs" wire:click="openToggleModal({{ $user->id }})" class="justify-start">
                                             <x-icon-alert-triangle class="w-3 h-3" />
                                             <span>{{ $user->is_active ? 'Disable' : 'Enable' }}</span>
-                                        </button>
+                                        </x-ui.button>
                                     </x-ui.action-menu>
                                 @endif
                             </div>
@@ -117,9 +115,9 @@
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-md p-6 mx-4" @click.away="$wire.set('showInviteModal', false)">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-primary">Invite New User</h3>
-                <button wire:click="$set('showInviteModal', false)" class="btn btn-ghost btn-square btn-sm">
+                <x-ui.button variant="ghost" circle wire:click="$set('showInviteModal', false)">
                     <x-icon-x class="w-4 h-4" />
-                </button>
+                </x-ui.button>
             </div>
 
             <form wire:submit="sendInvite" class="space-y-4">
@@ -136,11 +134,11 @@
                 </p>
 
                 <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" wire:click="$set('showInviteModal', false)" class="btn btn-ghost btn-sm">Cancel</button>
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-primary btn-sm">
+                    <x-ui.button type="button" variant="ghost" wire:click="$set('showInviteModal', false)">Cancel</x-ui.button>
+                    <x-ui.button type="submit" wire:loading.attr="disabled">
                         <span wire:loading.remove wire:target="sendInvite">Send Invite</span>
                         <span wire:loading wire:target="sendInvite"><span class="loading loading-spinner loading-xs"></span> Sending...</span>
-                    </button>
+                    </x-ui.button>
                 </div>
             </form>
         </div>
@@ -171,11 +169,11 @@
                 <x-ui.form-input label="Enter your password to confirm" model="confirmPassword" type="password" placeholder="Your password" :error="$errors->first('confirmPassword')" />
 
                 <div class="flex gap-3 pt-1">
-                    <button type="button" wire:click="$set('showToggleModal', false)" class="btn btn-ghost btn-sm flex-1">Cancel</button>
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-sm flex-1 {{ $toggleUserIsActive ? 'btn-warning' : 'btn-success' }}">
+                    <x-ui.button type="button" variant="ghost" wire:click="$set('showToggleModal', false)" class="flex-1">Cancel</x-ui.button>
+                    <x-ui.button type="submit" :variant="$toggleUserIsActive ? 'warning' : 'success'" wire:loading.attr="disabled" class="flex-1">
                         <span wire:loading.remove wire:target="confirmToggleActive">{{ $toggleUserIsActive ? 'Disable' : 'Enable' }}</span>
                         <span wire:loading wire:target="confirmToggleActive"><span class="loading loading-spinner loading-xs"></span></span>
-                    </button>
+                    </x-ui.button>
                 </div>
             </form>
         </div>

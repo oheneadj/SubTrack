@@ -6,10 +6,10 @@
             <p class="text-sm text-slate-500 mt-0.5">{{ now()->format('l, F j, Y') }}</p>
         </div>
         <div class="flex items-center gap-2 mt-3 sm:mt-0">
-            <a href="{{ route('invoices.create') }}" class="btn btn-primary btn-sm flex items-center gap-2 whitespace-nowrap" wire:navigate>
+            <x-ui.button as="a" href="{{ route('invoices.create') }}" wire:navigate class="whitespace-nowrap">
                 <x-icon-plus class="w-4 h-4" />
                 <span>New Invoice</span>
-            </a>
+            </x-ui.button>
         </div>
     </div>
 
@@ -74,7 +74,7 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {{-- Revenue Chart Card --}}
-        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between" x-data="comparisonChart({{ json_encode($comparisonData) }})">
+        <x-ui.card class="lg:col-span-2 flex flex-col justify-between" x-data="comparisonChart({{ json_encode($comparisonData) }})">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-slate-800">Revenue vs. Expenses</h3>
@@ -96,7 +96,7 @@
             <div class="h-[180px] w-full relative">
                 <canvas x-ref="canvas"></canvas>
             </div>
-        </div>
+        </x-ui.card>
 
         {{-- Mini Stats Column --}}
         <div class="grid grid-cols-1 row-span-2 gap-4">
@@ -137,7 +137,7 @@
     {{-- Two Column Section: Critical + Warning Tables --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {{-- Critical Expirations --}}
-        <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <x-ui.card :padding="false">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="font-bold flex items-center gap-2 text-slate-800">
                     <x-icon-alert-triangle class="w-4 h-4 text-error" />
@@ -173,11 +173,12 @@
                                         <x-ui.days-pill :days="$sub->days_until_expiry" />
                                     </td>
                                     <td>
-                                        <button
+                                        <x-ui.button
                                             type="button"
                                             wire:click="sendReminder({{ $sub->id }})"
                                             wire:loading.attr="disabled"
-                                            class="btn btn-primary btn-xs text-white"
+                                            size="xs"
+                                            class="text-white"
                                             title="Send Reminder"
                                         >
                                             <span wire:loading.remove wire:target="sendReminder({{ $sub->id }})">
@@ -186,7 +187,7 @@
                                             <span wire:loading wire:target="sendReminder({{ $sub->id }})">
                                                 <span class="loading loading-spinner loading-xs"></span>
                                             </span>
-                                        </button>
+                                        </x-ui.button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -194,10 +195,10 @@
                     </table>
                 </div>
             @endif
-        </section>
+        </x-ui.card>
 
         {{-- Expiring This Month --}}
-        <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <x-ui.card :padding="false">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="font-bold flex items-center gap-2 text-slate-800">
                     <x-icon-clock class="w-4 h-4 text-warning" />
@@ -233,11 +234,12 @@
                                         <x-ui.days-pill :days="$sub->days_until_expiry" />
                                     </td>
                                     <td>
-                                        <button
+                                        <x-ui.button
                                             type="button"
                                             wire:click="sendReminder({{ $sub->id }})"
                                             wire:loading.attr="disabled"
-                                            class="btn btn-primary btn-xs text-white"
+                                            size="xs"
+                                            class="text-white"
                                             title="Send Reminder"
                                         >
                                             <span wire:loading.remove wire:target="sendReminder({{ $sub->id }})">
@@ -246,7 +248,7 @@
                                             <span wire:loading wire:target="sendReminder({{ $sub->id }})">
                                                 <span class="loading loading-spinner loading-xs"></span>
                                             </span>
-                                        </button>
+                                        </x-ui.button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -254,13 +256,13 @@
                     </table>
                 </div>
             @endif
-        </section>
+        </x-ui.card>
     </div>
 
     {{-- Three Column Section: Invoices + Revenue + Activity --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Recent Invoices (wider) --}}
-        <section class="lg:col-span-1 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <x-ui.card :padding="false" class="lg:col-span-1">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 class="font-bold text-slate-800 text-sm">Recent Invoices</h3>
                 <a href="{{ route('invoices.index') }}" class="text-xs text-primary font-semibold hover:underline" wire:navigate>View all</a>
@@ -284,10 +286,10 @@
                     @endforeach
                 </div>
             @endif
-        </section>
+        </x-ui.card>
 
         {{-- Recent Activity Feed --}}
-        <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <x-ui.card :padding="false">
             <div class="p-5 border-b border-slate-100">
                 <h3 class="font-bold text-slate-800 text-sm">Recent Activity</h3>
             </div>
@@ -305,7 +307,7 @@
                     @endforeach
                 </div>
             @endif
-        </section>
+        </x-ui.card>
     </div>
 
     {{-- Flash Message --}}

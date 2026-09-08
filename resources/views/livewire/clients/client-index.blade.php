@@ -1,37 +1,23 @@
 <div>
     <x-ui.page-header title="Clients" subtitle="Manage your client relationships and contact details">
-        <button wire:click="openCreate" class="btn btn-primary btn-sm flex items-center gap-2 whitespace-nowrap">
+        <x-ui.button wire:click="openCreate" class="whitespace-nowrap">
             <x-icon-plus class="w-4 h-4" />
             <span>Add Client</span>
-        </button>
+        </x-ui.button>
     </x-ui.page-header>
 
 
     {{-- Filters --}}
-    <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-4">
-        <div class="w-full max-w-sm">
-            <x-ui.form-input 
-                label="" 
-                model="search" 
-                placeholder="Search clients..." 
-                prefix="search"
-                class="input-sm"
-            >
-                <x-slot name="prefix">
-                    <x-icon-search class="w-4 h-4 text-slate-400" />
-                </x-slot>
-            </x-ui.form-input>
-        </div>
-    </div>
+    <x-ui.toolbar searchModel="search" searchPlaceholder="Search clients..." />
 
     {{-- Table --}}
     @if($clients->isEmpty())
-        <x-ui.empty-state 
-            icon="users" 
-            title="No clients found" 
+        <x-ui.empty-state
+            icon="users"
+            title="No clients found"
             message="{{ $search ? 'Try adjusting your search query.' : 'Get started by adding your first client.' }}"
         >
-            <button wire:click="openCreate" class="btn btn-primary btn-sm">Add Client</button>
+            <x-ui.button wire:click="openCreate">Add Client</x-ui.button>
         </x-ui.empty-state>
     @else
         <x-ui.data-table :headers="['name' => 'Client Name', 'email' => 'Email', 'projects_count' => 'Projects', 'created_at' => 'Registered', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
@@ -61,10 +47,10 @@
                             editAction="edit({{ $client->id }})" 
                             deleteAction="openDeleteModal({{ $client->id }})" 
                         >
-                            <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="flex items-center gap-2 btn btn-primary btn-xs gap-1.5 h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors border-blue-100 text-blue-700" wire:navigate>
+                            <x-ui.button as="a" size="xs" href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" wire:navigate class="h-8 px-3 rounded-lg hover:bg-blue-100 transition-colors border-blue-100 text-blue-700">
                                 <x-icon-mail class="w-3.5 h-3.5 text-white" />
                                 <span class="font-bold uppercase tracking-tight text-[10px]">Email</span>
-                            </a>
+                            </x-ui.button>
                         </x-ui.action-menu>
                     </td>
                 </tr>
@@ -92,11 +78,11 @@
                 <x-ui.form-input label="Enter your password to confirm" model="deletePassword" type="password" placeholder="Your password" :error="$errors->first('deletePassword')" />
 
                 <div class="flex gap-3 pt-1">
-                    <button type="button" wire:click="$set('showDeleteModal', false)" class="btn btn-ghost btn-sm flex-1">Cancel</button>
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-error btn-sm flex-1">
+                    <x-ui.button type="button" variant="ghost" wire:click="$set('showDeleteModal', false)" class="flex-1">Cancel</x-ui.button>
+                    <x-ui.button type="submit" variant="error" wire:loading.attr="disabled" class="flex-1">
                         <span wire:loading.remove wire:target="deleteWithPassword">Delete</span>
                         <span wire:loading wire:target="deleteWithPassword"><span class="loading loading-spinner loading-xs"></span></span>
-                    </button>
+                    </x-ui.button>
                 </div>
             </form>
         </div>
@@ -140,9 +126,9 @@
                     <h3 class="text-lg font-bold text-slate-800">
                         {{ $editingId ? 'Edit Client' : 'Add New Client' }}
                     </h3>
-                    <button @click="open = false" class="btn btn-sm btn-ghost btn-circle text-slate-400">
+                    <x-ui.button @click="open = false" variant="ghost" circle class="text-slate-400">
                         <x-icon-square-x class="w-5 h-5" />
-                    </button>
+                    </x-ui.button>
                 </div>
 
                 <div class="p-8">
@@ -187,13 +173,13 @@
                 </div>
 
                 <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-xl">
-                    <button @click="open = false" class="btn btn-ghost btn-sm">Cancel</button>
-                    <button wire:click="save" wire:loading.attr="disabled" class="btn btn-primary btn-sm min-w-[100px]">
+                    <x-ui.button @click="open = false" variant="ghost">Cancel</x-ui.button>
+                    <x-ui.button wire:click="save" wire:loading.attr="disabled" class="min-w-[100px]">
                         <span wire:loading.remove>{{ $editingId ? 'Update Client' : 'Create Client' }}</span>
                         <span wire:loading>
                             <span class="loading loading-spinner loading-xs"></span> Saving...
                         </span>
-                    </button>
+                    </x-ui.button>
                 </div>
             </div>
         </div>

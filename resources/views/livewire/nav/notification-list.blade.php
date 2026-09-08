@@ -41,17 +41,15 @@
                         
                         <div class="flex items-center justify-between">
                             @if(isset($notification->data['action_url']))
-                                <a href="{{ $notification->data['action_url'] }}" 
-                                   class="btn btn-xs btn-outline btn-primary">
+                                <x-ui.button as="a" href="{{ $notification->data['action_url'] }}" variant="outline" size="xs">
                                     View Details
-                                </a>
+                                </x-ui.button>
                             @endif
 
                             @if(!$notification->read_at)
-                                <button wire:click="markAsRead('{{ $notification->id }}')" 
-                                        class="btn btn-xs btn-ghost text-slate-400 hover:text-primary">
+                                <x-ui.button wire:click="markAsRead('{{ $notification->id }}')" variant="ghost" size="xs" class="text-slate-400 hover:text-primary">
                                     Mark read
-                                </button>
+                                </x-ui.button>
                             @endif
                         </div>
                     </div>

@@ -1,12 +1,12 @@
 <div>
     <x-ui.page-header title="Projects" subtitle="Manage client web projects and assets">
-        <button 
-            @click="$dispatch('open-modal', { id: 'project-modal' })" 
-            wire:click="$dispatchTo('projects.project-form', 'open-project-modal')" 
-            class="btn btn-primary btn-sm !inline-flex !flex-row items-center gap-2 whitespace-nowrap">
+        <x-ui.button
+            @click="$dispatch('open-modal', { id: 'project-modal' })"
+            wire:click="$dispatchTo('projects.project-form', 'open-project-modal')"
+            class="whitespace-nowrap">
             <x-icon-plus class="w-4 h-4" />
             <span>Add Project</span>
-        </button>
+        </x-ui.button>
     </x-ui.page-header>
 
     @if(session('success'))
@@ -15,34 +15,19 @@
         </div>
     @endif
 
-    {{-- Filters --}}
-    <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-4">
-        <div class="w-full max-w-sm">
-            <x-ui.form-input 
-                label="" 
-                model="search" 
-                placeholder="Search projects or clients..." 
-                prefix="search"
-                class="input-sm"
-            >
-                <x-slot name="prefix">
-                    <x-icon-search class="w-4 h-4 text-slate-400" />
-                </x-slot>
-            </x-ui.form-input>
-        </div>
-    </div>
+    <x-ui.toolbar searchModel="search" searchPlaceholder="Search projects or clients...">
+    </x-ui.toolbar>
 
     {{-- Table --}}
     @if($projects->isEmpty())
-        <x-ui.empty-state 
-            icon="folder" 
-            title="No projects found" 
+        <x-ui.empty-state
+            icon="folder"
+            title="No projects found"
             message="{{ $search ? 'Try adjusting your search query.' : 'Get started by adding your first project.' }}"
         >
-            <button 
-                @click="$dispatch('open-modal', { id: 'project-modal' })" 
-                wire:click="$dispatchTo('projects.project-form', 'open-project-modal')" 
-                class="btn btn-primary btn-sm">Add Project</button>
+            <x-ui.button
+                @click="$dispatch('open-modal', { id: 'project-modal' })"
+                wire:click="$dispatchTo('projects.project-form', 'open-project-modal')">Add Project</x-ui.button>
         </x-ui.empty-state>
     @else
         <x-ui.data-table :headers="['project_name' => 'Project Name', 'Client', 'Subscriptions', 'created_at' => 'Created', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">

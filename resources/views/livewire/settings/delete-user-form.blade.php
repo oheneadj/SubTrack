@@ -1,12 +1,12 @@
 <section class="mt-10">
-    <div class="bg-red-50 rounded-2xl border border-red-200 p-6">
+    <x-ui.card class="border-red-200 bg-red-50/50">
         <h3 class="text-lg font-bold text-red-700 mb-1">{{ __('Delete Account') }}</h3>
         <p class="text-sm text-red-600 mb-4">{{ __('Once your account is deleted, all of its resources and data will be permanently deleted.') }}</p>
 
         <div x-data="{ showDeleteModal: false }">
-            <button @click="showDeleteModal = true" class="btn btn-error btn-sm">
+            <x-ui.button variant="error" @click="showDeleteModal = true">
                 <x-icon-trash class="w-4 h-4 mr-1" /> {{ __('Delete Account') }}
-            </button>
+            </x-ui.button>
 
             {{-- Delete Confirmation Modal --}}
             <div x-show="showDeleteModal" x-cloak
@@ -23,16 +23,16 @@
                         <x-ui.form-input label="Password" model="password" type="password" placeholder="Enter your password" :error="$errors->first('password')" />
 
                         <div class="flex justify-end gap-3 mt-6">
-                            <button type="button" @click="showDeleteModal = false" class="btn btn-ghost btn-sm">
+                            <x-ui.button type="button" variant="ghost" @click="showDeleteModal = false">
                                 {{ __('Cancel') }}
-                            </button>
-                            <button type="submit" class="btn btn-error btn-sm">
+                            </x-ui.button>
+                            <x-ui.button type="submit" variant="error">
                                 {{ __('Delete Account') }}
-                            </button>
+                            </x-ui.button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    </x-ui.card>
 </section>

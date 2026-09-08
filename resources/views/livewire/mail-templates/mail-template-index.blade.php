@@ -14,7 +14,7 @@
 
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         @foreach ($this->templates as $template)
-            <div class="flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <x-ui.card class="flex flex-col">
                 <div class="mb-4 flex items-center justify-between">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                         <x-icon-mail class="h-6 w-6" />
@@ -29,22 +29,26 @@
                 
                 <div class="mt-auto pt-4 border-t border-slate-100">
                         <div class="flex flex-row gap-2">
-                            <a 
-                                href="{{ route('mail-templates.preview', $template->slug) }}" 
+                            <x-ui.button
+                                as="a"
+                                href="{{ route('mail-templates.preview', $template->slug) }}"
                                 target="_blank"
-                                class="flex flex-1 items-center gap-2 justify-center btn btn-outline btn-sm bg-white"
+                                variant="outline"
+                                full
+                                class="flex items-center gap-2 justify-center bg-white"
                             >
                                 Preview
-                            </a>
-                            <button 
-                                wire:click="edit({{ $template->id }})" 
-                                class="flex flex-1 items-center gap-2 justify-center btn btn-primary btn-sm"
+                            </x-ui.button>
+                            <x-ui.button
+                                wire:click="edit({{ $template->id }})"
+                                full
+                                class="flex items-center gap-2 justify-center"
                             >
                                 Edit
-                            </button>
+                            </x-ui.button>
                         </div>
                 </div>
-            </div>
+            </x-ui.card>
         @endforeach
     </div>
 
@@ -54,9 +58,9 @@
             <div class="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
                 <div class="flex items-center justify-between border-b border-slate-100 p-6">
                     <h3 class="text-xl font-bold text-slate-800">Edit Template: {{ $editingTemplate->name }}</h3>
-                    <button wire:click="$set('showEditModal', false)" class="rounded-lg p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600">
+                    <x-ui.button wire:click="$set('showEditModal', false)" variant="ghost" circle class="text-slate-400 hover:bg-slate-50 hover:text-slate-600">
                         <x-icon-x class="h-6 w-6" />
-                    </button>
+                    </x-ui.button>
                 </div>
 
                 <form wire:submit="save">
@@ -100,21 +104,21 @@
 
                     <div class="flex items-center justify-between border-t border-slate-100 p-6 bg-slate-50 rounded-b-2xl">
                         <div class="flex gap-2">
-                            <button type="button" wire:click="sendTest({{ $editingTemplate->id }})" class="btn btn-outline btn-sm">
+                            <x-ui.button type="button" wire:click="sendTest({{ $editingTemplate->id }})" variant="outline">
                                 <x-icon-send class="w-4 h-4 mr-1" />
                                 Send Test
-                            </button>
-                            <button type="button" wire:click="resetToDefault({{ $editingTemplate->id }})" class="btn btn-ghost btn-sm text-slate-500">
+                            </x-ui.button>
+                            <x-ui.button type="button" wire:click="resetToDefault({{ $editingTemplate->id }})" variant="ghost" class="text-slate-500">
                                 Reset to Default
-                            </button>
+                            </x-ui.button>
                         </div>
                         <div class="flex gap-3">
-                            <button type="button" wire:click="$set('showEditModal', false)" class="btn btn-ghost btn-sm">
+                            <x-ui.button type="button" wire:click="$set('showEditModal', false)" variant="ghost">
                                 Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary btn-sm px-6">
+                            </x-ui.button>
+                            <x-ui.button type="submit" class="px-6">
                                 Save Changes
-                            </button>
+                            </x-ui.button>
                         </div>
                     </div>
                 </form>

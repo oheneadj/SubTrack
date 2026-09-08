@@ -29,7 +29,7 @@
     </div>
 
     {{-- Comparison Chart Section --}}
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-8 shadow-sm" x-data="comparisonChart({{ json_encode($comparisonData) }})">
+    <x-ui.card x-data="comparisonChart({{ json_encode($comparisonData) }})">
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h3 class="font-bold text-slate-800 text-lg">Revenue vs. Expenses</h3>
@@ -49,11 +49,11 @@
         <div class="h-[300px] w-full relative">
             <canvas x-ref="canvas"></canvas>
         </div>
-    </div>
+    </x-ui.card>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {{-- Recent Revenue --}}
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <x-ui.card :padding="false">
             <div class="p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="font-bold text-slate-800 flex items-center gap-2">
                     <x-icon-circle-check class="w-5 h-5 text-green-500" />
@@ -91,10 +91,10 @@
             <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
                 <a href="{{ route('invoices.index') }}" class="text-sm font-medium text-blue-600 hover:underline" wire:navigate>View All Invoices &rarr;</a>
             </div>
-        </div>
+        </x-ui.card>
 
         {{-- Upcoming Costs --}}
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <x-ui.card :padding="false">
             <div class="p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="font-bold text-slate-800 flex items-center gap-2">
                     <x-icon-calendar-due class="w-5 h-5 text-orange-500" />
@@ -134,7 +134,7 @@
             <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
                 <a href="{{ route('renewals.index') }}" class="text-sm font-medium text-blue-600 hover:underline" wire:navigate>View Renewal Tracker &rarr;</a>
             </div>
-        </div>
+        </x-ui.card>
     </div>
 </div>
 

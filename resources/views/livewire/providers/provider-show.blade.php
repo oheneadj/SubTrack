@@ -1,14 +1,14 @@
 <div>
     <x-ui.page-header :title="$provider->name" subtitle="Provider Details & Subscriptions">
         <div class="flex gap-2">
-            <a href="{{ route('providers.index') }}" class="btn btn-ghost btn-sm flex items-center gap-2" wire:navigate>
+            <x-ui.button as="a" variant="ghost" href="{{ route('providers.index') }}" wire:navigate>
                 <x-icon-arrow-left class="w-4 h-4" />
                 <span>Back to Providers</span>
-            </a>
-            <a href="{{ route('subscriptions.create') }}" class="btn btn-primary btn-sm flex items-center gap-2" wire:navigate>
+            </x-ui.button>
+            <x-ui.button as="a" variant="primary" href="{{ route('subscriptions.create') }}" wire:navigate>
                 <x-icon-plus class="w-4 h-4" />
                 <span>Add Subscription</span>
-            </a>
+            </x-ui.button>
         </div>
     </x-ui.page-header>
 
@@ -37,11 +37,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {{-- Left Column: Subscriptions --}}
         <div class="lg:col-span-2 space-y-8">
-           
-                <div class="p-2 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-slate-800">Provided Services</h3>
-                </div>
-                
+            <x-ui.card title="Provided Services" :padding="false">
                 @if($this->subscriptions->isEmpty())
                     <x-ui.empty-state 
                         icon="list-details" 
@@ -97,15 +93,13 @@
                         {{ $this->subscriptions->links() }}
                     </div>
                 @endif
-            
+            </x-ui.card>
         </div>
 
         {{-- Right Column: Provider Info --}}
         <div class="space-y-8">
             {{-- Provider Details --}}
-            <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-800 mb-6">Provider Info</h3>
-                
+            <x-ui.card title="Provider Info">
                 <div class="space-y-6">
                     <div>
                         <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Provider Name</label>
@@ -136,7 +130,7 @@
                         <p class="text-slate-500 text-sm font-medium">{{ $provider->created_at->format('F d, Y') }}</p>
                     </div>
                 </div>
-            </section>
+            </x-ui.card>
         </div>
     </div>
 </div>

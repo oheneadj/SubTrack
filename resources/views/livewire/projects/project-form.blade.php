@@ -1,11 +1,11 @@
 <div>
     @if(!$isModal)
         <x-ui.page-header :title="$pageTitle" subtitle="Define the web project and its client owner">
-            <a href="{{ route('projects.index') }}" class="btn btn-ghost btn-sm">Cancel</a>
-            <button wire:click="save" wire:loading.attr="disabled" class="btn btn-primary btn-sm">
+            <x-ui.button as="a" variant="ghost" href="{{ route('projects.index') }}">Cancel</x-ui.button>
+            <x-ui.button wire:click="save" wire:loading.attr="disabled">
                 <span wire:loading.remove>Save Project</span>
                 <span wire:loading><span class="loading loading-spinner loading-xs"></span> Saving...</span>
-            </button>
+            </x-ui.button>
         </x-ui.page-header>
     @endif
 
@@ -51,18 +51,18 @@
 
             <div class="flex justify-end pt-8 mt-8 border-t border-slate-50 gap-3">
                 @if($isModal)
-                    <button type="button" @click="Livewire.dispatch('close-modal', {id: 'project-modal'})" class="btn btn-ghost btn-sm">Cancel</button>
+                    <x-ui.button type="button" variant="ghost" @click="Livewire.dispatch('close-modal', {id: 'project-modal'})">Cancel</x-ui.button>
                 @else
-                    <a href="{{ route('projects.index') }}" class="btn btn-ghost btn-sm">Cancel</a>
+                    <x-ui.button as="a" variant="ghost" href="{{ route('projects.index') }}">Cancel</x-ui.button>
                 @endif
-                <button wire:click="save" wire:loading.attr="disabled" class="btn btn-primary btn-sm">
+                <x-ui.button wire:click="save" wire:loading.attr="disabled">
                     <span wire:loading.remove>
                         {{ $project && $project->exists ? 'Update Project' : 'Create Project' }}
                     </span>
                     <span wire:loading>
                         <span class="loading loading-spinner loading-xs"></span> Saving...
                     </span>
-                </button>
+                </x-ui.button>
             </div>
         </div>
     </div>

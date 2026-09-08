@@ -16,10 +16,10 @@
     }
 }" @insert-placeholder.window="insertPlaceholder($event.detail.value)">
     <x-ui.page-header title="Direct Mailer" subtitle="Compose and send personalized messages to your clients.">
-        <a href="{{ route('mail-templates.index') }}" class="btn btn-ghost btn-sm flex items-center gap-2" wire:navigate>
+        <x-ui.button as="a" variant="ghost" href="{{ route('mail-templates.index') }}" wire:navigate>
             <x-icon-arrow-left class="w-4 h-4" />
             <span>Back to Templates</span>
-        </a>
+        </x-ui.button>
     </x-ui.page-header>
 
     @if(session('success'))
@@ -33,7 +33,7 @@
         
         {{-- ═══════════════ LEFT COLUMN: RECIPIENTS ═══════════════ --}}
         <div class="lg:col-span-4 space-y-4">
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[calc(100vh-220px)] flex flex-col sticky top-6">
+            <x-ui.card :padding="false" class="h-[calc(100vh-220px)] flex flex-col sticky top-6">
                 <div class="p-5 border-b border-slate-100 bg-slate-50/50">
                     <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4">
                         <x-icon-users class="w-5 h-5 text-blue-500" />
@@ -63,7 +63,7 @@
                 <div class="flex-1 overflow-y-auto divide-y divide-slate-200">
                     @forelse($this->clients as $client)
                         <label class="flex items-center gap-4 p-4 hover:bg-blue-50/40 cursor-pointer transition-all group">
-                            <input type="checkbox" wire:model.live="selectedClients" value="{{ $client->ulid }}"
+                            <input type="checkbox" wire:model.live="selectedClients" value="{{ $client->id }}" 
                                    class="checkbox checkbox-primary checkbox-sm rounded-md" />
                             
                             <div class="flex-1 flex items-center gap-3 min-w-0">
@@ -90,13 +90,13 @@
                         </div>
                     @endforelse
                 </div>
-            </div>
+            </x-ui.card>
             @error('selectedClients') <span class="text-error text-[11px] font-bold uppercase tracking-wider px-2">{{ $message }}</span> @enderror
         </div>
 
         {{-- ═══════════════ RIGHT COLUMN: COMPOSER ═══════════════ --}}
         <div class="lg:col-span-8">
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-220px)] max-h-[900px]">
+            <x-ui.card :padding="false" class="flex flex-col h-[calc(100vh-220px)] max-h-[900px]">
                 <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
                     <h3 class="font-bold text-slate-800 flex items-center gap-2">
                         <x-icon-mail class="w-5 h-5 text-blue-500" />
@@ -120,7 +120,7 @@
                             <select wire:model.live="selectedTemplate" class="select select-bordered w-full rounded-2xl bg-white border-slate-200 focus:border-blue-500 transition-all font-bold text-slate-700 shadow-sm h-12">
                                 <option value="">Draft from scratch...</option>
                                 @foreach($this->templates as $template)
-                                    <option wire:key="template-{{ $template->id }}" value="{{ $template->slug }}">{{ $template->name }}</option>
+                                    <option value="{{ $template->slug }}">{{ $template->name }}</option>
                                 @endforeach
                             </select>
                             <p class="text-[11px] text-slate-400 mt-3 font-medium flex items-center gap-1.5 px-1">
@@ -160,7 +160,7 @@
                             <div class="mt-6 flex flex-wrap gap-2 items-center px-2">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2 border-r border-slate-200 pr-3">Quick Insert:</span>
                                 @foreach(['{client_name}', '{company_name}', '{company_email}', '{app_name}'] as $var)
-                                    <button wire:key="var-{{ $loop->index }}"
+                                    <button 
                                         type="button"
                                         @click="insertPlaceholder('{{ $var }}')"
                                         class="badge bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 border-none transition-all cursor-pointer py-4 px-4 rounded-xl text-[11px] font-bold shadow-sm active:scale-95"
@@ -179,7 +179,7 @@
                         <div class="flex -space-x-3">
                             @php $displayLimit = 4; @endphp
                             @forelse(array_slice($selectedClients, 0, $displayLimit) as $index => $cid)
-                                @php $recipient = $this->selectedClientModels->get($cid); @endphp
+                                @php $recipient = \App\Models\Client::find($cid); @endphp
                                 <div class="w-10 h-10 rounded-full border-4 border-slate-50 bg-white ring-1 ring-slate-200 flex items-center justify-center font-bold text-xs text-blue-600 shadow-sm overflow-hidden z-[{{ 10 - $index }}]">
                                     {{ strtoupper(substr($recipient?->name ?? '?', 0, 1)) }}
                                 </div>
@@ -204,23 +204,24 @@
                         </div>
                     </div>
 
-                    <button 
-                        wire:click="send" 
-                        wire:loading.attr="disabled" 
-                        class="btn btn-primary btn-lg px-12 rounded-2xl shadow-xl shadow-blue-500/20 flex items-center gap-3 group transition-all"
-                        @if(empty($selectedClients)) disabled @endif
+                    <x-ui.button
+                        wire:click="send"
+                        wire:loading.attr="disabled"
+                        size="lg"
+                        class="px-12 rounded-2xl shadow-xl shadow-blue-500/20 flex items-center gap-3 group transition-all"
+                        :disabled="empty($selectedClients)"
                     >
                         <span wire:loading.remove wire:target="send" class="flex items-center gap-3">
                              <span class="font-bold tracking-tight">Send Message Now</span>
                              <x-icon-send class="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         </span>
                         <span wire:loading wire:target="send">
-                            <span class="loading loading-spinner loading-sm"></span> 
+                            <span class="loading loading-spinner loading-sm"></span>
                             <span class="font-bold">Broadcasting...</span>
                         </span>
-                    </button>
+                    </x-ui.button>
                 </div>
-            </div>
+            </x-ui.card>
         </div>
     </div>
 </div>

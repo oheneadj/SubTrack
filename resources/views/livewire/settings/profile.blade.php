@@ -3,7 +3,7 @@
 
     <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
+            <x-ui.card>
                 <x-ui.form-input label="Name" model="name" placeholder="Your full name" :error="$errors->first('name')" />
 
                 <div>
@@ -28,16 +28,16 @@
                 </div>
 
                 <div class="flex items-center gap-4 pt-2">
-                    <button type="submit" wire:loading.attr="disabled" class="btn btn-primary btn-sm">
+                    <x-ui.button type="submit" wire:loading.attr="disabled">
                         <span wire:loading.remove>Save Changes</span>
                         <span wire:loading><span class="loading loading-spinner loading-xs"></span> Saving...</span>
-                    </button>
+                    </x-ui.button>
 
                     <x-action-message class="text-sm text-green-600 font-medium" on="profile-updated">
                         {{ __('Saved.') }}
                     </x-action-message>
                 </div>
-            </div>
+            </x-ui.card>
         </form>
 
         @if ($this->showDeleteUser)

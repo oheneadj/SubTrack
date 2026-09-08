@@ -1,9 +1,9 @@
 <div>
     <x-ui.page-header title="App Settings" subtitle="Configure your company identity, payment info, and invoicing defaults">
-        <button wire:click="save" wire:loading.attr="disabled" class="btn btn-primary btn-sm">
+        <x-ui.button wire:click="save" wire:loading.attr="disabled">
             <span wire:loading.remove>Save Changes</span>
             <span wire:loading><span class="loading loading-spinner loading-xs"></span> Saving...</span>
-        </button>
+        </x-ui.button>
     </x-ui.page-header>
 
     @if(session('success'))
@@ -19,8 +19,8 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {{-- Logo & App Identity --}}
             <div class="lg:col-span-1">
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
-                    <h3 class="text-lg font-bold text-primary flex items-center gap-2">
+                <x-ui.card>
+                    <h3 class="text-lg font-bold text-primary flex items-center gap-2 mb-6">
                         <x-icon-id class="w-5 h-5 text-blue-500" />
                         App Identity
                     </h3>
@@ -92,29 +92,24 @@
                             @error('logo') <span class="text-error text-xs">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                </div>
+                </x-ui.card>
             </div>
 
             {{-- Business Details --}}
             <div class="lg:col-span-2">
-                <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <h3 class="text-lg font-bold text-primary flex items-center gap-2 mb-6">
-                        <x-icon-building class="w-5 h-5 text-blue-500" />
-                        Business Details
-                    </h3>
-
+                <x-ui.card title="Business Details">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <x-ui.form-input label="Company Name" model="companyName" placeholder="e.g. Acme Web Solutions" :error="$errors->first('companyName')" />
                         <x-ui.form-input label="Contact Email" model="contactEmail" type="email" placeholder="billing@acme.com" :error="$errors->first('contactEmail')" />
                         <x-ui.form-input label="Phone Number" model="businessPhone" type="tel" placeholder="+1 555-123-4567" :error="$errors->first('businessPhone')" />
                         <x-ui.form-input label="Website" model="businessWebsite" type="url" placeholder="https://acme.com" :error="$errors->first('businessWebsite')" />
                     </div>
-                </div>
+                </x-ui.card>
             </div>
         </div>
 
         {{-- ═══════════════ SECTION 2: Payment Details ═══════════════ --}}
-        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <x-ui.card>
             <h3 class="text-lg font-bold text-primary flex items-center gap-2 mb-2">
                 <x-icon-credit-card class="w-5 h-5 text-blue-500" />
                 Payment Details
@@ -132,10 +127,10 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <x-ui.form-input label="PayPal Email" model="paypalEmail" type="email" placeholder="paypal@acme.com" :error="$errors->first('paypalEmail')" />
             </div>
-        </div>
+        </x-ui.card>
 
         {{-- ═══════════════ SECTION 3: Invoicing Defaults ═══════════════ --}}
-        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <x-ui.card>
             <h3 class="text-lg font-bold text-primary flex items-center gap-2 mb-2">
                 <x-icon-file-invoice class="w-5 h-5 text-blue-500" />
                 Invoicing Defaults
@@ -152,10 +147,10 @@
                     <x-ui.form-textarea label="Invoice Footer Notes" model="invoiceFooter" rows="3" placeholder="e.g. Thank you for your business! Payment is due within the stated period." :error="$errors->first('invoiceFooter')" />
                 </div>
             </div>
-        </div>
+        </x-ui.card>
 
         {{-- ═══════════════ SECTION 4: Notifications ═══════════════ --}}
-        <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <x-ui.card>
             <h3 class="text-lg font-bold text-primary flex items-center gap-2 mb-2">
                 <x-icon-bell class="w-5 h-5 text-blue-500" />
                 Notification Preferences
@@ -168,18 +163,18 @@
                     <p class="text-xs text-secondary mt-2">Comma-separated list of days before expiry to send reminders. Example: <code class="text-xs bg-slate-100 px-1.5 py-0.5 rounded">30,14,7</code></p>
                 </div>
             </div>
-        </div>
+        </x-ui.card>
 
         {{-- Bottom Save Bar --}}
         <div class="flex justify-end pt-2 pb-4">
-            <button wire:click="save" wire:loading.attr="disabled" class="btn btn-primary">
+            <x-ui.button size="md" wire:click="save" wire:loading.attr="disabled">
                 <span wire:loading.remove>
                     Save All Settings
                 </span>
                 <span wire:loading>
                     <span class="loading loading-spinner loading-xs"></span> Saving...
                 </span>
-            </button>
+            </x-ui.button>
         </div>
     </div>
 </div>
