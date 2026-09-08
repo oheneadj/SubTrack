@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `SubscriptionRenewalType` enum (`OneTime`, `OneTimeMonthly`, `OneTimeAnnually`, `RecurringMonthly`, `RecurringAnnually`) with `expiryFrom()` date-math and `isRecurring()` helpers — foundation for auto-generated expiry dates and the renewal-tracker/receipts work that follows
 - `subscriptions.renewal_type` (defaults to `RecurringAnnually` for existing rows) and `subscriptions.notes` columns
 - Tests: `SubscriptionRenewalTypeTest`
+- `Project::unrelatedFor(Client $client)` — get-or-create the client's catch-all "Unrelated" project, used whenever a subscription is saved without a real project selected
+- Tests: `UnrelatedProjectTest`
+
+### Changed
+- `SubscriptionForm::save()` now attaches a subscription to the client's "Unrelated" project instead of leaving `project_id` null when no project is picked
 - Adopted new CLAUDE.md rules (soft-delete unique-value mutation, Blade design/logic separation, webhook idempotency, payment polling fallback) into the existing codebase
 - `Provider` and `Invoice` models now mutate their unique column (`name`, `invoice_number`) on soft delete (`{original}-deleted-{id}`), freeing the value for reuse by a new record
 - `webhook_events` table + `WebhookEvent` model — deduplicates redelivered provider webhook events by (gateway, event_id) before they reach gateway-specific handling

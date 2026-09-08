@@ -1,17 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Traits\HasPublicUlid;
 use App\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $ulid
+ * @property int $client_id
+ * @property string $project_name
+ * @property string|null $description
+ * @property-read Client|null $client
+ * @property-read Collection<int, Subscription> $subscriptions
+ */
 class Project extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, HasPublicUlid, LogsActivity, SoftDeletes;
+
+    /** Name used for the fallback project auto-provisioned per client. */
+    public const UNRELATED_NAME = 'Unrelated';
 
     protected $fillable = ['client_id', 'project_name', 'description'];
 
@@ -23,5 +39,18 @@ class Project extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get (or create) the client's catch-all "Unrelated" project — used when a
+     * subscription is created without picking a real project, so it still has
+     * something to group/filter by instead of a bare null.
+     */
+    public static function unrelatedFor(Client $client): self
+    {
+        return static::firstOrCreate([
+            'client_id' => $client->id,
+            'project_name' => self::UNRELATED_NAME,
+        ]);
     }
 }
