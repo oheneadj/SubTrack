@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - `SubscriptionShow::viewReceipt()` (inline) and `downloadReceipt()` (attachment) — view/download actions on each row of the receipts list, regenerating the PDF first if it's missing
+- The "Project / Client" column on the subscriptions list is now sortable by the subscription's effective client name (handles both direct `client_id` and via-project linkage)
 
 - `SubscriptionRenewalType` enum (`OneTime`, `OneTimeMonthly`, `OneTimeAnnually`, `RecurringMonthly`, `RecurringAnnually`) with `expiryFrom()` date-math and `isRecurring()` helpers — foundation for auto-generated expiry dates and the renewal-tracker/receipts work that follows
 - `subscriptions.renewal_type` (defaults to `RecurringAnnually` for existing rows) and `subscriptions.notes` columns

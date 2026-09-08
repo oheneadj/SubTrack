@@ -77,7 +77,7 @@
             icon="icon-calendar-off"
         />
     @else
-        <x-ui.data-table :headers="['Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection" :selectable="true">
+        <x-ui.data-table :headers="['client_name' => 'Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection" :selectable="true">
             @foreach($this->subscriptions as $sub)
                 <tr wire:key="sub-{{ $sub->ulid }}" class="{{ in_array($sub->ulid, $selectedSubscriptions) ? 'bg-primary/5' : '' }}">
                     <td class="w-10 px-4">

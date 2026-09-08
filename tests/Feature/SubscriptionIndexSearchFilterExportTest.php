@@ -58,6 +58,25 @@ test('client filter narrows results to that client only', function () {
     expect($component->subscriptions->pluck('id'))->toContain($subA->id)->not->toContain($subB->id);
 });
 
+test('sorting by client name orders subscriptions by their effective client, ascending or descending', function () {
+    $user = User::factory()->create();
+    $provider = Provider::create(['name' => 'Test Provider']);
+
+    $clientA = Client::create(['name' => 'Acme Corp', 'email' => 'acme@test.test']);
+    $clientB = Client::create(['name' => 'Beta Inc', 'email' => 'beta@test.test']);
+    $project = Project::create(['client_id' => $clientB->id, 'project_name' => 'Rocket Launch']);
+
+    // subA links directly to a client, subB links via a project — both must sort correctly.
+    $subA = makeSubscription($clientA, $provider, ['domain_name' => 'acme.com']);
+    $subB = makeSubscription($clientB, $provider, ['client_id' => null, 'project_id' => $project->id, 'domain_name' => 'beta.com']);
+
+    $component = Livewire::actingAs($user)->test(SubscriptionIndex::class)->call('sortBy', 'client_name');
+    expect($component->subscriptions->pluck('id')->toArray())->toBe([$subA->id, $subB->id]);
+
+    $component->call('sortBy', 'client_name');
+    expect($component->subscriptions->pluck('id')->toArray())->toBe([$subB->id, $subA->id]);
+});
+
 test('csv export contains the requested columns and values', function () {
     $user = User::factory()->create();
     $provider = Provider::create(['name' => 'Test Provider']);

@@ -84,7 +84,33 @@ class SubscriptionIndex extends Component
     #[Computed]
     public function subscriptions()
     {
-        return $this->applySorting($this->filteredQuery())->paginate(15);
+        return $this->sortedQuery($this->filteredQuery())->paginate(15);
+    }
+
+    /**
+     * Apply sorting, with a special case for "client_name" since the
+     * effective client comes from either subscriptions.client_id or
+     * projects.client_id and isn't a plain column WithSorting can order by.
+     *
+     * @param  Builder<Subscription>  $query
+     * @return Builder<Subscription>
+     */
+    private function sortedQuery(Builder $query): Builder
+    {
+        if ($this->sortColumn !== 'client_name') {
+            return $this->applySorting($query);
+        }
+
+        // sortDirection is a public Livewire property (client-settable), so never interpolate it
+        // into raw SQL directly — constrain it to a known-safe value first.
+        $direction = $this->sortDirection === 'desc' ? 'desc' : 'asc';
+
+        return $query
+            ->select('subscriptions.*')
+            ->leftJoin('clients', 'clients.id', '=', 'subscriptions.client_id')
+            ->leftJoin('projects', 'projects.id', '=', 'subscriptions.project_id')
+            ->leftJoin('clients as project_clients', 'project_clients.id', '=', 'projects.client_id')
+            ->orderByRaw("COALESCE(clients.name, project_clients.name) {$direction}");
     }
 
     /** Clients available in the client filter dropdown. */
