@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Three new reusable Blade components, per CLAUDE.md §10 (check for a reusable component before building new UI): `<x-ui.card>` (title/actions-slot header, `:padding` toggle for table-wrapping cards), `<x-ui.button>` (`as="a"|"button"`, `variant`, `size`, `circle`, `full`, `soft` props — covers every button/link shape used on the subscription pages), `<x-ui.toolbar>` (the search-input-plus-filters bar above a data table; also fixes a pre-existing bug where the search icon wasn't positioned relative to its wrapper)
+
 - `SubscriptionObserver`, `RenewalObserver`, `ReceiptObserver` — the dashboard activity feed already had icon/rendering support for `SubscriptionCreated`, `SubscriptionExpiring`, `SubscriptionExpired`, and `RenewalConfirmed` but nothing ever recorded them; these observers wire that up (subscription created, status transitions to Expiring/Expired, a renewal confirmed)
 - `ActivityEventType::ReceiptGenerated` — new dashboard event for receipt generation, plus its icon/color mapping
 - `Subscription::effectiveClientIdWithoutLoading()` — resolves the effective client ID without lazy-loading the `client`/`project.client` relations (used by the new observers, which run before those relations are eager loaded)
@@ -40,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Tests: `GenerateReceiptTest`
 
 ### Changed
+- Subscription pages (index, show, form) now use the new `card`/`button`/`toolbar` components instead of repeated raw markup — adopted here first as the reference implementation; the rest of the app still uses the old inline classes and can be migrated separately
 - `SubscriptionIndex` search now also matches client name and project name (previously domain/provider only)
 - `SubscriptionIndex` gained client and renewal-date-range filters, alongside the existing service-type/status filters
 - CSV export rewritten to the requested column set: Client Name, Client Email, Subscription Name, Renewal Type, Subscription Date, Renewal Date, Status — filters/search apply identically to the export as to the on-screen list

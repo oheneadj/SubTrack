@@ -1,22 +1,12 @@
 <div>
     <x-ui.page-header title="Subscriptions" subtitle="Manage domains, hosting, and service expiries">
-        <a href="{{ route('subscriptions.create') }}" class="btn btn-primary btn-sm flex items-center gap-2" wire:navigate>
+        <x-ui.button as="a" href="{{ route('subscriptions.create') }}" wire:navigate>
             <x-icon-plus class="w-4 h-4" />
             <span>Add Subscription</span>
-        </a>
+        </x-ui.button>
     </x-ui.page-header>
 
-
-    <div class="flex flex-col md:flex-row gap-4 mb-6 bg-white p-6 border border-slate-200 rounded-lg">
-        <div class="w-full">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <x-icon-search class="h-4 w-4 text-slate-400" />
-            </div>
-            <input type="text" wire:model.live.debounce.300ms="search"
-                class="input input-bordered w-full pl-10"
-                placeholder="Search domain, provider, client, or project...">
-        </div>
-
+    <x-ui.toolbar searchModel="search" searchPlaceholder="Search domain, provider, client, or project...">
         <select wire:model.live="filterService" class="select select-bordered w-full md:w-48">
             <option value="">All Services</option>
             @foreach(\App\Enums\ServiceType::cases() as $type)
@@ -41,11 +31,11 @@
         <input type="date" wire:model.live="filterRenewalFrom" class="input input-bordered w-full md:w-40" title="Renewal date from">
         <input type="date" wire:model.live="filterRenewalTo" class="input input-bordered w-full md:w-40" title="Renewal date to">
 
-        <button wire:click="export" class="btn btn-soft btn-secondary btn-sm flex items-center gap-2">
+        <x-ui.button variant="secondary" soft wire:click="export">
             <x-icon-file-invoice class="w-4 h-4" />
             <span>Export CSV</span>
-        </button>
-    </div>
+        </x-ui.button>
+    </x-ui.toolbar>
 
     @if(count($selectedSubscriptions) > 0)
         <div class="flex items-center justify-between bg-primary/10 border border-primary/20 p-4 rounded-xl mb-6 animate-in fade-in slide-in-from-top-4">
@@ -54,19 +44,19 @@
                 <div class="h-4 w-px bg-primary/20"></div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bulk Actions:</span>
-                    <button wire:click="applyBulkStatus('Active')" wire:loading.attr="disabled" class="btn btn-xs btn-success font-bold text-white">
+                    <x-ui.button variant="success" size="xs" wire:click="applyBulkStatus('Active')" wire:loading.attr="disabled" class="font-bold text-white">
                         <span wire:loading.remove>Mark Active</span>
                         <span wire:loading><span class="loading loading-spinner loading-xs"></span></span>
-                    </button>
-                    <button wire:click="applyBulkStatus('Cancelled')" wire:loading.attr="disabled" class="btn btn-xs btn-error font-bold text-white">
+                    </x-ui.button>
+                    <x-ui.button variant="error" size="xs" wire:click="applyBulkStatus('Cancelled')" wire:loading.attr="disabled" class="font-bold text-white">
                         <span wire:loading.remove>Mark Cancelled</span>
                         <span wire:loading><span class="loading loading-spinner loading-xs"></span></span>
-                    </button>
+                    </x-ui.button>
                 </div>
             </div>
-            <button @click="$wire.set('selectedSubscriptions', [])" class="btn btn-ghost btn-circle btn-xs text-slate-400 hover:text-error">
+            <x-ui.button variant="ghost" size="xs" circle @click="$wire.set('selectedSubscriptions', [])" class="text-slate-400 hover:text-error">
                 <x-icon-x class="w-4 h-4" />
-            </button>
+            </x-ui.button>
         </div>
     @endif
 

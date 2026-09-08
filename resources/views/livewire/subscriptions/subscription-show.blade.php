@@ -4,14 +4,14 @@
         :subtitle="$subscription->service_type->label() . ($this->client ? ' · ' . $this->client->name : '')"
     >
         <div class="flex items-center gap-3">
-            <a href="{{ route('subscriptions.index') }}" class="btn btn-ghost btn-sm flex items-center gap-2" wire:navigate>
+            <x-ui.button as="a" variant="ghost" href="{{ route('subscriptions.index') }}" wire:navigate>
                 <x-icon-arrow-left class="w-4 h-4" />
                 <span>Back</span>
-            </a>
-            <a href="{{ route('subscriptions.edit', $subscription) }}" class="btn btn-soft btn-sm flex items-center gap-2" wire:navigate>
+            </x-ui.button>
+            <x-ui.button as="a" variant="soft" href="{{ route('subscriptions.edit', $subscription) }}" wire:navigate>
                 <x-icon-edit class="w-4 h-4" />
                 <span>Edit</span>
-            </a>
+            </x-ui.button>
         </div>
     </x-ui.page-header>
 
@@ -49,8 +49,7 @@
         <div class="lg:col-span-2 space-y-8">
 
             {{-- Service Details --}}
-            <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-800 mb-5">Service Details</h3>
+            <x-ui.card title="Service Details">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div>
                         <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Status</label>
@@ -101,11 +100,10 @@
                         <p class="text-slate-800 text-sm font-semibold">{{ $subscription->formatted_client_renewal_cost_usd }}</p>
                     </div>
                 </div>
-            </section>
+            </x-ui.card>
 
             {{-- Notes --}}
-            <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Notes</h3>
+            <x-ui.card title="Notes">
                 <form wire:submit="saveNotes" class="space-y-3">
                     <x-ui.form-textarea
                         model="notes"
@@ -113,22 +111,21 @@
                         :rows="3"
                     />
                     <div class="flex justify-end">
-                        <button type="submit" class="btn btn-soft btn-sm" wire:loading.attr="disabled" wire:target="saveNotes">
+                        <x-ui.button type="submit" variant="soft" wire:loading.attr="disabled" wire:target="saveNotes">
                             <span wire:loading.remove wire:target="saveNotes">Save Notes</span>
                             <span wire:loading wire:target="saveNotes">Saving...</span>
-                        </button>
+                        </x-ui.button>
                     </div>
                 </form>
-            </section>
+            </x-ui.card>
 
             {{-- Renewal History --}}
-            <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-slate-800">Renewal History</h3>
+            <x-ui.card title="Renewal History" :padding="false">
+                <x-slot:actions>
                     <a href="{{ route('renewals.index') }}" class="text-xs text-primary font-semibold hover:underline" wire:navigate>
                         Go to Renewal Tracker
                     </a>
-                </div>
+                </x-slot:actions>
 
                 @if($this->renewals->isEmpty())
                     <x-ui.empty-state
@@ -184,14 +181,10 @@
                         </table>
                     </div>
                 @endif
-            </section>
+            </x-ui.card>
 
             {{-- Receipts --}}
-            <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                <div class="p-6 border-b border-slate-100">
-                    <h3 class="text-lg font-bold text-slate-800">Receipts</h3>
-                </div>
-
+            <x-ui.card title="Receipts" :padding="false">
                 @if($this->receipts->isEmpty())
                     <x-ui.empty-state
                         icon="file-invoice"
@@ -217,12 +210,12 @@
                                         <td class="text-sm font-semibold text-slate-800">{{ $receipt->formatted_amount_usd }}</td>
                                         <td class="text-right">
                                             <div class="flex items-center justify-end gap-1">
-                                                <button wire:click="viewReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="View" class="btn btn-ghost btn-xs">
+                                                <x-ui.button variant="ghost" size="xs" wire:click="viewReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="View">
                                                     <x-icon-eye class="w-3.5 h-3.5" />
-                                                </button>
-                                                <button wire:click="downloadReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="Download" class="btn btn-ghost btn-xs">
+                                                </x-ui.button>
+                                                <x-ui.button variant="ghost" size="xs" wire:click="downloadReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="Download">
                                                     <x-icon-arrow-down class="w-3.5 h-3.5" />
-                                                </button>
+                                                </x-ui.button>
                                             </div>
                                         </td>
                                     </tr>
@@ -231,45 +224,44 @@
                         </table>
                     </div>
                 @endif
-            </section>
+            </x-ui.card>
         </div>
 
         {{-- Right: Actions + Linked To --}}
         <div class="space-y-6">
 
             {{-- Quick Actions --}}
-            <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Quick Actions</h3>
+            <x-ui.card title="Quick Actions">
                 <div class="space-y-2">
                     @if($this->client)
-                        <a href="{{ route('mail-mailer.index', ['clientId' => $this->client->ulid, 'subscriptionId' => $subscription->ulid, 'template' => 'subscription-reminder']) }}"
-                           class="btn btn-warning btn-sm w-full flex items-center gap-2" wire:navigate>
+                        <x-ui.button as="a" variant="warning" full
+                           href="{{ route('mail-mailer.index', ['clientId' => $this->client->ulid, 'subscriptionId' => $subscription->ulid, 'template' => 'subscription-reminder']) }}"
+                           wire:navigate>
                             <x-icon-bell class="w-4 h-4" />
                             Send Renewal Reminder
-                        </a>
+                        </x-ui.button>
                     @endif
                     @if($subscription->renewal_type->isRecurring())
-                        <button wire:click="openRenewalModal" class="btn btn-primary btn-sm w-full flex items-center gap-2">
+                        <x-ui.button variant="primary" full wire:click="openRenewalModal">
                             <x-icon-refresh class="w-4 h-4" />
                             Process Renewal
-                        </button>
+                        </x-ui.button>
                     @endif
                     @if($this->client)
-                        <button wire:click="openReceiptModal" class="btn btn-soft btn-success btn-sm w-full flex items-center gap-2">
+                        <x-ui.button variant="success" soft full wire:click="openReceiptModal">
                             <x-icon-file-invoice class="w-4 h-4" />
                             Generate Receipt
-                        </button>
+                        </x-ui.button>
                     @endif
-                    <a href="{{ route('subscriptions.edit', $subscription) }}" class="btn btn-ghost btn-sm w-full flex items-center gap-2" wire:navigate>
+                    <x-ui.button as="a" variant="ghost" full href="{{ route('subscriptions.edit', $subscription) }}" wire:navigate>
                         <x-icon-edit class="w-4 h-4" />
                         Edit Subscription
-                    </a>
+                    </x-ui.button>
                 </div>
-            </section>
+            </x-ui.card>
 
             {{-- Client / Project --}}
-            <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="text-lg font-bold text-slate-800 mb-5">Linked To</h3>
+            <x-ui.card title="Linked To">
                 <div class="space-y-4">
                     @if($this->client)
                     <div>
@@ -293,7 +285,7 @@
                         @endif
                     </div>
                 </div>
-            </section>
+            </x-ui.card>
         </div>
     </div>
 
@@ -315,9 +307,9 @@
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-slate-800">Process Renewal</h3>
-                        <button wire:click="$set('showRenewalModal', false)" class="btn btn-sm btn-circle btn-ghost">
+                        <x-ui.button variant="ghost" circle wire:click="$set('showRenewalModal', false)">
                             <x-icon-x class="w-4 h-4" />
-                        </button>
+                        </x-ui.button>
                     </div>
                     <div class="p-6 space-y-6">
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
@@ -376,13 +368,13 @@
                         </div>
                     </div>
                     <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
-                        <button wire:click="$set('showRenewalModal', false)" class="btn btn-ghost btn-sm">Cancel</button>
-                        <button wire:click="processRenewal" class="btn btn-primary btn-sm" wire:loading.attr="disabled">
+                        <x-ui.button variant="ghost" wire:click="$set('showRenewalModal', false)">Cancel</x-ui.button>
+                        <x-ui.button variant="primary" wire:click="processRenewal" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="processRenewal">Confirm Renewal</span>
                             <span wire:loading wire:target="processRenewal">
                                 <span class="loading loading-spinner loading-xs"></span> Processing...
                             </span>
-                        </button>
+                        </x-ui.button>
                     </div>
                 </div>
             </div>
@@ -399,9 +391,9 @@
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-slate-800">Generate Receipt</h3>
-                        <button wire:click="$set('showReceiptModal', false)" class="btn btn-sm btn-circle btn-ghost">
+                        <x-ui.button variant="ghost" circle wire:click="$set('showReceiptModal', false)">
                             <x-icon-x class="w-4 h-4" />
-                        </button>
+                        </x-ui.button>
                     </div>
                     <div class="p-6 space-y-4">
                         <p class="text-xs text-slate-500">
@@ -422,13 +414,13 @@
                         />
                     </div>
                     <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
-                        <button wire:click="$set('showReceiptModal', false)" class="btn btn-ghost btn-sm">Cancel</button>
-                        <button wire:click="generateReceipt" class="btn btn-success btn-sm" wire:loading.attr="disabled">
+                        <x-ui.button variant="ghost" wire:click="$set('showReceiptModal', false)">Cancel</x-ui.button>
+                        <x-ui.button variant="success" wire:click="generateReceipt" wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="generateReceipt">Generate & Send</span>
                             <span wire:loading wire:target="generateReceipt">
                                 <span class="loading loading-spinner loading-xs"></span> Generating...
                             </span>
-                        </button>
+                        </x-ui.button>
                     </div>
                 </div>
             </div>

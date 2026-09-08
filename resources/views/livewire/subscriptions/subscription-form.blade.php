@@ -5,9 +5,8 @@
     />
 
     <div class="max-w-4xl">
-        <div class="card bg-white border border-slate-200 shadow-sm">
-            <div class="card-body gap-6">
-                <form wire:submit="save" class="space-y-6">
+        <x-ui.card>
+            <form wire:submit="save" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Client Selection -->
                         <x-ui.form-select 
@@ -126,19 +125,18 @@
                     </div>
 
                     <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                        <a href="{{ route('subscriptions.index') }}" class="btn btn-ghost" wire:navigate>
+                        <x-ui.button as="a" variant="ghost" size="md" href="{{ route('subscriptions.index') }}" wire:navigate>
                             Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                        </x-ui.button>
+                        <x-ui.button type="submit" variant="primary" size="md" wire:loading.attr="disabled">
                             <span wire:loading.remove>{{ $isEditing ? 'Update Subscription' : 'Create Subscription' }}</span>
                             <span wire:loading class="flex items-center gap-2">
                                 <span class="loading loading-spinner loading-xs"></span>
                                 Saving...
                             </span>
-                        </button>
+                        </x-ui.button>
                     </div>
-                </form>
-            </div>
-        </div>
+            </form>
+        </x-ui.card>
     </div>
 </div>
