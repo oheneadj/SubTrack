@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `SubscriptionObserver`, `RenewalObserver`, `ReceiptObserver` — the dashboard activity feed already had icon/rendering support for `SubscriptionCreated`, `SubscriptionExpiring`, `SubscriptionExpired`, and `RenewalConfirmed` but nothing ever recorded them; these observers wire that up (subscription created, status transitions to Expiring/Expired, a renewal confirmed)
+- `ActivityEventType::ReceiptGenerated` — new dashboard event for receipt generation, plus its icon/color mapping
+- `Subscription::effectiveClientIdWithoutLoading()` — resolves the effective client ID without lazy-loading the `client`/`project.client` relations (used by the new observers, which run before those relations are eager loaded)
+- `Receipt` model now uses `LogsActivity`, so receipt create/update/delete shows up in the generic audit trail (Activity Logs admin page) like every other financial record
+- Tests: `DashboardActivityLoggingTest`
+
 - `SubscriptionShow::viewReceipt()` (inline) and `downloadReceipt()` (attachment) — view/download actions on each row of the receipts list, regenerating the PDF first if it's missing
 - The "Project / Client" column on the subscriptions list is now sortable by the subscription's effective client name (handles both direct `client_id` and via-project linkage)
 

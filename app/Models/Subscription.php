@@ -113,6 +113,18 @@ class Subscription extends Model
         return $this->client ?? $this->project?->client;
     }
 
+    /**
+     * Resolve the effective client's ID without lazy-loading a relation —
+     * useful in observers/listeners where eager loading isn't set up.
+     * Direct client_id first, falling back to a one-off lookup of the
+     * linked project's client_id.
+     */
+    public function effectiveClientIdWithoutLoading(): ?int
+    {
+        return $this->client_id
+            ?? ($this->project_id ? Project::whereKey($this->project_id)->value('client_id') : null);
+    }
+
     public function renewals(): HasMany
     {
         return $this->hasMany(Renewal::class);

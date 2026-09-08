@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Traits\HasPublicUlid;
+use App\Traits\LogsActivity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Receipt extends Model
 {
-    use HasFactory, HasPublicUlid;
+    use HasFactory, HasPublicUlid, LogsActivity;
 
     /** @var list<string> */
     protected $fillable = [

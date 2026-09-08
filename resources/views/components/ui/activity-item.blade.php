@@ -11,6 +11,7 @@ $config = match($type) {
     \App\Enums\ActivityEventType::SubscriptionExpiring => ['bg-orange-50', 'text-orange-600', 'clock'],
     \App\Enums\ActivityEventType::SubscriptionExpired  => ['bg-red-50',    'text-red-600',    'alert-triangle'],
     \App\Enums\ActivityEventType::SubscriptionCreated  => ['bg-green-50',  'text-green-600',  'plus'],
+    \App\Enums\ActivityEventType::ReceiptGenerated     => ['bg-emerald-50', 'text-emerald-600', 'file-invoice'],
     default                                        => ['bg-slate-50',  'text-slate-500',  'list-details'],
 };
 @endphp

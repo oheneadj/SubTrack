@@ -1,21 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Models\Client;
+use App\Models\Invoice;
+use App\Models\Receipt;
+use App\Models\Renewal;
+use App\Models\Setting;
+use App\Models\Subscription;
+use App\Models\User;
+use App\Observers\ClientObserver;
+use App\Observers\InvoiceObserver;
+use App\Observers\ReceiptObserver;
+use App\Observers\RenewalObserver;
+use App\Observers\SubscriptionObserver;
+use App\Services\ActivityLogService;
+use App\Services\Payment\GatewayRegistry;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\PasswordReset;
-use App\Services\ActivityLogService;
-use App\Models\Client;
-use App\Models\Invoice;
-use App\Observers\ClientObserver;
-use App\Observers\InvoiceObserver;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,7 +39,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Built once per request — all gateways resolved from config on first use.
+        $this->app->singleton(GatewayRegistry::class);
     }
 
     /**
@@ -37,6 +53,9 @@ class AppServiceProvider extends ServiceProvider
 
         Client::observe(ClientObserver::class);
         Invoice::observe(InvoiceObserver::class);
+        Subscription::observe(SubscriptionObserver::class);
+        Renewal::observe(RenewalObserver::class);
+        Receipt::observe(ReceiptObserver::class);
 
         $this->configureDynamicMail();
     }
@@ -47,15 +66,15 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDynamicMail(): void
     {
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
-                $fromEmail = \App\Models\Setting::get('contact_email') ?: \App\Models\Setting::get('business_email');
-                $fromName  = \App\Models\Setting::get('sender_name') ?: \App\Models\Setting::get('business_name') ?: \App\Models\Setting::get('app_name');
+            if (Schema::hasTable('settings')) {
+                $fromEmail = Setting::get('contact_email') ?: Setting::get('business_email');
+                $fromName = Setting::get('sender_name') ?: Setting::get('business_name') ?: Setting::get('app_name');
 
                 if ($fromEmail) {
-                    \Illuminate\Support\Facades\Config::set('mail.from.address', $fromEmail);
+                    Config::set('mail.from.address', $fromEmail);
                 }
                 if ($fromName) {
-                    \Illuminate\Support\Facades\Config::set('mail.from.name', $fromName);
+                    Config::set('mail.from.name', $fromName);
                 }
             }
         } catch (\Exception $e) {
@@ -69,7 +88,7 @@ class AppServiceProvider extends ServiceProvider
     protected function registerActivityListeners(): void
     {
         Event::listen(Login::class, function (Login $event) {
-            /** @var \App\Models\User $user */
+            /** @var User $user */
             $user = $event->user;
             $now = now();
 
@@ -82,13 +101,17 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Event::listen(Logout::class, function (Logout $event) {
-            if ($event->user) {
-                app(ActivityLogService::class)->logAuth('logout', "User {$event->user->email} logged out");
+            /** @var User|null $logoutUser */
+            $logoutUser = $event->user;
+            if ($logoutUser) {
+                app(ActivityLogService::class)->logAuth('logout', "User {$logoutUser->email} logged out");
             }
         });
 
         Event::listen(PasswordReset::class, function (PasswordReset $event) {
-            app(ActivityLogService::class)->logAuth('password_reset', "User {$event->user->email} reset their password");
+            /** @var User $resetUser */
+            $resetUser = $event->user;
+            app(ActivityLogService::class)->logAuth('password_reset', "User {$resetUser->email} reset their password");
         });
     }
 
@@ -98,6 +121,11 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        Model::preventLazyLoading(! app()->isProduction());
+        Model::handleLazyLoadingViolationUsing(function (Model $model, string $relation): void {
+            Log::warning("Lazy loading violation: [{$relation}] on ".$model::class);
+        });
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
