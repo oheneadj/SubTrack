@@ -206,6 +206,7 @@
                                     <th class="bg-slate-50/50 text-xs">Receipt #</th>
                                     <th class="bg-slate-50/50 text-xs">Issued</th>
                                     <th class="bg-slate-50/50 text-xs">Amount</th>
+                                    <th class="bg-slate-50/50 text-xs"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -214,6 +215,16 @@
                                         <td class="text-sm font-mono font-medium text-slate-700">{{ $receipt->receipt_number }}</td>
                                         <td class="text-sm text-slate-600">{{ $receipt->issued_date->format('M d, Y') }}</td>
                                         <td class="text-sm font-semibold text-slate-800">{{ $receipt->formatted_amount_usd }}</td>
+                                        <td class="text-right">
+                                            <div class="flex items-center justify-end gap-1">
+                                                <button wire:click="viewReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="View" class="btn btn-ghost btn-xs">
+                                                    <x-icon-eye class="w-3.5 h-3.5" />
+                                                </button>
+                                                <button wire:click="downloadReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="Download" class="btn btn-ghost btn-xs">
+                                                    <x-icon-arrow-down class="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

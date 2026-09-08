@@ -118,6 +118,7 @@ class Subscription extends Model
         return $this->hasMany(Renewal::class);
     }
 
+    /** @return HasMany<Receipt, $this> */
     public function receipts(): HasMany
     {
         return $this->hasMany(Receipt::class);

@@ -7,12 +7,17 @@ namespace App\Livewire\Subscriptions;
 use App\Actions\GenerateReceiptAction;
 use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
+use App\Models\Receipt;
 use App\Models\Renewal;
 use App\Models\Subscription;
+use App\Services\ReceiptPdfService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Shows full details for a single subscription, including renewal history.
@@ -96,6 +101,34 @@ class SubscriptionShow extends Component
         unset($this->receipts);
 
         session()->flash('success', 'Receipt generated and sent to the client.');
+    }
+
+    /** Stream a receipt PDF inline for viewing in the browser. */
+    public function viewReceipt(string $receiptUlid, ReceiptPdfService $pdfService): StreamedResponse|BinaryFileResponse
+    {
+        $receipt = $this->findReceiptOrFail($receiptUlid, $pdfService);
+
+        return Storage::response('public/'.$receipt->pdf_path, $receipt->receipt_number.'.pdf');
+    }
+
+    /** Force-download a receipt PDF. */
+    public function downloadReceipt(string $receiptUlid, ReceiptPdfService $pdfService): StreamedResponse|BinaryFileResponse
+    {
+        $receipt = $this->findReceiptOrFail($receiptUlid, $pdfService);
+
+        return Storage::download('public/'.$receipt->pdf_path, $receipt->receipt_number.'.pdf');
+    }
+
+    /** Look up a receipt on this subscription, regenerating its PDF if it's missing. */
+    private function findReceiptOrFail(string $receiptUlid, ReceiptPdfService $pdfService): Receipt
+    {
+        $receipt = $this->subscription->receipts()->where('ulid', $receiptUlid)->firstOrFail();
+
+        if (! $receipt->pdf_path || ! Storage::exists('public/'.$receipt->pdf_path)) {
+            $pdfService->generate($receipt);
+        }
+
+        return $receipt;
     }
 
     #[Computed]
