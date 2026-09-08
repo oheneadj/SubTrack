@@ -185,6 +185,42 @@
                     </div>
                 @endif
             </section>
+
+            {{-- Receipts --}}
+            <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="p-6 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800">Receipts</h3>
+                </div>
+
+                @if($this->receipts->isEmpty())
+                    <x-ui.empty-state
+                        icon="file-invoice"
+                        title="No receipts yet"
+                        message="Generate a receipt once the client has paid."
+                    />
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th class="bg-slate-50/50 text-xs">Receipt #</th>
+                                    <th class="bg-slate-50/50 text-xs">Issued</th>
+                                    <th class="bg-slate-50/50 text-xs">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($this->receipts as $receipt)
+                                    <tr wire:key="receipt-{{ $receipt->id }}" class="hover:bg-slate-50/50">
+                                        <td class="text-sm font-mono font-medium text-slate-700">{{ $receipt->receipt_number }}</td>
+                                        <td class="text-sm text-slate-600">{{ $receipt->issued_date->format('M d, Y') }}</td>
+                                        <td class="text-sm font-semibold text-slate-800">{{ $receipt->formatted_amount_usd }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </section>
         </div>
 
         {{-- Right: Actions + Linked To --}}
@@ -205,6 +241,12 @@
                         <button wire:click="openRenewalModal" class="btn btn-primary btn-sm w-full flex items-center gap-2">
                             <x-icon-refresh class="w-4 h-4" />
                             Process Renewal
+                        </button>
+                    @endif
+                    @if($this->client)
+                        <button wire:click="openReceiptModal" class="btn btn-soft btn-success btn-sm w-full flex items-center gap-2">
+                            <x-icon-file-invoice class="w-4 h-4" />
+                            Generate Receipt
                         </button>
                     @endif
                     <a href="{{ route('subscriptions.edit', $subscription) }}" class="btn btn-ghost btn-sm w-full flex items-center gap-2" wire:navigate>
@@ -328,6 +370,52 @@
                             <span wire:loading.remove wire:target="processRenewal">Confirm Renewal</span>
                             <span wire:loading wire:target="processRenewal">
                                 <span class="loading loading-spinner loading-xs"></span> Processing...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Receipt Modal --}}
+    @if($showReceiptModal)
+    <div class="fixed inset-0 z-50" x-data @keydown.escape.window="$wire.set('showReceiptModal', false)">
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showReceiptModal', false)"></div>
+        <div class="fixed inset-0 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-800">Generate Receipt</h3>
+                        <button wire:click="$set('showReceiptModal', false)" class="btn btn-sm btn-circle btn-ghost">
+                            <x-icon-x class="w-4 h-4" />
+                        </button>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-xs text-slate-500">
+                            Sent to <span class="font-semibold text-slate-700">{{ $this->client?->email }}</span> once generated.
+                        </p>
+                        <x-ui.form-input
+                            label="Amount (USD)"
+                            model="receiptAmount"
+                            type="number"
+                            step="0.01"
+                            prefix="$"
+                        />
+                        <x-ui.form-textarea
+                            label="Notes (optional)"
+                            model="receiptNotes"
+                            placeholder="e.g. Payment for renewal via bank transfer"
+                            :rows="3"
+                        />
+                    </div>
+                    <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
+                        <button wire:click="$set('showReceiptModal', false)" class="btn btn-ghost btn-sm">Cancel</button>
+                        <button wire:click="generateReceipt" class="btn btn-success btn-sm" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="generateReceipt">Generate & Send</span>
+                            <span wire:loading wire:target="generateReceipt">
+                                <span class="loading loading-spinner loading-xs"></span> Generating...
                             </span>
                         </button>
                     </div>

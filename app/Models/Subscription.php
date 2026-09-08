@@ -118,6 +118,11 @@ class Subscription extends Model
         return $this->hasMany(Renewal::class);
     }
 
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
+    }
+
     // Scopes
     public function scopeCritical(Builder $query): Builder
     {

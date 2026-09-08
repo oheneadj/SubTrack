@@ -24,6 +24,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `RenewalTracker` no longer lists non-recurring (one-time) subscriptions — they don't need renewal processing
 - Tests: `SubscriptionIndexSearchFilterExportTest`
 
+- `receipts` table + `Receipt` model — an immutable, snapshotted proof-of-payment record per subscription
+- `ReceiptNumberService` (year-scoped sequential numbers, e.g. `RCT-2026-001`) and `ReceiptPdfService` (mirrors `InvoicePdfService`), plus `resources/views/pdf/receipt.blade.php`
+- `GenerateReceiptAction` — creates the receipt + PDF in a single DB transaction, then queues `ReceiptMail` to the client
+- "Generate Receipt" action on the subscription page (amount defaults to renewal cost, editable; optional notes) plus a running list of past receipts for that subscription
+- Tests: `GenerateReceiptTest`
+
 ### Changed
 - `SubscriptionIndex` search now also matches client name and project name (previously domain/provider only)
 - `SubscriptionIndex` gained client and renewal-date-range filters, alongside the existing service-type/status filters

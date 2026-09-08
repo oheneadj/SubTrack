@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Subscriptions;
 
+use App\Actions\GenerateReceiptAction;
 use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
 use App\Models\Renewal;
@@ -34,6 +35,12 @@ class SubscriptionShow extends Component
 
     public string $notes = '';
 
+    public bool $showReceiptModal = false;
+
+    public float $receiptAmount = 0;
+
+    public string $receiptNotes = '';
+
     public function mount(Subscription $subscription): void
     {
         $this->subscription = $subscription->load(['client', 'project.client', 'provider', 'renewals.invoice']);
@@ -54,6 +61,41 @@ class SubscriptionShow extends Component
     public function client()
     {
         return $this->subscription->effective_client;
+    }
+
+    /** Receipts already generated for this subscription, most recent first. */
+    #[Computed]
+    public function receipts()
+    {
+        return $this->subscription->receipts()->latest('issued_date')->get();
+    }
+
+    /** Open the receipt modal, defaulting the amount to the subscription's renewal cost. */
+    public function openReceiptModal(): void
+    {
+        $this->receiptAmount = round($this->subscription->renewal_cost_usd / 100, 2);
+        $this->receiptNotes = '';
+        $this->showReceiptModal = true;
+    }
+
+    /** Generate a receipt for the entered amount and email it to the client. */
+    public function generateReceipt(GenerateReceiptAction $action): void
+    {
+        $this->validate([
+            'receiptAmount' => 'required|numeric|min:0.01',
+            'receiptNotes' => 'nullable|string',
+        ]);
+
+        $action->execute(
+            $this->subscription,
+            (int) round($this->receiptAmount * 100),
+            $this->receiptNotes ?: null,
+        );
+
+        $this->showReceiptModal = false;
+        unset($this->receipts);
+
+        session()->flash('success', 'Receipt generated and sent to the client.');
     }
 
     #[Computed]
