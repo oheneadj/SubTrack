@@ -109,7 +109,7 @@ class SubscriptionIndex extends Component
     public function confirmDelete(string $ulid): void
     {
         $this->selectedSubscriptionId = Subscription::where('ulid', $ulid)->firstOrFail()->id;
-        $this->dispatch('open-modal', 'confirm-delete-subscription');
+        $this->dispatch('open-modal', id: 'confirm-delete-subscription');
     }
 
     public function delete(): void

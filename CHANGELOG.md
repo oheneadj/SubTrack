@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Delete-confirmation modals on the subscriptions and projects list pages never opened — `confirm-modal.blade.php` listens for the `open-modal` browser event and checks `$event.detail.id`, but both pages dispatched it as a bare string (`dispatch('open-modal', 'confirm-delete-subscription')`) or a positional array (`dispatch('open-modal', ['id' => '...'])`), neither of which produces a `.id` property on the event detail. Both now use Livewire's named-argument dispatch (`dispatch('open-modal', id: '...')`), matching the one call site that already worked (`UserShow`)
+- Tests: `DeleteConfirmationModalTest` — asserts the exact dispatched event shape so this can't silently regress again
+
 ### Added
 - Rolled out `<x-ui.card>`, `<x-ui.button>`, `<x-ui.toolbar>` (introduced for the subscriptions pages) across the rest of the admin app: clients, dashboard, invoices, mail templates, projects, providers, users, activity logs, settings, and the notification list — 23 pages converted from repeated raw markup to the shared components
 - `button` component gained `info` and `lg` variants/sizes to cover the two button shapes the rollout needed that didn't exist yet (Send-to-client invoice action, the mail composer's large send button)

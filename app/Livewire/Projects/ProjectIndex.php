@@ -1,23 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Projects;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 use App\Models\Project;
 use App\Traits\WithSorting;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class ProjectIndex extends Component
 {
     use WithPagination, WithSorting;
 
     public string $sortColumn = 'created_at';
+
     public string $sortDirection = 'desc';
 
     public string $search = '';
+
     public bool $confirmDelete = false;
+
     public ?int $deletingId = null;
 
     protected $queryString = [
@@ -29,10 +34,10 @@ class ProjectIndex extends Component
         $this->resetPage();
     }
 
-    public function confirmDelete(int $id): void
+    public function confirmDelete(string $ulid): void
     {
-        $this->deletingId = $id;
-        $this->dispatch('open-modal', ['id' => 'delete-project-modal']);
+        $this->deletingId = Project::where('ulid', $ulid)->firstOrFail()->id;
+        $this->dispatch('open-modal', id: 'delete-project-modal');
     }
 
     #[On('project-saved')]
@@ -56,9 +61,9 @@ class ProjectIndex extends Component
     {
         return view('livewire.projects.project-index', [
             'projects' => $this->applySorting(Project::with('client')
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->where('project_name', 'like', "%{$this->search}%")
-                        ->orWhereHas('client', function($q) {
+                        ->orWhereHas('client', function ($q) {
                             $q->where('name', 'like', "%{$this->search}%");
                         });
                 })
