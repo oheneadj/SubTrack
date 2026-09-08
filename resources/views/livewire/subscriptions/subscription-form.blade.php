@@ -19,20 +19,28 @@
                             required
                         />
 
-                        <!-- Project Selection -->
-                        <x-ui.form-select 
-                            label="Project" 
-                            model="project_id" 
-                            :options="$projects->pluck('project_name', 'id')->toArray()" 
-                            placeholder="{{ $client_id ? 'Select a project' : 'Select a client first' }}"
-                            required
+                        <!-- Project Selection (optional) -->
+                        <x-ui.form-select
+                            label="Project (optional)"
+                            model="project_id"
+                            :options="$projects->pluck('project_name', 'id')->toArray()"
+                            placeholder="{{ $client_id ? 'No project — direct to client' : 'Select a client first' }}"
                         />
 
                         <!-- Service Type -->
-                        <x-ui.form-select 
-                            label="Service Type" 
-                            model="service_type" 
+                        <x-ui.form-select
+                            label="Service Type"
+                            model="service_type"
                             :options="collect(\App\Enums\ServiceType::cases())->mapWithKeys(fn($t) => [$t->value => $t->label()])->toArray()"
+                            required
+                        />
+
+                        <!-- Renewal Type -->
+                        <x-ui.form-select
+                            label="Renewal Type"
+                            model="renewal_type"
+                            :options="collect(\App\Enums\SubscriptionRenewalType::cases())->mapWithKeys(fn($t) => [$t->value => $t->label()])->toArray()"
+                            :live="true"
                             required
                         />
 
@@ -72,28 +80,49 @@
                             prefix="$"
                         />
 
-                        <x-ui.form-input 
-                            label="Renewal Cost (USD)" 
-                            model="renewal_cost_usd" 
+                        <x-ui.form-input
+                            label="Renewal Cost (USD)"
+                            model="renewal_cost_usd"
                             type="number"
                             step="0.01"
                             prefix="$"
                         />
 
+                        <x-ui.form-input
+                            label="Markup % (optional)"
+                            model="markup_percentage"
+                            type="number"
+                            step="0.01"
+                            suffix="%"
+                            placeholder="e.g. 20"
+                        />
+
                         <!-- Dates -->
-                        <x-ui.form-input 
-                            label="Purchase Date" 
-                            model="purchase_date" 
+                        <x-ui.form-input
+                            label="Purchase Date"
+                            model="purchase_date"
                             type="date"
+                            :live="true"
                             required
                         />
 
-                        <x-ui.form-input 
-                            label="Expiry Date" 
-                            model="expiry_date" 
+                        <x-ui.form-input
+                            label="Expiry Date{{ $this->expiryDateIsAutoComputed ? ' (auto-calculated)' : '' }}"
+                            model="expiry_date"
                             type="date"
+                            :readonly="$this->expiryDateIsAutoComputed"
                             required
                         />
+
+                        <!-- Notes -->
+                        <div class="md:col-span-2">
+                            <x-ui.form-textarea
+                                label="Notes (optional)"
+                                model="notes"
+                                placeholder="Any context worth keeping about this subscription..."
+                                :rows="3"
+                            />
+                        </div>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">

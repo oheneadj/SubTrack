@@ -52,6 +52,9 @@ class RenewalTracker extends Component
     {
         $query = Subscription::with(['client', 'project.client', 'provider'])
             ->where('status', '!=', SubscriptionStatus::Cancelled)
+            // Only recurring subscriptions need renewal processing — one-time
+            // purchases simply lapse at their expiry date.
+            ->whereIn('renewal_type', ['RecurringMonthly', 'RecurringAnnually'])
             ->when($this->search, function ($query) {
                 $query->where('domain_name', 'like', '%'.$this->search.'%')
                     ->orWhereHas('provider', fn ($p) => $p->where('name', 'like', '%'.$this->search.'%'))

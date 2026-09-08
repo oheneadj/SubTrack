@@ -13,8 +13,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Project::unrelatedFor(Client $client)` — get-or-create the client's catch-all "Unrelated" project, used whenever a subscription is saved without a real project selected
 - Tests: `UnrelatedProjectTest`
 
+- `form-input` Blade component gained a `:live` prop (mirroring `form-select`), used so the subscription form recalculates expiry date as soon as purchase date changes
+- `SubscriptionShow::saveNotes()` — inline notes editing on the subscription page
+- Tests: `RenewalTrackerExcludesOneTimeTest`
+
 ### Changed
 - `SubscriptionForm::save()` now attaches a subscription to the client's "Unrelated" project instead of leaving `project_id` null when no project is picked
+- `SubscriptionForm`: added Renewal Type and Notes fields; expiry date auto-computes (and becomes read-only) for renewal types with an implied duration, stays manual for bare One-time
+- `SubscriptionShow`: displays renewal type, hides "Process Renewal" for non-recurring subscriptions, defaults the renewal increment (months vs years) to match the subscription's billing cycle, shows "Unrelated" instead of blank when no project is linked
+- `RenewalTracker` no longer lists non-recurring (one-time) subscriptions — they don't need renewal processing
 - Adopted new CLAUDE.md rules (soft-delete unique-value mutation, Blade design/logic separation, webhook idempotency, payment polling fallback) into the existing codebase
 - `Provider` and `Invoice` models now mutate their unique column (`name`, `invoice_number`) on soft delete (`{original}-deleted-{id}`), freeing the value for reuse by a new record
 - `webhook_events` table + `WebhookEvent` model — deduplicates redelivered provider webhook events by (gateway, event_id) before they reach gateway-specific handling
