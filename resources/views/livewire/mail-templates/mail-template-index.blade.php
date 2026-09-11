@@ -40,7 +40,7 @@
                                 Preview
                             </x-ui.button>
                             <x-ui.button
-                                wire:click="edit({{ $template->id }})"
+                                wire:click="edit('{{ $template->ulid }}')"
                                 full
                                 class="flex items-center gap-2 justify-center"
                             >
@@ -104,11 +104,11 @@
 
                     <div class="flex items-center justify-between border-t border-slate-100 p-6 bg-slate-50 rounded-b-2xl">
                         <div class="flex gap-2">
-                            <x-ui.button type="button" wire:click="sendTest({{ $editingTemplate->id }})" variant="outline">
+                            <x-ui.button type="button" wire:click="sendTest('{{ $editingTemplate->ulid }}')" variant="outline">
                                 <x-icon-send class="w-4 h-4 mr-1" />
                                 Send Test
                             </x-ui.button>
-                            <x-ui.button type="button" wire:click="resetToDefault({{ $editingTemplate->id }})" variant="ghost" class="text-slate-500">
+                            <x-ui.button type="button" wire:click="resetToDefault('{{ $editingTemplate->ulid }}')" variant="ghost" class="text-slate-500">
                                 Reset to Default
                             </x-ui.button>
                         </div>

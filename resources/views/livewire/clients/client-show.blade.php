@@ -20,13 +20,13 @@
                 </x-ui.button>
                 <ul x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-50 menu p-2 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2">
                     <li>
-                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->id]) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
+                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
                             <x-icon-send class="w-4 h-4 text-blue-400" />
                             <span class="font-medium">Send Custom Email</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->id, 'template' => 'subscription-reminder']) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
+                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->ulid, 'template' => 'subscription-reminder']) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
                             <x-icon-refresh class="w-4 h-4 text-orange-400" />
                             <span class="font-medium">Send Renewal Reminder</span>
                         </a>
@@ -35,7 +35,7 @@
             </div>
 
             <x-ui.button
-                onclick="window.location.href='{{ route('clients.index') }}?edit={{ $client->id }}'"
+                onclick="window.location.href='{{ route('clients.index') }}?edit={{ $client->ulid }}'"
                 class="border-slate-200 bg-white"
             >
                 <x-icon-edit class="w-4 h-4" />
@@ -80,7 +80,7 @@
                 <x-ui.card :padding="false">
                     <x-slot:actions>
                         <x-ui.button
-                            @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { clientId: {{ $client->id }} })">
+                            @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { clientId: '{{ $client->ulid }}' })">
                             <x-icon-plus class="w-4 h-4" />
                             <span>New Project</span>
                         </x-ui.button>
@@ -112,7 +112,7 @@
                                     </td>
                                     <td class="text-right">
                                         <x-ui.button
-                                            @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { id: {{ $project->id }} })"
+                                            @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
                                             variant="ghost" circle title="Edit Project">
                                             <x-icon-edit class="w-4 h-4" />
                                         </x-ui.button>
@@ -126,7 +126,7 @@
                 {{-- Recent Invoices Section --}}
                 <x-ui.card :padding="false">
                     <x-slot:actions>
-                        <x-ui.button as="a" href="{{ route('invoices.create', ['clientId' => $client->id]) }}">
+                        <x-ui.button as="a" href="{{ route('invoices.create', ['clientId' => $client->ulid]) }}">
                             <x-icon-plus class="w-4 h-4" />
                             <span>New Invoice</span>
                         </x-ui.button>

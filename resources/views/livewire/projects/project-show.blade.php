@@ -19,7 +19,7 @@
 
             <x-ui.button
                 soft
-                @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { id: {{ $project->id }} })"
+                @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
                 class="border-slate-200 bg-white">
                 <x-icon-edit class="w-4 h-4" />
                 <span>Edit Project</span>
@@ -87,7 +87,7 @@
                                 <td class="text-right">
                                     <x-ui.action-menu
                                         editAction="window.location.href='{{ route('subscriptions.edit', $sub) }}'"
-                                        deleteAction="confirmDelete({{ $sub->id }})"
+                                        deleteAction="confirmDelete('{{ $sub->ulid }}')"
                                     />
                                 </td>
                             </tr>
@@ -177,4 +177,11 @@
     <x-ui.modal id="project-modal">
         <livewire:projects.project-form :isModal="true" />
     </x-ui.modal>
+
+    <x-ui.confirm-modal
+        id="delete-subscription-modal"
+        title="Delete Subscription"
+        message="Are you sure you want to delete this subscription? This action cannot be undone."
+        confirmAction="delete"
+    />
 </div>

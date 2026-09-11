@@ -53,9 +53,9 @@
                     </td>
                     <td class="text-right">
                         <x-ui.action-menu 
-                            editAction="$dispatchTo('projects.project-form', 'open-project-modal', { id: {{ $project->id }} })" 
+                            editAction="$dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
                             editModalId="project-modal"
-                            deleteAction="confirmDelete({{ $project->id }})" 
+                            deleteAction="confirmDelete('{{ $project->ulid }}')"
                         />
                     </td>
                 </tr>

@@ -86,12 +86,12 @@
                                     Details
                                 </x-ui.button>
                                 @if($user->id !== auth()->id())
-                                    <x-ui.action-menu deleteAction="confirmDelete({{ $user->id }})">
-                                        <x-ui.button variant="primary" size="xs" wire:click="resendInvite({{ $user->id }})" class="text-white justify-start">
+                                    <x-ui.action-menu deleteAction="confirmDelete('{{ $user->ulid }}')">
+                                        <x-ui.button variant="primary" size="xs" wire:click="resendInvite('{{ $user->ulid }}')" class="text-white justify-start">
                                             <x-icon-refresh class="w-3 h-3" />
                                             <span>Resend Invite</span>
                                         </x-ui.button>
-                                        <x-ui.button :variant="$user->is_active ? 'warning' : 'success'" size="xs" wire:click="openToggleModal({{ $user->id }})" class="justify-start">
+                                        <x-ui.button :variant="$user->is_active ? 'warning' : 'success'" size="xs" wire:click="openToggleModal('{{ $user->ulid }}')" class="justify-start">
                                             <x-icon-alert-triangle class="w-3 h-3" />
                                             <span>{{ $user->is_active ? 'Disable' : 'Enable' }}</span>
                                         </x-ui.button>

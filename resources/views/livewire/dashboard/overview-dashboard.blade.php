@@ -175,16 +175,16 @@
                                     <td>
                                         <x-ui.button
                                             type="button"
-                                            wire:click="sendReminder({{ $sub->id }})"
+                                            wire:click="sendReminder('{{ $sub->ulid }}')"
                                             wire:loading.attr="disabled"
                                             size="xs"
                                             class="text-white"
                                             title="Send Reminder"
                                         >
-                                            <span wire:loading.remove wire:target="sendReminder({{ $sub->id }})">
+                                            <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')">
                                                 <x-icon-send class="w-3.5 h-3.5" />
                                             </span>
-                                            <span wire:loading wire:target="sendReminder({{ $sub->id }})">
+                                            <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
                                                 <span class="loading loading-spinner loading-xs"></span>
                                             </span>
                                         </x-ui.button>
@@ -236,16 +236,16 @@
                                     <td>
                                         <x-ui.button
                                             type="button"
-                                            wire:click="sendReminder({{ $sub->id }})"
+                                            wire:click="sendReminder('{{ $sub->ulid }}')"
                                             wire:loading.attr="disabled"
                                             size="xs"
                                             class="text-white"
                                             title="Send Reminder"
                                         >
-                                            <span wire:loading.remove wire:target="sendReminder({{ $sub->id }})">
+                                            <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')">
                                                 <x-icon-send class="w-3.5 h-3.5" />
                                             </span>
-                                            <span wire:loading wire:target="sendReminder({{ $sub->id }})">
+                                            <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
                                                 <span class="loading loading-spinner loading-xs"></span>
                                             </span>
                                         </x-ui.button>

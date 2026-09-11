@@ -55,7 +55,7 @@
                         </td>
                     <td class="text-right">
                         <div class="flex gap-1 justify-end">
-                            <x-ui.button wire:click="downloadPdf({{ $invoice->id }})" wire:loading.attr="disabled" title="Download PDF" size="xs" class="text-white">
+                            <x-ui.button wire:click="downloadPdf('{{ $invoice->ulid }}')" wire:loading.attr="disabled" title="Download PDF" size="xs" class="text-white">
                                 <span wire:loading.remove class="flex items-center gap-1">
                                     <x-icon-photo class="w-4 h-4 text-white" />Download
                                 </span>
@@ -63,7 +63,7 @@
                                     <span class="loading loading-spinner loading-xs"></span>
                                 </span>
                             </x-ui.button>
-                            <x-ui.button wire:click="sendInvoice({{ $invoice->id }})" wire:loading.attr="disabled" title="Send to Client" variant="info" size="xs" class="text-white">
+                            <x-ui.button wire:click="sendInvoice('{{ $invoice->ulid }}')" wire:loading.attr="disabled" title="Send to Client" variant="info" size="xs" class="text-white">
                                 <span wire:loading.remove class="flex items-center gap-1">
                                     <x-icon-mail class="w-4 h-4 text-white" />Send
                                 </span>
@@ -72,7 +72,7 @@
                                 </span>
                             </x-ui.button>
                             @if($invoice->status !== 'Paid')
-                                <x-ui.button wire:click="markAsPaid({{ $invoice->id }})" wire:loading.attr="disabled" title="Mark as Paid" variant="success" size="xs" class="text-white">
+                                <x-ui.button wire:click="markAsPaid('{{ $invoice->ulid }}')" wire:loading.attr="disabled" title="Mark as Paid" variant="success" size="xs" class="text-white">
                                     <span wire:loading.remove class="flex items-center gap-1">
                                         <x-icon-circle-check class="w-4 h-4 text-white" />Paid
                                     </span>

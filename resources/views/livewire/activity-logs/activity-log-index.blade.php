@@ -97,7 +97,7 @@
                             </td>
                             <td class="py-4 px-6 text-right">
                                 @if($log->properties && count($log->properties) > 0)
-                                    <x-ui.button variant="ghost" size="xs" wire:click="viewDetails({{ $log->id }})" class="text-blue-600">
+                                    <x-ui.button variant="ghost" size="xs" wire:click="viewDetails('{{ $log->ulid }}')" class="text-blue-600">
                                         <x-icon-eye class="w-3 h-3" />
                                     </x-ui.button>
                                 @else
@@ -128,9 +128,8 @@
     </div>
 
     {{-- Detail Modal (Livewire-driven) --}}
-    @if($showDetailModal && $selectedLogId)
-        @php $selectedLog = \App\Models\ActivityLog::with('user')->find($selectedLogId); @endphp
-        @if($selectedLog)
+    @if($showDetailModal && $selectedLogUlid)
+        @if($this->selectedLog)
         <div class="fixed inset-0 z-50 overflow-y-auto" x-data @keydown.escape.window="$wire.closeDetail()">
             <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" wire:click="closeDetail"></div>
 
@@ -138,9 +137,9 @@
                 <div class="flex min-h-full items-center justify-center p-4">
                     <div class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden">
                         <div class="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                            <h3 class="font-bold text-lg text-slate-800">Log Details #{{ $selectedLog->id }}</h3>
+                            <h3 class="font-bold text-lg text-slate-800">Log Details #{{ $this->selectedLog->id }}</h3>
                             <div class="flex items-center gap-2">
-                                <span class="badge badge-lg badge-neutral">{{ str($selectedLog->action)->replace('.', ' ')->title() }}</span>
+                                <span class="badge badge-lg badge-neutral">{{ str($this->selectedLog->action)->replace('.', ' ')->title() }}</span>
                                 <x-ui.button variant="ghost" circle wire:click="closeDetail" class="text-white hover:bg-primary hover:text-white">✕</x-ui.button>
                             </div>
                         </div>
@@ -148,27 +147,27 @@
                             <div class="grid grid-cols-2 gap-4 mb-6">
                                 <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
                                     <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">User Info</div>
-                                    <div class="text-sm font-medium text-slate-700">{{ $selectedLog->user?->name ?? 'System' }}</div>
-                                    <div class="text-[10px] text-slate-400 truncate">{{ $selectedLog->user_agent }}</div>
+                                    <div class="text-sm font-medium text-slate-700">{{ $this->selectedLog->user?->name ?? 'System' }}</div>
+                                    <div class="text-[10px] text-slate-400 truncate">{{ $this->selectedLog->user_agent }}</div>
                                 </div>
                                 <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
                                     <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">Context</div>
-                                    <div class="text-sm font-medium text-slate-700">{{ $selectedLog->ip_address }}</div>
-                                    <div class="text-[10px] text-slate-400">{{ $selectedLog->created_at->format('l, F j, Y — H:i:s') }}</div>
+                                    <div class="text-sm font-medium text-slate-700">{{ $this->selectedLog->ip_address }}</div>
+                                    <div class="text-[10px] text-slate-400">{{ $this->selectedLog->created_at->format('l, F j, Y — H:i:s') }}</div>
                                 </div>
                             </div>
 
                             <div class="space-y-4">
-                                @if(isset($selectedLog->properties['old']) && $selectedLog->properties['old'])
+                                @if(isset($this->selectedLog->properties['old']) && $this->selectedLog->properties['old'])
                                     <div>
                                         <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Changes</h4>
                                         <div class="bg-slate-50 rounded-lg p-4 border border-slate-100 font-mono text-[10px] space-y-2">
-                                            @foreach($selectedLog->properties['old'] as $key => $oldValue)
+                                            @foreach($this->selectedLog->properties['old'] as $key => $oldValue)
                                                 <div class="flex items-start gap-4">
                                                     <span class="text-slate-500 w-24 shrink-0">{{ $key }}:</span>
                                                     <div class="flex flex-col gap-1">
                                                         <span class="text-red-500 line-through">{{ var_export($oldValue, true) }}</span>
-                                                        <span class="text-green-600">{{ var_export($selectedLog->properties['attributes'][$key] ?? null, true) }}</span>
+                                                        <span class="text-green-600">{{ var_export($this->selectedLog->properties['attributes'][$key] ?? null, true) }}</span>
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -178,7 +177,7 @@
 
                                 <div>
                                     <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Raw Data</h4>
-                                    <pre class="bg-slate-900 text-slate-300 rounded-lg p-4 text-[10px] overflow-x-auto"><code>{{ json_encode($selectedLog->properties, JSON_PRETTY_PRINT) }}</code></pre>
+                                    <pre class="bg-slate-900 text-slate-300 rounded-lg p-4 text-[10px] overflow-x-auto"><code>{{ json_encode($this->selectedLog->properties, JSON_PRETTY_PRINT) }}</code></pre>
                                 </div>
                             </div>
                         </div>

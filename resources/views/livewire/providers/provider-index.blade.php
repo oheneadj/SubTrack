@@ -63,8 +63,8 @@
                         <td class="text-right">
                             <x-ui.action-menu 
                                 viewAction="{{ route('providers.show', $provider) }}"
-                                editAction="$wire.edit({{ $provider->id }})" 
-                                deleteAction="$wire.openDeleteModal({{ $provider->id }})" 
+                                editAction="$wire.edit('{{ $provider->ulid }}')"
+                                deleteAction="$wire.openDeleteModal('{{ $provider->ulid }}')"
                             />
                         </td>
                     </tr>

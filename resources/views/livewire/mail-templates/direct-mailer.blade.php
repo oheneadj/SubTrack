@@ -63,7 +63,7 @@
                 <div class="flex-1 overflow-y-auto divide-y divide-slate-200">
                     @forelse($this->clients as $client)
                         <label class="flex items-center gap-4 p-4 hover:bg-blue-50/40 cursor-pointer transition-all group">
-                            <input type="checkbox" wire:model.live="selectedClients" value="{{ $client->id }}" 
+                            <input type="checkbox" wire:model.live="selectedClients" value="{{ $client->ulid }}"
                                    class="checkbox checkbox-primary checkbox-sm rounded-md" />
                             
                             <div class="flex-1 flex items-center gap-3 min-w-0">
@@ -179,7 +179,7 @@
                         <div class="flex -space-x-3">
                             @php $displayLimit = 4; @endphp
                             @forelse(array_slice($selectedClients, 0, $displayLimit) as $index => $cid)
-                                @php $recipient = \App\Models\Client::find($cid); @endphp
+                                @php $recipient = $this->selectedClientModels->get($cid); @endphp
                                 <div class="w-10 h-10 rounded-full border-4 border-slate-50 bg-white ring-1 ring-slate-200 flex items-center justify-center font-bold text-xs text-blue-600 shadow-sm overflow-hidden z-[{{ 10 - $index }}]">
                                     {{ strtoupper(substr($recipient?->name ?? '?', 0, 1)) }}
                                 </div>

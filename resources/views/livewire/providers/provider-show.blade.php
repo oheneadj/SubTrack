@@ -83,7 +83,7 @@
                                 <td class="text-right">
                                     <x-ui.action-menu 
                                         editAction="window.location.href='{{ route('subscriptions.edit', $sub) }}'" 
-                                        deleteAction="$wire.deleteSubscription({{ $sub->id }})" 
+                                        deleteAction="$wire.deleteSubscription('{{ $sub->ulid }}')"
                                     />
                                 </td>
                             </tr>
