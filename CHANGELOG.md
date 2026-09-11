@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- "Add Subscription" (×2) and "New Invoice" on the project detail page passed the project/client's raw internal `id` as the `?projectId=`/`?clientId=` query param — the target forms (`SubscriptionForm`, `InvoiceBuilder`) look those up by `ulid`, so the project/client never pre-filled and the link silently landed on an empty form. Same bug class as the earlier row-action fixes, just hiding inside a `route()` query array instead of a `wire:click` argument — the earlier sweep's search pattern didn't catch this shape, so it survived that pass
+- Tests: `ProjectShowLinksTest`
+
 ### Added
 - `<x-ui.toast>` — a reusable success/error flash toast (auto-dismissing, bottom-right), wired once into the shared app layout. Replaces ~10 differently-styled, hand-copied flash-message blocks scattered across individual pages — several of which duplicated the layout's own inline banner, so the message showed twice on those pages. Now every page shows the same toast automatically after any action that flashes `success`/`error`, including every delete/edit action fixed in the previous commit
 - Tests: `FlashToastTest`

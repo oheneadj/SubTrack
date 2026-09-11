@@ -7,12 +7,12 @@
                 <span>Back to Projects</span>
             </x-ui.button>
 
-            <x-ui.button as="a" variant="primary" href="{{ route('subscriptions.create', ['projectId' => $project->id]) }}" wire:navigate>
+            <x-ui.button as="a" variant="primary" href="{{ route('subscriptions.create', ['projectId' => $project->ulid]) }}" wire:navigate>
                 <x-icon-plus class="w-4 h-4" />
                 <span>Add Subscription</span>
             </x-ui.button>
 
-            <x-ui.button as="a" variant="secondary" href="{{ route('invoices.create', ['clientId' => $project->client_id, 'projectId' => $project->id]) }}" class="bg-slate-800 hover:bg-slate-700 text-white border-0" wire:navigate>
+            <x-ui.button as="a" variant="secondary" href="{{ route('invoices.create', ['clientId' => $project->client?->ulid, 'projectId' => $project->ulid]) }}" class="bg-slate-800 hover:bg-slate-700 text-white border-0" wire:navigate>
                 <x-icon-file-invoice class="w-4 h-4" />
                 <span>New Invoice</span>
             </x-ui.button>
@@ -65,7 +65,7 @@
                         title="No subscriptions"
                         message="This project doesn't have any active subscriptions yet."
                     >
-                        <x-ui.button as="a" variant="primary" href="{{ route('subscriptions.create', ['projectId' => $project->id]) }}">Add Subscription</x-ui.button>
+                        <x-ui.button as="a" variant="primary" href="{{ route('subscriptions.create', ['projectId' => $project->ulid]) }}">Add Subscription</x-ui.button>
                     </x-ui.empty-state>
                 @else
                     <x-ui.data-table :headers="['Service', 'Provider', 'Status', 'Expiry', '']">
