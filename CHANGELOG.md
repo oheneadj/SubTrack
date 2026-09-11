@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Client detail page: subscriptions moved out of a capped, summary-only sidebar card (5 max, active-only) into their own full section in the main column, directly below Projects — a proper table (service/domain, project, provider, expiry, status) covering every subscription, not just the active ones
+- Added an "Add Subscription" action to the client detail page, matching the existing "New Project" — both create with the client pre-filled via `?clientId=`
+- Tests: `ClientShowProjectsSubscriptionsTest`
+
 ### Added
 - `App\Livewire\Clients\ClientForm` — extracted client create/edit out of `ClientIndex` into its own standalone component (mirroring how `ProjectForm` already works), shared as a modal between the clients index and a client's own detail page. Opening "Edit Client" from the detail page no longer navigates away to the clients index to do it — it opens in place, exactly like every other edit modal in the app
 - Tests: `ClientFormModalTest`

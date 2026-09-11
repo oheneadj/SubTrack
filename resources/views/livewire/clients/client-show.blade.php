@@ -118,6 +118,58 @@
                     @endif
                 </x-ui.card>
 
+                {{-- Subscriptions Section --}}
+                <x-ui.card :padding="false">
+                    <x-slot:actions>
+                        <x-ui.button as="a" href="{{ route('subscriptions.create', ['clientId' => $client->ulid]) }}" wire:navigate>
+                            <x-icon-plus class="w-4 h-4" />
+                            <span>Add Subscription</span>
+                        </x-ui.button>
+                    </x-slot:actions>
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-800">Subscriptions</h3>
+                    </div>
+
+                    @if($this->subscriptions->isEmpty())
+                        <div class="p-12 text-center">
+                            <x-icon-refresh class="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                            <p class="text-slate-500">No subscriptions found for this client.</p>
+                        </div>
+                    @else
+                        <x-ui.data-table :headers="['Service / Domain', 'Project', 'Provider', 'Expiry', 'Status', '']">
+                            @foreach($this->subscriptions as $sub)
+                                <tr wire:key="client-sub-{{ $sub->ulid }}">
+                                    <td>
+                                        <a href="{{ route('subscriptions.show', $sub) }}" class="group block" wire:navigate>
+                                            <div class="font-bold text-primary group-hover:text-blue-600 group-hover:underline transition-colors">
+                                                {{ $sub->domain_name ?: $sub->service_type->label() }}
+                                            </div>
+                                            <div class="text-xs text-secondary">{{ $sub->service_type->label() }}</div>
+                                        </a>
+                                    </td>
+                                    <td class="text-secondary text-sm">
+                                        {{ $sub->project?->project_name ?? 'Unrelated' }}
+                                    </td>
+                                    <td class="text-secondary text-sm">
+                                        {{ $sub->provider?->name ?? '—' }}
+                                    </td>
+                                    <td class="text-secondary text-sm">
+                                        {{ $sub->expiry_date->format('M d, Y') }}
+                                    </td>
+                                    <td>
+                                        <x-ui.badge-status :status="$sub->status->value" />
+                                    </td>
+                                    <td class="text-right">
+                                        <x-ui.button as="a" variant="ghost" circle href="{{ route('subscriptions.show', $sub) }}" wire:navigate>
+                                            <x-icon-eye class="w-4 h-4" />
+                                        </x-ui.button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </x-ui.data-table>
+                    @endif
+                </x-ui.card>
+
                 {{-- Recent Invoices Section --}}
                 <x-ui.card :padding="false">
                     <x-slot:actions>
@@ -193,23 +245,6 @@
                     </div>
                 </div>
             </x-ui.card>
-
-            @if(!$this->subscriptions->isEmpty())
-            <x-ui.card title="Active Subscriptions">
-                <div class="space-y-4">
-                    @foreach($this->subscriptions->where('status', 'Active')->take(5) as $sub)
-                        <div class="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-bold text-primary">{{ $sub->service_name }}</p>
-                                <p class="text-xs text-secondary">{{ $sub->project?->project_name ?? 'Unknown Project' }}</p>
-                            </div>
-                            <x-ui.badge-status :status="$sub->status->value" />
-                        </div>
-                    @endforeach
-                    <x-ui.button as="a" full href="{{ route('subscriptions.index') }}">View all subscriptions</x-ui.button>
-                </div>
-            </x-ui.card>
-            @endif
         </div>
     </div>
     <x-ui.modal id="project-modal">
