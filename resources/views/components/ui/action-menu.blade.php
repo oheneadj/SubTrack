@@ -6,11 +6,14 @@
     $shouldUnfold = $totalActions < 5;
 
     // editAction is usually a PHP method call meant for wire:click. But it's
-    // sometimes a client-side JS expression (e.g. "$dispatchTo(...)" to tell
+    // sometimes a client-side JS expression (e.g. "Livewire.dispatchTo(...)" to tell
     // a modal's child component what to load) — that belongs in @click, never
     // wire:click, which would try (and fail) to call it as a server action.
     $editIsWindowLocation = $editAction && str_starts_with($editAction, 'window.location');
-    $editIsJsExpression = $editAction && str_starts_with($editAction, '$');
+    $editIsJsExpression = $editAction && (
+        str_starts_with($editAction, '$')
+        || str_starts_with($editAction, 'Livewire.')
+    );
 @endphp
 
 @if($shouldUnfold)

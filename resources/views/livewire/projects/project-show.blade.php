@@ -19,7 +19,7 @@
 
             <x-ui.button
                 soft
-                @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
+                @click="$dispatch('open-modal', { id: 'project-modal' }); Livewire.dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
                 class="border-slate-200 bg-white">
                 <x-icon-edit class="w-4 h-4" />
                 <span>Edit Project</span>

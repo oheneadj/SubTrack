@@ -1,7 +1,7 @@
 <div>
     <x-ui.page-header title="Projects" subtitle="Manage client web projects and assets">
         <x-ui.button
-            @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal')"
+            @click="$dispatch('open-modal', { id: 'project-modal' }); Livewire.dispatchTo('projects.project-form', 'open-project-modal')"
             class="whitespace-nowrap">
             <x-icon-plus class="w-4 h-4" />
             <span>Add Project</span>
@@ -19,7 +19,7 @@
             message="{{ $search ? 'Try adjusting your search query.' : 'Get started by adding your first project.' }}"
         >
             <x-ui.button
-                @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal')">Add Project</x-ui.button>
+                @click="$dispatch('open-modal', { id: 'project-modal' }); Livewire.dispatchTo('projects.project-form', 'open-project-modal')">Add Project</x-ui.button>
         </x-ui.empty-state>
     @else
         <x-ui.data-table :headers="['project_name' => 'Project Name', 'Client', 'Subscriptions', 'created_at' => 'Created', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
@@ -47,7 +47,7 @@
                     </td>
                     <td class="text-right">
                         <x-ui.action-menu 
-                            editAction="$dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
+                            editAction="Livewire.dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
                             editModalId="project-modal"
                             deleteAction="confirmDelete('{{ $project->ulid }}')"
                         />

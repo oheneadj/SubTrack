@@ -74,7 +74,7 @@
                 <x-ui.card :padding="false">
                     <x-slot:actions>
                         <x-ui.button
-                            @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { clientId: '{{ $client->ulid }}' })">
+                            @click="$dispatch('open-modal', { id: 'project-modal' }); Livewire.dispatchTo('projects.project-form', 'open-project-modal', { clientId: '{{ $client->ulid }}' })">
                             <x-icon-plus class="w-4 h-4" />
                             <span>New Project</span>
                         </x-ui.button>
@@ -106,7 +106,7 @@
                                     </td>
                                     <td class="text-right">
                                         <x-ui.button
-                                            @click="$dispatch('open-modal', { id: 'project-modal' }); $dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
+                                            @click="$dispatch('open-modal', { id: 'project-modal' }); Livewire.dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
                                             variant="ghost" circle title="Edit Project">
                                             <x-icon-edit class="w-4 h-4" />
                                         </x-ui.button>
