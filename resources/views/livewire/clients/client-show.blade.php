@@ -29,7 +29,8 @@
             </div>
 
             <x-ui.button
-                onclick="window.location.href='{{ route('clients.index') }}?edit={{ $client->ulid }}'"
+                variant="soft"
+                @click="$dispatch('open-modal', { id: 'client-modal' }); Livewire.dispatchTo('clients.client-form', 'open-client-modal', { id: '{{ $client->ulid }}' })"
                 class="border-slate-200 bg-white"
             >
                 <x-icon-edit class="w-4 h-4" />
@@ -213,5 +214,8 @@
     </div>
     <x-ui.modal id="project-modal">
         <livewire:projects.project-form :isModal="true" />
+    </x-ui.modal>
+    <x-ui.modal id="client-modal">
+        <livewire:clients.client-form :isModal="true" />
     </x-ui.modal>
 </div>

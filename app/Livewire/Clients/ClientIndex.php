@@ -1,19 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Clients;
 
+use App\Models\Client;
+use App\Traits\WithSorting;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Client;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use App\Traits\WithSorting;
 
 class ClientIndex extends Component
 {
     use WithPagination, WithSorting;
 
     public string $sortColumn = 'name';
+
     public string $sortDirection = 'asc';
 
     // Table state
@@ -21,41 +25,20 @@ class ClientIndex extends Component
 
     // Delete modal state
     public bool $showDeleteModal = false;
+
     public ?int $deletingId = null;
+
     public string $deletePassword = '';
-
-    // Modal/Form state
-    public bool $showModal = false;
-    public ?int $editingId = null;
-    public string $name = '';
-    public string $email = '';
-    public string $phone = '';
-    public string $company_name = '';
-
-    protected function rules()
-    {
-        return [
-            'name'         => 'required|string|max:255',
-            'email'        => [
-                'required', 
-                'email', 
-                'max:255', 
-                Rule::unique('clients', 'email')->ignore($this->editingId)
-            ],
-            'phone'        => 'nullable|string|max:30',
-            'company_name' => 'nullable|string|max:255',
-        ];
-    }
 
     protected $queryString = [
         'search' => ['except' => ''],
     ];
 
-    public function mount(): void
+    /** Flash the success message from the shared client-form modal after a create/update. */
+    #[On('client-saved')]
+    public function clientSaved(string $message): void
     {
-        if (request()->has('edit')) {
-            $this->edit((int) request()->query('edit'));
-        }
+        session()->flash('success', $message);
     }
 
     public function updatingSearch(): void
@@ -63,9 +46,9 @@ class ClientIndex extends Component
         $this->resetPage();
     }
 
-    public function openDeleteModal(int $id): void
+    public function openDeleteModal(string $ulid): void
     {
-        $this->deletingId = $id;
+        $this->deletingId = Client::where('ulid', $ulid)->firstOrFail()->id;
         $this->deletePassword = '';
         $this->resetErrorBag('deletePassword');
         $this->showDeleteModal = true;
@@ -77,6 +60,7 @@ class ClientIndex extends Component
 
         if (! Hash::check($this->deletePassword, auth()->user()->password)) {
             $this->addError('deletePassword', 'Incorrect password.');
+
             return;
         }
 
@@ -90,58 +74,7 @@ class ClientIndex extends Component
         $this->reset('deletePassword', 'deletingId');
     }
 
-    // Modal Actions
-    public function openCreate(): void
-    {
-        $this->resetFields();
-        $this->editingId = null;
-        $this->showModal = true;
-    }
-
-    public function edit(int $id): void
-    {
-        $this->resetFields();
-        $client = Client::findOrFail($id);
-        $this->editingId = $id;
-        $this->name = $client->name;
-        $this->email = $client->email;
-        $this->phone = $client->phone ?? '';
-        $this->company_name = $client->company_name ?? '';
-        $this->showModal = true;
-    }
-
-    public function save(): void
-    {
-        $data = $this->validate();
-
-        if ($this->editingId) {
-            Client::findOrFail($this->editingId)->update($data);
-            session()->flash('success', 'Client updated successfully.');
-        } else {
-            Client::create($data);
-            session()->flash('success', 'Client created successfully.');
-        }
-
-        $this->showModal = false;
-        $this->resetFields();
-    }
-
-    public function closeModal(): void
-    {
-        $this->showModal = false;
-        $this->resetFields();
-    }
-
-    private function resetFields(): void
-    {
-        $this->name = '';
-        $this->email = '';
-        $this->phone = '';
-        $this->company_name = '';
-        $this->resetValidation();
-    }
-
-    public function render()
+    public function render(): View
     {
         return view('livewire.clients.client-index', [
             'clients' => $this->applySorting(Client::search($this->search)

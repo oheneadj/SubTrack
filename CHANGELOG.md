@@ -6,7 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `App\Livewire\Clients\ClientForm` — extracted client create/edit out of `ClientIndex` into its own standalone component (mirroring how `ProjectForm` already works), shared as a modal between the clients index and a client's own detail page. Opening "Edit Client" from the detail page no longer navigates away to the clients index to do it — it opens in place, exactly like every other edit modal in the app
+- Tests: `ClientFormModalTest`
+
 ### Fixed
+- "Edit Client" on the client detail page had unreadable text — no variant was set (defaulting to solid `btn-primary`, white text) while custom classes forced the background to white too, leaving white-on-white. Switched to the `soft` variant (blue text on a light background), matching the same fix already applied to the Email button
 - **The actual reason "Edit Project" still didn't work after the previous fix**: `$dispatchTo(...)` was moved into `@click` to fix the wire:click-vs-server-action bug, but `$dispatchTo` isn't a real Alpine magic — Livewire only registers `$dispatch` globally; `dispatchTo` only exists as `$wire.dispatchTo(...)` or the global `Livewire.dispatchTo(...)`. The bare `$dispatchTo(...)` call threw a silent `ReferenceError` in the browser console, so the modal still opened (the *other* half of the same click handler, `$dispatch('open-modal', ...)`, ran fine first) but the form never received the project to load and rendered empty. Fixed every instance to use `Livewire.dispatchTo(...)` — the same pattern already working correctly for the modal's own Cancel button elsewhere in these files — and updated `action-menu.blade.php`'s JS-vs-server-action detection to recognize the `Livewire.` prefix too
 - "Add Subscription" (×2) and "New Invoice" on the project detail page passed the project/client's raw internal `id` as the `?projectId=`/`?clientId=` query param — the target forms (`SubscriptionForm`, `InvoiceBuilder`) look those up by `ulid`, so the project/client never pre-filled and the link silently landed on an empty form. Same bug class as the earlier row-action fixes, just hiding inside a `route()` query array instead of a `wire:click` argument — the earlier sweep's search pattern didn't catch this shape, so it survived that pass
 - Tests: `ProjectShowLinksTest`

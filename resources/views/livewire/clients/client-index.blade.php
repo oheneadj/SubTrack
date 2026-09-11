@@ -1,6 +1,9 @@
 <div>
     <x-ui.page-header title="Clients" subtitle="Manage your client relationships and contact details">
-        <x-ui.button wire:click="openCreate" class="whitespace-nowrap">
+        <x-ui.button
+            class="whitespace-nowrap"
+            @click="$dispatch('open-modal', { id: 'client-modal' }); Livewire.dispatchTo('clients.client-form', 'open-client-modal')"
+        >
             <x-icon-plus class="w-4 h-4" />
             <span>Add Client</span>
         </x-ui.button>
@@ -17,7 +20,7 @@
             title="No clients found"
             message="{{ $search ? 'Try adjusting your search query.' : 'Get started by adding your first client.' }}"
         >
-            <x-ui.button wire:click="openCreate">Add Client</x-ui.button>
+            <x-ui.button @click="$dispatch('open-modal', { id: 'client-modal' }); Livewire.dispatchTo('clients.client-form', 'open-client-modal')">Add Client</x-ui.button>
         </x-ui.empty-state>
     @else
         <x-ui.data-table :headers="['name' => 'Client Name', 'email' => 'Email', 'projects_count' => 'Projects', 'created_at' => 'Registered', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
@@ -44,7 +47,8 @@
                     <td class="text-right">
                         <x-ui.action-menu 
                             :viewAction="route('clients.show', $client)"
-                            editAction="edit('{{ $client->ulid }}')"
+                            editAction="Livewire.dispatchTo('clients.client-form', 'open-client-modal', { id: '{{ $client->ulid }}' })"
+                            editModalId="client-modal"
                             deleteAction="openDeleteModal('{{ $client->ulid }}')"
                         >
                             <x-ui.button as="a" size="xs" href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" wire:navigate class="h-8 px-3 rounded-lg">
@@ -89,99 +93,8 @@
     </div>
     @endif
 
-    {{-- Client Form Modal --}}
-    <div 
-        x-data="{ open: @entangle('showModal') }"
-        x-show="open"
-        x-on:keydown.escape.window="open = false"
-        class="fixed inset-0 z-50 overflow-y-auto"
-        style="display: none;"
-    >
-        <div class="flex items-center justify-center min-h-screen p-4">
-            {{-- Overlay/Backdrop --}}
-            <div 
-                x-show="open"
-                x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
-                @click="open = false"
-            ></div>
-
-            {{-- Modal Content --}}
-            <div 
-                x-show="open"
-                x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="relative bg-white rounded-2xl shadow-2xl transform transition-all max-w-2xl w-full overflow-hidden"
-            >
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-slate-800">
-                        {{ $editingId ? 'Edit Client' : 'Add New Client' }}
-                    </h3>
-                    <x-ui.button @click="open = false" variant="ghost" circle class="text-slate-400">
-                        <x-icon-square-x class="w-5 h-5" />
-                    </x-ui.button>
-                </div>
-
-                <div class="p-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Identity & Contact</h4>
-                        </div>
-
-                        <x-ui.form-input 
-                            label="Full Name" 
-                            model="name" 
-                            placeholder="John Doe" 
-                            :error="$errors->first('name')"
-                        />
-                        
-                        <x-ui.form-input 
-                            label="Email Address" 
-                            model="email" 
-                            type="email" 
-                            placeholder="john@example.com" 
-                            :error="$errors->first('email')"
-                        />
-
-                        <div class="md:col-span-2 mt-4">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Organization & Phone</h4>
-                        </div>
-
-                        <x-ui.form-input 
-                            label="Company Name" 
-                            model="company_name" 
-                            placeholder="Acme Inc." 
-                            :error="$errors->first('company_name')"
-                        />
-                        
-                        <x-ui.form-input 
-                            label="Phone Number" 
-                            model="phone" 
-                            placeholder="+1 (555) 000-0000" 
-                            :error="$errors->first('phone')"
-                        />
-                    </div>
-                </div>
-
-                <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-xl">
-                    <x-ui.button @click="open = false" variant="ghost">Cancel</x-ui.button>
-                    <x-ui.button wire:click="save" wire:loading.attr="disabled" class="min-w-[100px]">
-                        <span wire:loading.remove>{{ $editingId ? 'Update Client' : 'Create Client' }}</span>
-                        <span wire:loading>
-                            <span class="loading loading-spinner loading-xs"></span> Saving...
-                        </span>
-                    </x-ui.button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- Client Form Modal (shared with the client detail page) --}}
+    <x-ui.modal id="client-modal">
+        <livewire:clients.client-form :isModal="true" />
+    </x-ui.modal>
 </div>

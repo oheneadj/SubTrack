@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\UserRole;
 use App\Livewire\ActivityLogs\ActivityLogIndex;
+use App\Livewire\Clients\ClientForm;
 use App\Livewire\Clients\ClientIndex;
 use App\Livewire\Projects\ProjectIndex;
 use App\Livewire\Projects\ProjectShow;
@@ -29,9 +30,10 @@ test('client edit and delete resolve by ulid, not the raw id', function () {
     $client = Client::create(['name' => 'Acme Co', 'email' => 'acme@test.test']);
 
     Livewire::actingAs(User::factory()->create())
-        ->test(ClientIndex::class)
-        ->call('edit', $client->ulid)
-        ->assertHasNoErrors();
+        ->test(ClientForm::class)
+        ->call('openClientModal', $client->ulid)
+        ->assertHasNoErrors()
+        ->assertSet('name', 'Acme Co');
 
     Livewire::actingAs(User::factory()->create())
         ->test(ClientIndex::class)

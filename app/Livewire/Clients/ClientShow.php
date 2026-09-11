@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
-use Livewire\Component;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class ClientShow extends Component
 {
@@ -14,7 +16,7 @@ class ClientShow extends Component
 
     public function mount(Client $client)
     {
-        $this->client = $client->load(['projects.subscriptions', 'invoices' => function($query) {
+        $this->client = $client->load(['projects.subscriptions', 'invoices' => function ($query) {
             $query->latest()->limit(10);
         }]);
     }
@@ -25,6 +27,14 @@ class ClientShow extends Component
         session()->flash('success', $message);
     }
 
+    /** Refresh the client after an edit made via the shared modal. */
+    #[On('client-saved')]
+    public function clientSaved(string $message): void
+    {
+        $this->client->refresh();
+        session()->flash('success', $message);
+    }
+
     #[Computed]
     public function projects()
     {
@@ -32,9 +42,18 @@ class ClientShow extends Component
     }
 
     #[Computed]
+    public function directSubscriptions()
+    {
+        return $this->client->directSubscriptions()->with(['provider'])->orderBy('expiry_date')->get();
+    }
+
+    #[Computed]
     public function subscriptions()
     {
-        return $this->client->subscriptions()->whereHas('project')->with('project')->get();
+        $direct = $this->client->directSubscriptions()->with('provider')->get();
+        $viaProjects = $this->client->projectSubscriptions()->with('project', 'provider')->get();
+
+        return $direct->merge($viaProjects)->sortBy('status');
     }
 
     #[Computed]
@@ -47,9 +66,10 @@ class ClientShow extends Component
     public function stats()
     {
         return [
-            'total_billed' => $this->client->invoices()->where('status', 'Paid')->sum('total_amount'),
-            'pending_amount' => $this->client->invoices()->where('status', 'Sent')->sum('total_amount'),
-            'active_subscriptions' => $this->client->subscriptions()->where('status', 'Active')->count(),
+            'total_billed' => $this->client->invoices()->where('status', 'Paid')->sum('total_amount') / 100,
+            'pending_amount' => $this->client->invoices()->whereIn('status', ['Sent', 'Overdue'])->sum('total_amount') / 100,
+            'active_subscriptions' => $this->client->directSubscriptions()->where('status', 'Active')->count()
+                + $this->client->projectSubscriptions()->where('status', 'Active')->count(),
             'project_count' => $this->client->projects()->count(),
         ];
     }
