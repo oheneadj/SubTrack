@@ -6,13 +6,6 @@
         </x-ui.button>
     </x-ui.page-header>
 
-    {{-- Flash Messages --}}
-    @if(session('success'))
-        <div class="alert alert-success mb-6 rounded-xl border-green-200">
-            <x-icon-circle-check class="w-5 h-5" />
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
 
     @if(session('error'))
         <div class="alert alert-error mb-6 rounded-xl border-red-200">

@@ -6,12 +6,6 @@
         </div>
     </div>
 
-    @if (session()->has('success'))
-        <div class="mb-6 rounded-lg bg-green-50 p-4 text-green-800 border border-green-200">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         @foreach ($this->templates as $template)
             <x-ui.card class="flex flex-col">

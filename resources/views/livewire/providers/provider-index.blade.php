@@ -6,12 +6,6 @@
         </x-ui.button>
     </x-ui.page-header>
 
-    @if(session('success'))
-        <div class="alert alert-success mb-6 shadow-sm border-0 bg-green-50 text-green-700">
-            <x-icon-check class="w-5 h-5" />
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
 
     <x-ui.toolbar searchModel="search" searchPlaceholder="Search providers...">
     </x-ui.toolbar>

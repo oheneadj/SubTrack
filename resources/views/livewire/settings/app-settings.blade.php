@@ -6,13 +6,6 @@
         </x-ui.button>
     </x-ui.page-header>
 
-    @if(session('success'))
-        <div class="alert alert-success mb-6 rounded-xl border-green-200">
-            <x-icon-circle-check class="w-5 h-5" />
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <div class="space-y-8">
 
         {{-- ═══════════════ SECTION 1: Business Information ═══════════════ --}}

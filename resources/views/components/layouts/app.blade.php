@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -36,21 +36,6 @@
             <x-nav.topbar />
 
             <main class="p-6 md:px-42">
-                {{-- Global Flash Messages --}}
-                @if (session()->has('success'))
-                    <div class="alert alert-success mb-6 rounded-xl border-green-200">
-                        <x-icon-circle-check class="w-5 h-5" />
-                        <span>{{ session('success') }}</span>
-                    </div>
-                @endif
-
-                @if (session()->has('error'))
-                    <div class="alert alert-error mb-6 rounded-xl border-red-200">
-                        <x-icon-alert-triangle class="w-5 h-5" />
-                        <span>{{ session('error') }}</span>
-                    </div>
-                @endif
-
                 {{ $slot }}
             </main>
         </div>
@@ -58,6 +43,10 @@
 
     {{-- Notification Slideover --}}
     <x-nav.notification-drawer />
+
+    {{-- Global Flash Toasts --}}
+    <x-ui.toast type="success" :message="session('success')" />
+    <x-ui.toast type="error" :message="session('error')" />
 
     @stack('scripts')
 

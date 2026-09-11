@@ -6,7 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `<x-ui.toast>` — a reusable success/error flash toast (auto-dismissing, bottom-right), wired once into the shared app layout. Replaces ~10 differently-styled, hand-copied flash-message blocks scattered across individual pages — several of which duplicated the layout's own inline banner, so the message showed twice on those pages. Now every page shows the same toast automatically after any action that flashes `success`/`error`, including every delete/edit action fixed in the previous commit
+- Tests: `FlashToastTest`
+
 ### Fixed
+- The "Email" button on the clients list had a white icon but no explicit text color on its label, inheriting a dark blue that was nearly unreadable against the button's background — set explicitly to white to match the icon
 - **The real cause of the "edit/delete returns 404" report**: nearly every row action across the app (client edit/delete, project edit/delete, provider edit/delete, invoice download/send/mark-paid, activity log details, dashboard reminder buttons, mail-recipient selection, user delete/resend-invite/toggle-active) passed the model's raw internal `id` into an action method that looks the record up by `ulid` (e.g. `Client::where('ulid', $id)->firstOrFail()`). The mismatch means `firstOrFail()` always threw `ModelNotFoundException`, which Laravel renders as a 404 — this was a pre-existing, systemic bug (present since the first commit), not something introduced this session, but it explains the reported symptom exactly. Fixed every call site to pass `->ulid` instead of `->id`
 - Subscription deletion from the project detail page was calling a `confirmDelete()` method that didn't exist on `ProjectShow` at all — implemented it properly (confirm modal + delete), matching the pattern used elsewhere
 - Two Blade views (`activity-log-index.blade.php`, `direct-mailer.blade.php`) had reverted to an earlier, buggy inline-query version of themselves during the app-wide card/button rollout — the rollout agents worked from file snapshots that predated this session's own earlier fixes to those same files, and copying their output back wholesale silently undid that earlier work. Restored both to use their component computed properties instead of inline `@php` queries

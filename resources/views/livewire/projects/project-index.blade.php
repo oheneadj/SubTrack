@@ -8,12 +8,6 @@
         </x-ui.button>
     </x-ui.page-header>
 
-    @if(session('success'))
-        <div class="alert alert-success mb-4">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <x-ui.toolbar searchModel="search" searchPlaceholder="Search projects or clients...">
     </x-ui.toolbar>
 

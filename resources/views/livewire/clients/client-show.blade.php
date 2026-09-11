@@ -7,12 +7,6 @@
                 <span>Back to List</span>
             </x-ui.button>
 
-            @if(session('success'))
-                <div class="alert alert-success py-2 px-4 mb-0 text-sm">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             <div class="relative" x-data="{ open: false }">
                 <x-ui.button @click="open = !open" type="button" soft class="bg-white hover:bg-slate-50 border-slate-200">
                     <x-icon-mail class="w-4 h-4 text-blue-500" />

@@ -289,15 +289,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="fixed bottom-4 right-4 z-50" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" x-transition>
-            <div class="alert alert-success shadow-lg rounded-xl">
-                <x-icon-check class="w-5 h-5" />
-                <span>{{ session('success') }}</span>
-            </div>
-        </div>
-    @endif
-
     {{-- Renewal Modal --}}
     @if($showRenewalModal)
     <div class="fixed inset-0 z-50" x-data @keydown.escape.window="$wire.set('showRenewalModal', false)">

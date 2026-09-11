@@ -22,13 +22,6 @@
         </x-ui.button>
     </x-ui.page-header>
 
-    @if(session('success'))
-        <div class="alert alert-success mb-6 rounded-xl border-green-200 shadow-sm">
-            <x-icon-circle-check class="w-5 h-5" />
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {{-- ═══════════════ LEFT COLUMN: RECIPIENTS ═══════════════ --}}
