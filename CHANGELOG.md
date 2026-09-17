@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Two missing icon components — `icon-file-x` (crashed the public invoice page and the client invoice portal with "Unable to locate a class or view for component") and `icon-chevron-down` (client invoice portal's expand/collapse toggle) — added both, matching the app's existing Tabler-icon SVG style
+- Tests: `NoMissingIconComponentsTest` — statically scans every Blade file for `<x-icon-*>` references with no matching component, so a missing icon can't sit broken again until someone happens to render that exact page (which is how `icon-file-x` went unnoticed all session)
+
 ### Changed
 - Client detail page: subscriptions moved out of a capped, summary-only sidebar card (5 max, active-only) into their own full section in the main column, directly below Projects — a proper table (service/domain, project, provider, expiry, status) covering every subscription, not just the active ones
 - Added an "Add Subscription" action to the client detail page, matching the existing "New Project" — both create with the client pre-filled via `?clientId=`
