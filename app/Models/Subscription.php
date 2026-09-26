@@ -94,6 +94,30 @@ class Subscription extends Model
         return '$'.number_format($this->client_renewal_cost_usd / 100, 2);
     }
 
+    /**
+     * Filters a site-wide configured list of "remind N days before expiry"
+     * values down to the ones that actually fit this subscription's billing
+     * cycle — a 30-day reminder is meaningless for a monthly subscription
+     * whose entire cycle is ~30 days (it would fire right as the previous
+     * cycle started). Types with no fixed cycle (bare OneTime) keep every
+     * configured value, since there's no cycle length to compare against.
+     *
+     * @param  array<int, int>  $configuredDays
+     * @return array<int, int>
+     */
+    public function applicableReminderDays(array $configuredDays): array
+    {
+        $cycleMonths = $this->renewal_type->cycleMonths();
+
+        if ($cycleMonths === null) {
+            return $configuredDays;
+        }
+
+        $cycleDays = $cycleMonths * 30;
+
+        return array_values(array_filter($configuredDays, fn (int $day) => $day < $cycleDays));
+    }
+
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);

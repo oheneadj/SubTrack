@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Enums\SubscriptionStatus;
+use App\Models\Setting;
 use App\Models\Subscription;
 use App\Services\NotificationService;
 use Illuminate\Console\Command;
@@ -38,6 +39,12 @@ class CheckSubscriptionExpiries extends Command
     {
         $this->info('Checking subscription expiries...');
 
+        $configuredReminderDays = collect(explode(',', Setting::get('reminder_days', '30,14,7')))
+            ->map(fn (string $day) => (int) trim($day))
+            ->filter(fn (int $day) => $day > 0)
+            ->values()
+            ->all();
+
         $subscriptions = Subscription::where('status', '!=', SubscriptionStatus::Cancelled)->get();
         $processedCount = 0;
         $notifiedCount = 0;
@@ -45,7 +52,6 @@ class CheckSubscriptionExpiries extends Command
         foreach ($subscriptions as $subscription) {
             $processedCount++;
             $daysLeft = $subscription->days_until_expiry;
-            $oldStatus = $subscription->status;
 
             // 1. Update status if expired
             if ($subscription->expiry_date->isPast()) {
@@ -54,23 +60,25 @@ class CheckSubscriptionExpiries extends Command
                     $this->warn("Subscription #{$subscription->id} ({$subscription->domain_name}) has EXPIRED.");
                     $this->notificationService->sendExpiryReminder($subscription);
                     $notifiedCount++;
-
-                    continue;
                 }
+
+                continue;
             }
 
             // 2. Update status if expiring soon (<= 30 days)
-            if ($daysLeft <= 30 && $daysLeft > 0) {
-                if ($subscription->status === SubscriptionStatus::Active) {
-                    $subscription->update(['status' => SubscriptionStatus::Expiring]);
-                    $this->info("Subscription #{$subscription->id} ({$subscription->domain_name}) is now EXPIRING (days left: {$daysLeft}).");
-                }
+            if ($daysLeft <= 30 && $daysLeft > 0 && $subscription->status === SubscriptionStatus::Active) {
+                $subscription->update(['status' => SubscriptionStatus::Expiring]);
+                $this->info("Subscription #{$subscription->id} ({$subscription->domain_name}) is now EXPIRING (days left: {$daysLeft}).");
+            }
 
-                // 3. Send reminders at specific intervals (30, 7, 3, 1 days)
-                if (in_array($daysLeft, [30, 7, 3, 1])) {
-                    $this->notificationService->sendExpiryReminder($subscription);
-                    $notifiedCount++;
-                }
+            // 3. Send reminders at the configured intervals — filtered down to
+            // whatever actually fits this subscription's own billing cycle
+            // (e.g. a 30-day reminder makes no sense for a monthly subscription).
+            $applicableDays = $subscription->applicableReminderDays($configuredReminderDays);
+
+            if ($daysLeft > 0 && in_array($daysLeft, $applicableDays, true)) {
+                $this->notificationService->sendExpiryReminder($subscription);
+                $notifiedCount++;
             }
         }
 
