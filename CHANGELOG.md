@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `MonthlyRenewalTestDataSeeder` — 10 clearly-labeled `RecurringMonthly`/`OneTimeMonthly` subscriptions under a "Monthly Test Client", covering active, each reminder window (7/3 days), and overdue by 1/2/3 missed cycles — for testing the reminder-day filtering and missed-payments-count work without hand-creating records. Registered in `DatabaseSeeder`; safe to re-run (`updateOrCreate`)
 - Subscriptions page: filter by Renewal Type (One-time, One-time Monthly/Annually, Recurring Monthly/Annually), alongside the existing service/status/date filters. Included in the CSV export's filtered query too, and in the shareable URL query string like the other filters
 - `Subscription::missed_payments_count` — for an overdue subscription, how many renewal payments have actually been skipped (`days overdue ÷ cycle length`), not just a raw negative day count. Only meaningful for recurring types with a fixed cycle (`null` for bare `OneTime`, which has no cycle to count against — those still show days overdue). Replaces "-45 days" / "EXPIRED 45 DAYS AGO" style displays with e.g. "2 payments missed" across the subscriptions list, renewal tracker, subscription detail page, dashboard, and the reminder email itself. Tests: `MissedPaymentsCountTest`
 
