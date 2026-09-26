@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Livewire\Dashboard;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
 use App\Models\Invoice;
 use App\Models\Renewal;
 use App\Models\Subscription;
 use App\Services\RevenueService;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -18,7 +20,19 @@ class FinanceDashboard extends Component
     public function render(RevenueService $revenue): View
     {
         $comparisonData = $revenue->comparisonData(12);
-        $totalRevenue = Invoice::where('status', InvoiceStatus::Paid)->sum('total_amount') / 100;
+
+        $invoiceRevenue = Invoice::where('status', InvoiceStatus::Paid)->sum('total_amount') / 100;
+
+        // Renewals paid for directly (not through an invoice) are just as much
+        // received revenue as a paid invoice — count them too, or a client who
+        // only ever pays via subscription renewals looks like they've never
+        // paid anything. Renewals linked to an invoice are excluded here since
+        // that revenue is already counted once via the invoice itself above.
+        $renewalRevenue = Renewal::whereNull('invoice_id')
+            ->whereIn('payment_status', [PaymentStatus::Renewed, PaymentStatus::Paid])
+            ->sum('client_cost_usd') / 100;
+
+        $totalRevenue = $invoiceRevenue + $renewalRevenue;
 
         $outstandingRevenue = Invoice::whereIn('status', [
             InvoiceStatus::Sent,
@@ -33,12 +47,7 @@ class FinanceDashboard extends Component
         $totalCosts = Renewal::sum('provider_cost_usd') / 100;
         $profit = Renewal::sum('client_cost_usd') / 100 - $totalCosts;
 
-        // Recent Paid Invoices
-        $recentInvoices = Invoice::with(['client'])
-            ->where('status', InvoiceStatus::Paid)
-            ->orderBy('updated_at', 'desc')
-            ->take(5)
-            ->get();
+        $recentPayments = $this->recentPayments();
 
         // Upcoming Renewals
         $upcomingRenewals = Subscription::with(['provider', 'project.client'])
@@ -53,9 +62,58 @@ class FinanceDashboard extends Component
             'mrr' => $mrr,
             'totalCosts' => $totalCosts,
             'profit' => $profit,
-            'recentInvoices' => $recentInvoices,
+            'recentPayments' => $recentPayments,
             'upcomingRenewals' => $upcomingRenewals,
             'comparisonData' => $comparisonData,
         ])->layout('components.layouts.app');
+    }
+
+    /**
+     * The 5 most recent payments received, merged from both revenue
+     * sources (paid invoices and directly-paid renewals) so neither is
+     * silently missing from the activity feed.
+     *
+     * @return Collection<int, object>
+     */
+    private function recentPayments(): Collection
+    {
+        $invoicePayments = Invoice::with('client')
+            ->where('status', InvoiceStatus::Paid)
+            ->latest('updated_at')
+            ->take(5)
+            ->get()
+            ->map(fn (Invoice $invoice) => (object) [
+                'type' => 'invoice',
+                'client_name' => $invoice->client?->name ?? 'Unknown Client',
+                'amount' => $invoice->total_amount / 100,
+                'date' => $invoice->updated_at,
+                'reference' => $invoice->invoice_number,
+                'route' => route('invoices.edit', $invoice),
+            ]);
+
+        $renewalPayments = Renewal::with('subscription.project.client', 'subscription.client')
+            ->whereNull('invoice_id')
+            ->whereIn('payment_status', [PaymentStatus::Renewed, PaymentStatus::Paid])
+            ->latest('renewal_confirmed_date')
+            ->take(5)
+            ->get()
+            ->map(function (Renewal $renewal) {
+                $subscription = $renewal->subscription;
+                $client = $subscription?->effective_client;
+
+                return (object) [
+                    'type' => 'renewal',
+                    'client_name' => $client?->name ?? 'Unknown Client',
+                    'amount' => $renewal->client_cost_usd / 100,
+                    'date' => $renewal->renewal_confirmed_date ?? $renewal->payment_received_date ?? $renewal->created_at,
+                    'reference' => $subscription?->domain_name ?: $subscription?->service_type?->label(),
+                    'route' => $subscription ? route('subscriptions.show', $subscription) : null,
+                ];
+            });
+
+        return $invoicePayments->concat($renewalPayments)
+            ->sortByDesc('date')
+            ->take(5)
+            ->values();
     }
 }

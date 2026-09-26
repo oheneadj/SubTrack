@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Finance dashboard's "Total Revenue" and "Recent Payments Received" only ever counted paid Invoices — subscription renewals paid for directly (never invoiced) were silently excluded, even though "Profit" on the same dashboard already counted them. Now both revenue figures merge paid invoices with directly-paid renewals (`Renewal::whereNull('invoice_id')`, so a renewal already counted once via its linked invoice isn't double-counted)
+- Recent Payments Received was displaying `$invoice->total_amount` (stored in cents) directly as dollars with no `/100` conversion — a 100x display bug on every row
+- Tests: `FinanceDashboardRevenueTest` — merged revenue totals, and no double-counting for invoice-linked renewals
+
 ### Changed
 - `x-ui.action-menu`'s built-in View/Edit/Delete pill buttons now match `x-ui.button`'s `xs` sizing exactly (`px-2 py-1`, `font-medium`, `gap-2`, no uppercase/tracking) — previously they used bespoke `px-3 py-1.5 font-bold uppercase gap-1.5` classes, so they visibly clashed with any slotted `x-ui.button` sitting right next to them (e.g. invoice-index, renewal-tracker, client-index's Email button)
 - Client detail page's "Communication" dropdown (Send Custom Email / Send Renewal Reminder) now uses the same menuitem styling as `x-ui.action-menu`'s own dropdown mode, instead of bespoke `px-3 py-2` classes

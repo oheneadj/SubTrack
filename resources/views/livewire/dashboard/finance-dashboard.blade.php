@@ -61,26 +61,31 @@
                 </h3>
             </div>
             <div class="p-0">
-                @if($recentInvoices->isEmpty())
+                @if($recentPayments->isEmpty())
                     <div class="p-8 text-center text-slate-500 text-sm">No recent payments.</div>
                 @else
                     <div class="divide-y divide-slate-100">
-                        @foreach($recentInvoices as $invoice)
+                        @foreach($recentPayments as $payment)
                             <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
                                         <x-icon-currency-dollar class="w-5 h-5 text-green-600" />
                                     </div>
                                     <div>
-                                        <div class="font-bold text-slate-800">{{ $invoice->client?->name ?? 'Unknown Client' }}</div>
+                                        <div class="font-bold text-slate-800">{{ $payment->client_name }}</div>
                                         <div class="text-xs text-slate-500">
-                                            <a href="{{ route('invoices.edit', $invoice) }}" class="hover:underline hover:text-blue-600" wire:navigate>{{ $invoice->invoice_number }}</a> 
-                                            &middot; {{ $invoice->updated_at->format('M d, Y') }}
+                                            @if($payment->route)
+                                                <a href="{{ $payment->route }}" class="hover:underline hover:text-blue-600" wire:navigate>{{ $payment->reference }}</a>
+                                            @else
+                                                {{ $payment->reference }}
+                                            @endif
+                                            &middot; {{ $payment->type === 'invoice' ? 'Invoice' : 'Renewal' }}
+                                            &middot; {{ $payment->date->format('M d, Y') }}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="font-bold text-green-600 text-right">
-                                    +${{ number_format($invoice->total_amount, 2) }}
+                                    +${{ number_format($payment->amount, 2) }}
                                     <div class="text-[10px] font-normal text-slate-400 uppercase">Paid</div>
                                 </div>
                             </div>
