@@ -14,13 +14,13 @@
                 </x-ui.button>
                 <ul x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-50 menu p-2 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2">
                     <li>
-                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
+                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors rounded-lg">
                             <x-icon-send class="w-4 h-4 text-blue-400" />
                             <span class="font-medium">Send Custom Email</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->ulid, 'template' => 'subscription-reminder']) }}" class="flex items-center gap-2 py-2 px-3 hover:bg-slate-50 rounded-lg text-sm text-primary transition-colors">
+                        <a href="{{ route('mail-mailer.index', ['clientId' => $client->ulid, 'template' => 'subscription-reminder']) }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors rounded-lg">
                             <x-icon-refresh class="w-4 h-4 text-orange-400" />
                             <span class="font-medium">Send Renewal Reminder</span>
                         </a>
