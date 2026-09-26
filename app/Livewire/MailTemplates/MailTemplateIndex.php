@@ -135,7 +135,7 @@ class MailTemplateIndex extends Component
             $this->editSubject = $defaults[$template->slug]['subject'];
             $this->editBody = $defaults[$template->slug]['body'];
 
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Fields reset to default values. Don\'t forget to save.']);
+            $this->dispatch('notify', type: 'success', message: "Fields reset to default values. Don't forget to save.");
         }
     }
 

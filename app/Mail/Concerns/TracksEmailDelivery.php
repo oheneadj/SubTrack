@@ -6,6 +6,7 @@ namespace App\Mail\Concerns;
 
 use App\Enums\EmailLogStatus;
 use App\Models\EmailLog;
+use App\Services\EmailBatchNotifier;
 use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -51,11 +52,20 @@ trait TracksEmailDelivery
             'error' => $exception->getMessage(),
         ]);
 
-        if ($this->emailLogId) {
-            EmailLog::where('id', $this->emailLogId)->update([
-                'status' => EmailLogStatus::Failed,
-                'error_message' => $exception->getMessage(),
-            ]);
+        if (! $this->emailLogId) {
+            return;
         }
+
+        $log = EmailLog::find($this->emailLogId);
+        if (! $log) {
+            return;
+        }
+
+        $log->update([
+            'status' => EmailLogStatus::Failed,
+            'error_message' => $exception->getMessage(),
+        ]);
+
+        app(EmailBatchNotifier::class)->notifyIfComplete($log);
     }
 }

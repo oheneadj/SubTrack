@@ -34,8 +34,16 @@ class EmailLogger
         array $context = [],
         ?callable $redact = null,
     ): EmailLog {
-        $subject = $mailable->envelope()->subject ?? '(no subject)';
-        $body = $mailable->render();
+        // Rendered on a clone, never the instance itself: Mailable::render()
+        // triggers prepareMailableForDelivery(), which (via headers()) calls
+        // withSymfonyMessage(Closure) — mutating $this permanently. Queuing
+        // that same, now-poisoned instance afterward fails job serialization
+        // ("Serialization of 'Closure' is not allowed"). Mail::fake() in
+        // tests never exercises real serialization, so this doesn't surface
+        // there — only against a real queue connection.
+        $preview = clone $mailable;
+        $subject = $preview->envelope()->subject ?? '(no subject)';
+        $body = $preview->render();
 
         if ($redact) {
             $body = $redact($body);

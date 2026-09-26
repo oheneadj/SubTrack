@@ -43,7 +43,8 @@ test('sending queues an email for each selected client and resets the form', fun
         ->set('subject', 'Hello there')
         ->set('body', 'This is the message body.')
         ->call('send')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertDispatched('notify', type: 'success');
 
     Mail::assertQueued(GenericClientMail::class, fn ($mail) => $mail->client->is($client));
 });
@@ -91,6 +92,8 @@ test('sending is rate limited after 3 attempts within a minute', function () {
             ->set('body', 'This is the message body.')
             ->call('send');
     }
+
+    $component->assertDispatched('notify', type: 'error');
 
     Mail::assertQueuedCount(3);
 });

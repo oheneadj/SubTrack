@@ -19,6 +19,7 @@ use App\Observers\ReceiptObserver;
 use App\Observers\RenewalObserver;
 use App\Observers\SubscriptionObserver;
 use App\Services\ActivityLogService;
+use App\Services\EmailBatchNotifier;
 use App\Services\Payment\GatewayRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
@@ -132,11 +133,18 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            EmailLog::where('id', (int) $header->getBody())->update([
+            $log = EmailLog::find((int) $header->getBody());
+            if (! $log) {
+                return;
+            }
+
+            $log->update([
                 'status' => EmailLogStatus::Sent,
                 'sent_at' => now(),
                 'error_message' => null,
             ]);
+
+            app(EmailBatchNotifier::class)->notifyIfComplete($log);
         });
     }
 

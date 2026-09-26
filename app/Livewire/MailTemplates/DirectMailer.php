@@ -168,7 +168,8 @@ class DirectMailer extends Component
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, maxAttempts: 3)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
-            session()->flash('error', "Too many send attempts. Please wait {$seconds} seconds before trying again.");
+            $wait = $seconds > 60 ? ceil($seconds / 60).' minute(s)' : "{$seconds} seconds";
+            $this->dispatch('notify', type: 'error', message: "You're sending a lot of emails at once. Please wait {$wait} and try again.");
 
             return;
         }
@@ -186,7 +187,9 @@ class DirectMailer extends Component
         $count = $clients->count();
 
         $this->reset(['selectedClients', 'selectedTemplate', 'subject', 'body', 'selectAll', 'hasManualEdits']);
-        session()->flash('success', "Queued emails to {$count} clients for delivery.");
+
+        $recipients = $count === 1 ? '1 person' : "{$count} people";
+        $this->dispatch('notify', type: 'success', message: "Sending your email to {$recipients} now — we'll let you know once it's done.");
     }
 
     #[Layout('components.layouts.app')]
