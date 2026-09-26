@@ -111,6 +111,20 @@ class NotificationService
             return Invoice::find($renewal->invoice_id);
         }
 
+        // No renewal yet (this subscription's first cycle) — but a reminder for
+        // this same expiry may already have created a pending draft on an
+        // earlier call (e.g. the 30-day reminder, before we're now at the
+        // 14-day one). Without this check, every reminder for the same cycle
+        // would create its own duplicate invoice.
+        $existingItem = InvoiceItem::where('subscription_id', $subscription->id)
+            ->whereHas('invoice', fn ($query) => $query->whereIn('status', [InvoiceStatus::Draft, InvoiceStatus::Sent]))
+            ->latest('id')
+            ->first();
+
+        if ($existingItem) {
+            return $existingItem->invoice;
+        }
+
         // No invoice yet — auto-create a draft invoice for the renewal amount.
         $costCents = $subscription->client_renewal_cost_usd;
         if ($costCents <= 0) {
@@ -136,6 +150,7 @@ class NotificationService
         InvoiceItem::create([
             'invoice_id' => $invoice->id,
             'renewal_id' => $renewal?->id,
+            'subscription_id' => $subscription->id,
             'description' => "Renewal: {$serviceName}",
             'period' => "Expiring {$subscription->expiry_date->format('M d, Y')}",
             'quantity' => 1,

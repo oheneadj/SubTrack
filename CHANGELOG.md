@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- Found while re-examining reminders: `NotificationService::resolveInvoiceForReminder()` created a brand-new draft invoice on *every* expiry reminder for a subscription that had never been renewed before (no `Renewal` row yet, so nothing to detect "I already made one for this cycle" from) — a subscription with a 30/14/7-day reminder schedule got 3 duplicate draft invoices for the same amount. Added `invoice_items.subscription_id` so a pending draft/sent invoice already created for this subscription's current cycle is found and reused instead of creating another. Tests: `ReminderInvoiceDeduplicationTest`
 - Notification Preferences' "Reminder Days" setting only ever made sense for annual subscriptions — a 30-day reminder is basically the entire cycle for a monthly subscription, firing right as the previous one started. Worse, `subtrack:check-expiries` never actually read this setting at all; it sent reminders on a hardcoded `[30, 7, 3, 1]` regardless of what was configured. Now the command reads `reminder_days`, and `Subscription::applicableReminderDays()` filters it per subscription down to whatever actually fits that subscription's own billing cycle (bare `OneTime`, with no fixed cycle, keeps every configured value)
 - Tests: `SubscriptionReminderDaysTest`
 

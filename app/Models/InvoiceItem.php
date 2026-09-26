@@ -14,7 +14,7 @@ class InvoiceItem extends Model
     use HasFactory, LogsActivity;
 
     protected $fillable = [
-        'invoice_id', 'renewal_id', 'description', 'period', 'quantity', 'unit_price', 'total',
+        'invoice_id', 'renewal_id', 'subscription_id', 'description', 'period', 'quantity', 'unit_price', 'total',
     ];
 
     protected $casts = [
@@ -41,5 +41,10 @@ class InvoiceItem extends Model
     public function renewal(): BelongsTo
     {
         return $this->belongsTo(Renewal::class);
+    }
+
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
     }
 }
