@@ -13,12 +13,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `DirectMailer`: "Select All" now selects every client matching the current search across all pages (previously only the 6 on the current page); searching resets pagination back to page 1; recipient list pagination switched to `simplePaginate` (compact Prev/Next) so it fits the narrow sidebar without overflowing
 - `GenericClientMail` now implements `ShouldQueue` (dedicated `emails` queue, `tries=3`, `timeout=30`, `backoff=[10,30,60]`, logs to `Log::error` on final failure via `failed()`) — bulk sends from Direct Mailer no longer block the request; local dev's `queue:listen` now listens on `emails,default`
 - User show page: removed raw internal `id` from the Meta Data card; fixed the initials avatar rendering as an oval instead of a circle (missing explicit height)
+- `DirectMailer::send()` is now rate limited to 3 attempts per minute per user
+- `DirectMailer`: selecting a template while there's an unsaved manual draft (typed subject/body) now prompts for confirmation instead of silently overwriting it
+- Extracted `GenericClientMail`'s placeholder-rendering logic into `App\Services\ClientMailPersonalizer`, shared with the new Direct Mailer preview so both stay in sync
 
 ### Added
 - User show page "Account History" now shows real `ActivityLog` entries for the user (as actor or subject) instead of a static placeholder; `toggleActive`/`confirmPasswordReset` now log to `ActivityLog`
 - `warning` toast type wired into the global flash-message layout (previously only `success`/`error`)
+- `DirectMailer`: "Preview" button showing the rendered subject/body with placeholders filled in for the first selected recipient, before sending to everyone
 - `ClientFactory`, `MailTemplateFactory`
-- Tests: `DirectMailerTest`, `MailTemplateIndexTest` — auth/authorization, validation, happy path, select-all-across-pages, search-resets-pagination
+- Tests: `DirectMailerTest`, `MailTemplateIndexTest` — auth/authorization, validation, happy path, select-all-across-pages, search-resets-pagination, rate limiting, manual-edit guard, preview rendering
 
 ### Fixed
 - Two missing icon components — `icon-file-x` (crashed the public invoice page and the client invoice portal with "Unable to locate a class or view for component") and `icon-chevron-down` (client invoice portal's expand/collapse toggle) — added both, matching the app's existing Tabler-icon SVG style

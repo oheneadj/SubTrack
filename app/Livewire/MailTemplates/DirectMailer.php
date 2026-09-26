@@ -8,7 +8,9 @@ use App\Mail\GenericClientMail;
 use App\Models\Client;
 use App\Models\MailTemplate;
 use App\Models\Subscription;
+use App\Services\ClientMailPersonalizer;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -31,6 +33,11 @@ class DirectMailer extends Component
     public string $search = '';
 
     public bool $selectAll = false;
+
+    /** Whether the user has typed into subject/body since the last template was applied — guards against silently overwriting a manual draft. */
+    public bool $hasManualEdits = false;
+
+    public bool $showPreview = false;
 
     public function mount()
     {
@@ -82,6 +89,46 @@ class DirectMailer extends Component
         return Client::whereIn('ulid', $this->selectedClients)->get()->keyBy('ulid');
     }
 
+    /** The first selected client, used as the stand-in recipient for the message preview. */
+    #[Computed]
+    public function previewClient(): ?Client
+    {
+        return $this->selectedClientModels->first();
+    }
+
+    /**
+     * The subject/body with placeholders rendered for the preview client, so the user can
+     * see exactly what a recipient will receive before sending to everyone.
+     *
+     * @return array{subject: string, body: string}
+     */
+    #[Computed]
+    public function previewRendered(): array
+    {
+        if (! $this->previewClient) {
+            return ['subject' => $this->subject, 'body' => $this->body];
+        }
+
+        $subscription = $this->selectedSubscriptionId ? Subscription::find($this->selectedSubscriptionId) : null;
+
+        return app(ClientMailPersonalizer::class)->render(
+            $this->previewClient,
+            $this->subject,
+            $this->body,
+            $subscription,
+        );
+    }
+
+    public function openPreview(): void
+    {
+        $this->showPreview = true;
+    }
+
+    public function closePreview(): void
+    {
+        $this->showPreview = false;
+    }
+
     public function updatedSelectedTemplate($slug)
     {
         if ($slug) {
@@ -89,8 +136,19 @@ class DirectMailer extends Component
             if ($template) {
                 $this->subject = $template->subject;
                 $this->body = $template->body;
+                $this->hasManualEdits = false;
             }
         }
+    }
+
+    public function updatedSubject(): void
+    {
+        $this->hasManualEdits = true;
+    }
+
+    public function updatedBody(): void
+    {
+        $this->hasManualEdits = true;
     }
 
     public function updatedSelectAll($value)
@@ -106,6 +164,17 @@ class DirectMailer extends Component
     {
         $this->validate();
 
+        $rateLimitKey = 'direct-mailer-send:'.auth()->id();
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, maxAttempts: 3)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+            session()->flash('error', "Too many send attempts. Please wait {$seconds} seconds before trying again.");
+
+            return;
+        }
+
+        RateLimiter::hit($rateLimitKey, decaySeconds: 60);
+
         $clients = Client::whereIn('ulid', $this->selectedClients)->get();
         $subscription = $this->selectedSubscriptionId ? Subscription::find($this->selectedSubscriptionId) : null;
 
@@ -120,7 +189,7 @@ class DirectMailer extends Component
 
         $count = $clients->count();
 
-        $this->reset(['selectedClients', 'selectedTemplate', 'subject', 'body', 'selectAll']);
+        $this->reset(['selectedClients', 'selectedTemplate', 'subject', 'body', 'selectAll', 'hasManualEdits']);
         session()->flash('success', "Queued emails to {$count} clients for delivery.");
     }
 

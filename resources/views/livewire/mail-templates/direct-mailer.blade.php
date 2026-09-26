@@ -99,6 +99,10 @@
                         <x-icon-mail class="w-5 h-5 text-blue-500" />
                         Compose Message
                     </h3>
+                    <x-ui.button type="button" variant="outline" size="sm" wire:click="openPreview">
+                        <x-icon-eye class="w-4 h-4" />
+                        <span>Preview</span>
+                    </x-ui.button>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-6 space-y-6">
@@ -107,15 +111,24 @@
                         <label class="label py-0 mb-2">
                             <span class="label-text">Use Template <span class="label-text-alt font-normal">(Optional)</span></span>
                         </label>
-                        <select wire:model.live="selectedTemplate" class="select select-bordered w-full">
+                        <select
+                            x-on:change="
+                                if (@js($hasManualEdits) && $el.value && !confirm('You have an unsaved draft. Selecting a template will replace the current subject and message. Continue?')) {
+                                    $el.value = @js($selectedTemplate ?? '');
+                                    return;
+                                }
+                                $wire.set('selectedTemplate', $el.value);
+                            "
+                            class="select select-bordered w-full"
+                        >
                             <option value="">Draft from scratch...</option>
                             @foreach($this->templates as $template)
-                                <option value="{{ $template->slug }}">{{ $template->name }}</option>
+                                <option value="{{ $template->slug }}" @selected($selectedTemplate === $template->slug)>{{ $template->name }}</option>
                             @endforeach
                         </select>
                         <p class="label-text-alt mt-2 flex items-center gap-1.5">
                             <x-icon-info-circle class="w-4 h-4 text-blue-400" />
-                            Selecting a template will replace the current subject and body content.
+                            Selecting a template replaces the current subject and body content. You'll be asked to confirm if you've already started a draft.
                         </p>
                     </div>
 
@@ -126,7 +139,7 @@
                         <label class="label py-0">
                             <span class="label-text">Subject Line</span>
                         </label>
-                        <input wire:model="subject" type="text"
+                        <input wire:model.blur="subject" type="text"
                                class="input input-bordered w-full"
                                placeholder="e.g. Important Update Regarding Your Subscription" />
                         @error('subject') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
@@ -139,7 +152,7 @@
                         </label>
                         <textarea
                             x-ref="messageBody"
-                            wire:model="body"
+                            wire:model.blur="body"
                             class="textarea textarea-bordered w-full min-h-[350px]"
                             placeholder="Start typing your personalized message here..."
                         ></textarea>
@@ -205,4 +218,43 @@
             </x-ui.card>
         </div>
     </div>
+
+    {{-- Preview Modal --}}
+    @if($showPreview)
+        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-slate-900/50 backdrop-blur-sm p-4">
+            <div class="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-100 p-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Message Preview</h3>
+                        <p class="label-text-alt mt-1">
+                            @if($this->previewClient)
+                                Showing how this will look for <span class="font-semibold text-slate-600">{{ $this->previewClient->name }}</span>
+                            @else
+                                Select a recipient to see placeholders rendered with real data.
+                            @endif
+                        </p>
+                    </div>
+                    <x-ui.button type="button" wire:click="closePreview" variant="ghost" circle class="text-slate-400 hover:bg-slate-50 hover:text-slate-600">
+                        <x-icon-x class="h-5 w-5" />
+                    </x-ui.button>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <div>
+                        <p class="label-text-alt mb-1">Subject</p>
+                        <p class="font-semibold text-slate-800">{{ $this->previewRendered['subject'] ?: '(no subject)' }}</p>
+                    </div>
+                    <div class="divider"></div>
+                    <div>
+                        <p class="label-text-alt mb-1">Body</p>
+                        <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ $this->previewRendered['body'] ?: '(no message content)' }}</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end border-t border-slate-100 p-6 bg-slate-50 rounded-b-2xl">
+                    <x-ui.button type="button" wire:click="closePreview" variant="ghost">Close</x-ui.button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
