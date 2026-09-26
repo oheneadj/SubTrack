@@ -12,6 +12,7 @@ use App\Models\Invoice;
 use App\Models\MailTemplate;
 use App\Models\Project;
 use App\Models\Subscription;
+use App\Services\EmailLogger;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -66,20 +67,20 @@ class MailTemplateIndex extends Component
         $user = auth()->user();
 
         try {
-            match ($template->slug) {
-                'user-invite' => Mail::to($user->email)->send(new UserInviteMail(
+            $mail = match ($template->slug) {
+                'user-invite' => new UserInviteMail(
                     $user->name,
                     $user->email,
                     'p4ssw0rd!',
                     route('dashboard')
-                )),
-                'subscription-reminder' => Mail::to($user->email)->send(new SubscriptionReminderMail(
+                ),
+                'subscription-reminder' => new SubscriptionReminderMail(
                     Subscription::first() ?? new Subscription([
                         'provider' => 'Example Provider',
                         'expiry_date' => now()->addDays(7),
                     ])
-                )),
-                'invoice-mail' => Mail::to($user->email)->send(new InvoiceMail(
+                ),
+                'invoice-mail' => new InvoiceMail(
                     Invoice::with(['client', 'project'])->first() ?? (function () {
                         $invoice = new Invoice([
                             'invoice_number' => 'INV-TEST-001',
@@ -92,9 +93,18 @@ class MailTemplateIndex extends Component
 
                         return $invoice;
                     })()
-                )),
+                ),
                 default => throw new \Exception('Unknown template type'),
             };
+
+            app(EmailLogger::class)->track($mail, $user->email, $user->name, userId: $user->id);
+
+            // sendNow(), not send()/queue() — these mailables implement ShouldQueue
+            // (so real sends go through the emails queue), but a test send may
+            // involve an unsaved mock model (e.g. no Invoice exists yet) that
+            // can't survive queue job serialization. sendNow() always sends
+            // in-process regardless of ShouldQueue, sidestepping that entirely.
+            Mail::to($user->email)->sendNow($mail);
 
             session()->flash('success', "Test email for '{$template->name}' sent to your email.");
         } catch (\Exception $e) {

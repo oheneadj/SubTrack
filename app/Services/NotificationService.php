@@ -32,9 +32,16 @@ class NotificationService
         $invoice = $this->resolveInvoiceForReminder($subscription);
         $paymentUrl = $invoice ? URL::signedRoute('invoice.pay', ['invoice' => $invoice->ulid]) : null;
 
-        Mail::to($client->email)->send(
-            new SubscriptionReminderMail($subscription, $paymentUrl)
+        $mail = new SubscriptionReminderMail($subscription, $paymentUrl);
+        app(EmailLogger::class)->track(
+            $mail,
+            $client->email,
+            $client->name,
+            clientId: $client->id,
+            context: ['subscription_id' => $subscription->id],
         );
+
+        Mail::to($client->email)->queue($mail);
 
         $this->activityLog->logMail(
             'expiry_reminder',
@@ -57,9 +64,16 @@ class NotificationService
 
         $paymentUrl = URL::signedRoute('invoice.pay', ['invoice' => $invoice->ulid]);
 
-        Mail::to($invoice->client->email)->send(
-            new InvoiceMail($invoice, $paymentUrl)
+        $mail = new InvoiceMail($invoice, $paymentUrl);
+        app(EmailLogger::class)->track(
+            $mail,
+            $invoice->client->email,
+            $invoice->client->name,
+            clientId: $invoice->client_id,
+            context: ['invoice_id' => $invoice->id],
         );
+
+        Mail::to($invoice->client->email)->queue($mail);
 
         $invoice->update(['status' => InvoiceStatus::Sent]);
 

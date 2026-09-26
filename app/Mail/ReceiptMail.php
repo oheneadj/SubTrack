@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Mail\Concerns\TracksEmailDelivery;
 use App\Models\Receipt;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,11 +18,21 @@ use Illuminate\Support\Facades\Storage;
 /** Emails a generated receipt PDF to the client it was issued for. */
 class ReceiptMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, TracksEmailDelivery;
+
+    public int $tries = 3;
+
+    public int $timeout = 30;
+
+    /** @var array<int, int> */
+    public array $backoff = [10, 30, 60];
 
     public function __construct(
         public Receipt $receipt,
-    ) {}
+        public ?int $emailLogId = null,
+    ) {
+        $this->onQueue('emails');
+    }
 
     /** Get the message envelope. */
     public function envelope(): Envelope

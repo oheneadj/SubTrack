@@ -6,6 +6,7 @@ namespace App\Livewire\EmailLogs;
 
 use App\Actions\DispatchClientMailAction;
 use App\Enums\EmailLogStatus;
+use App\Mail\GenericClientMail;
 use App\Models\EmailLog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -50,7 +51,8 @@ class EmailLogIndex extends Component
             ->selectRaw('batch_id, user_id, MIN(created_at) as created_at, COUNT(*) as total_count')
             ->selectRaw('SUM(CASE WHEN status IN ('.implode(',', array_fill(0, count($deliveredStatuses), '?')).') THEN 1 ELSE 0 END) as sent_count', $deliveredStatuses)
             ->selectRaw('SUM(CASE WHEN status IN ('.implode(',', array_fill(0, count($failedStatuses), '?')).') THEN 1 ELSE 0 END) as failed_count', $failedStatuses)
-            ->selectRaw('SUM(CASE WHEN status IN ('.implode(',', array_fill(0, count($resendableStatuses), '?')).') THEN 1 ELSE 0 END) as resendable_count', $resendableStatuses)
+            // resendable_count is also restricted to GenericClientMail — see EmailLog::scopeResendable().
+            ->selectRaw('SUM(CASE WHEN mailable_class = ? AND status IN ('.implode(',', array_fill(0, count($resendableStatuses), '?')).') THEN 1 ELSE 0 END) as resendable_count', [GenericClientMail::class, ...$resendableStatuses])
             ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as queued_count', [EmailLogStatus::Queued->value])
             ->selectRaw('MIN(subject) as sample_subject')
             ->with('user')

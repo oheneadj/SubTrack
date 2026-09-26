@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Enums\EmailLogStatus;
+use App\Mail\Concerns\TracksEmailDelivery;
 use App\Models\Client;
-use App\Models\EmailLog;
 use App\Models\Subscription;
 use App\Services\ClientMailPersonalizer;
 use Illuminate\Bus\Queueable;
@@ -14,14 +13,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class GenericClientMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, TracksEmailDelivery;
 
     public int $tries = 3;
 
@@ -41,48 +37,6 @@ class GenericClientMail extends Mailable implements ShouldQueue
         public ?int $emailLogId = null,
     ) {
         $this->onQueue('emails');
-    }
-
-    /**
-     * Tag the outgoing message with its EmailLog id (for our own MessageSent
-     * listener) and a stable Message-ID built from the log's ULID (so the
-     * mail provider's delivery/bounce webhook can be correlated back to this
-     * row without ever exposing the internal integer id). Done via the
-     * headers() hook — plain serializable data — rather than
-     * withSymfonyMessage(), whose closure can't survive queue job
-     * serialization.
-     */
-    public function headers(): Headers
-    {
-        if (! $this->emailLogId) {
-            return new Headers;
-        }
-
-        $log = EmailLog::find($this->emailLogId);
-
-        return new Headers(
-            messageId: $log?->message_id ?? $log?->generateMessageId(),
-            text: ['X-Email-Log-Id' => (string) $this->emailLogId],
-        );
-    }
-
-    /**
-     * Handle a job failure after all retries have been exhausted.
-     */
-    public function failed(Throwable $exception): void
-    {
-        Log::error('Direct mailer failed to deliver to client after retries', [
-            'client_id' => $this->client->id,
-            'client_email' => $this->client->email,
-            'error' => $exception->getMessage(),
-        ]);
-
-        if ($this->emailLogId) {
-            EmailLog::where('id', $this->emailLogId)->update([
-                'status' => EmailLogStatus::Failed,
-                'error_message' => $exception->getMessage(),
-            ]);
-        }
     }
 
     /**

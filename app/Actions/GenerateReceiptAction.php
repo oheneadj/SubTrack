@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Mail\ReceiptMail;
 use App\Models\Receipt;
 use App\Models\Subscription;
+use App\Services\EmailLogger;
 use App\Services\ReceiptNumberService;
 use App\Services\ReceiptPdfService;
 use Carbon\CarbonImmutable;
@@ -54,7 +55,16 @@ class GenerateReceiptAction
             return $receipt;
         });
 
-        Mail::to($client->email)->queue(new ReceiptMail($receipt->fresh()));
+        $mail = new ReceiptMail($receipt->fresh());
+        app(EmailLogger::class)->track(
+            $mail,
+            $client->email,
+            $client->name,
+            clientId: $client->id,
+            context: ['receipt_id' => $receipt->id, 'subscription_id' => $subscription->id],
+        );
+
+        Mail::to($client->email)->queue($mail);
 
         return $receipt;
     }

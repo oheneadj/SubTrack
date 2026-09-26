@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Mail\ClientMagicLinkMail;
 use App\Models\Client;
 use App\Models\ClientAuthToken;
+use App\Services\EmailLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -34,9 +35,10 @@ class ClientAuthController extends Controller
                 'expires_at' => now()->addHours(24),
             ]);
 
-            Mail::to($client->email)->send(
-                new ClientMagicLinkMail($client, route('client.auth', ['token' => $token->token]))
-            );
+            $mail = new ClientMagicLinkMail($client, route('client.auth', ['token' => $token->token]));
+            app(EmailLogger::class)->track($mail, $client->email, $client->name, clientId: $client->id);
+
+            Mail::to($client->email)->queue($mail);
         }
 
         return back()->with('success', 'If that email is registered, a login link has been sent.');

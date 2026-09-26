@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EmailLogStatus;
+use App\Mail\GenericClientMail;
 use App\Traits\HasPublicUlid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -110,14 +111,20 @@ class EmailLog extends Model
      * Anything worth retrying — genuinely failed, bounced, or blocked.
      * Excludes spam complaints: resending to someone who reported the
      * message as spam would be bad practice, not a delivery fix.
+     *
+     * Also restricted to GenericClientMail (Direct Mailer sends) — that's
+     * the only mailable DispatchClientMailAction::resend() knows how to
+     * reconstruct from a stored log row.
      */
     public function scopeResendable(Builder $query): Builder
     {
-        return $query->whereIn('status', [
-            EmailLogStatus::Failed,
-            EmailLogStatus::Bounced,
-            EmailLogStatus::Blocked,
-        ]);
+        return $query
+            ->where('mailable_class', GenericClientMail::class)
+            ->whereIn('status', [
+                EmailLogStatus::Failed,
+                EmailLogStatus::Bounced,
+                EmailLogStatus::Blocked,
+            ]);
     }
 
     public function scopeForBatch(Builder $query, string $batchId): Builder

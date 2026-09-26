@@ -4,18 +4,27 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Mail\Concerns\TracksEmailDelivery;
 use App\Models\MailTemplate;
 use App\Models\Subscription;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SubscriptionReminderMail extends Mailable
+class SubscriptionReminderMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, TracksEmailDelivery;
+
+    public int $tries = 3;
+
+    public int $timeout = 30;
+
+    /** @var array<int, int> */
+    public array $backoff = [10, 30, 60];
 
     /**
      * Create a new message instance.
@@ -23,7 +32,10 @@ class SubscriptionReminderMail extends Mailable
     public function __construct(
         public Subscription $subscription,
         public ?string $paymentUrl = null,
-    ) {}
+        public ?int $emailLogId = null,
+    ) {
+        $this->onQueue('emails');
+    }
 
     /**
      * Get the message envelope.

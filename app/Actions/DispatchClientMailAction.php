@@ -71,6 +71,12 @@ class DispatchClientMailAction
      */
     public function resend(EmailLog $log): void
     {
+        if ($log->mailable_class !== GenericClientMail::class) {
+            throw new \InvalidArgumentException(
+                'Cannot resend a '.$log->mailable_class.' via DispatchClientMailAction — only Direct Mailer sends can be reconstructed and resent this way.'
+            );
+        }
+
         $client = $log->client;
 
         if (! $client) {

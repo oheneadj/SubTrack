@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\UserRole;
 use App\Livewire\MailTemplates\MailTemplateIndex;
+use App\Mail\InvoiceMail;
+use App\Mail\SubscriptionReminderMail;
 use App\Mail\UserInviteMail;
 use App\Models\MailTemplate;
 use App\Models\User;
@@ -83,4 +85,24 @@ test('sending a test email for a known template slug sends mail to the current u
         ->call('sendTest', $template->ulid);
 
     Mail::assertSent(UserInviteMail::class);
+});
+
+test('test sends for templates with no matching record fall back to mock data without error', function () {
+    // These mailables implement ShouldQueue; sendTest() must use sendNow() rather
+    // than send() (which would force-queue and try to serialize the unsaved mock
+    // Subscription/Invoice models built below, which have no primary key).
+    Mail::fake();
+
+    $admin = User::factory()->create(['role' => UserRole::SuperAdmin]);
+    $reminderTemplate = MailTemplate::where('slug', 'subscription-reminder')->firstOrFail();
+    $invoiceTemplate = MailTemplate::where('slug', 'invoice-mail')->firstOrFail();
+
+    Livewire::actingAs($admin)->test(MailTemplateIndex::class)->call('sendTest', $reminderTemplate->ulid);
+    Livewire::actingAs($admin)->test(MailTemplateIndex::class)->call('sendTest', $invoiceTemplate->ulid);
+
+    // If sendTest() had thrown (e.g. the queue-serialization bug this guards
+    // against), it would have been swallowed into a flashed session error and
+    // neither mailable would ever have reached Mail::sendNow().
+    Mail::assertSent(SubscriptionReminderMail::class);
+    Mail::assertSent(InvoiceMail::class);
 });

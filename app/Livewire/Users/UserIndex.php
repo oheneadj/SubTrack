@@ -6,6 +6,7 @@ namespace App\Livewire\Users;
 
 use App\Mail\UserInviteMail;
 use App\Models\User;
+use App\Services\EmailLogger;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -79,12 +80,21 @@ class UserIndex extends Component
             'requires_password_change' => true,
         ]);
 
-        Mail::to($user->email)->send(new UserInviteMail(
+        $mail = new UserInviteMail(
             userName: $user->name,
             userEmail: $user->email,
             plainPassword: $plainPassword,
             loginUrl: route('login'),
-        ));
+        );
+        app(EmailLogger::class)->track(
+            $mail,
+            $user->email,
+            $user->name,
+            userId: auth()->id(),
+            redact: fn (string $body) => str_replace($plainPassword, '[REDACTED]', $body),
+        );
+
+        Mail::to($user->email)->queue($mail);
 
         $this->showInviteModal = false;
         $this->reset('inviteName', 'inviteEmail', 'inviteRole');
@@ -140,12 +150,21 @@ class UserIndex extends Component
             'requires_password_change' => true,
         ]);
 
-        Mail::to($user->email)->send(new UserInviteMail(
+        $mail = new UserInviteMail(
             userName: $user->name,
             userEmail: $user->email,
             plainPassword: $plainPassword,
             loginUrl: route('login'),
-        ));
+        );
+        app(EmailLogger::class)->track(
+            $mail,
+            $user->email,
+            $user->name,
+            userId: auth()->id(),
+            redact: fn (string $body) => str_replace($plainPassword, '[REDACTED]', $body),
+        );
+
+        Mail::to($user->email)->queue($mail);
 
         session()->flash('success', "New credentials sent to {$user->email}.");
     }

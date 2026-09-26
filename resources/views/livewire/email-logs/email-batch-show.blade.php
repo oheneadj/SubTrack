@@ -72,7 +72,7 @@
                                 <x-icon-eye class="w-3.5 h-3.5" />
                                 <span>Events ({{ $log->events->count() }})</span>
                             </x-ui.button>
-                            @if(in_array($log->status->value, ['Failed', 'Bounced', 'Blocked']))
+                            @if($log->mailable_class === \App\Mail\GenericClientMail::class && in_array($log->status->value, ['Failed', 'Bounced', 'Blocked']))
                                 <x-ui.button variant="error" size="xs" wire:click="resend('{{ $log->ulid }}')" wire:confirm="Resend this email to {{ $log->to_email }}?">
                                     <x-icon-refresh class="w-3.5 h-3.5" />
                                     <span>Resend</span>
