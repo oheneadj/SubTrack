@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Mail;
 function makeReminderTestSubscription(SubscriptionRenewalType $renewalType, int $daysUntilExpiry): Subscription
 {
     $client = Client::factory()->create();
-    $provider = Provider::create(['name' => 'Test Provider']);
+    $provider = Provider::create(['name' => 'Test Provider '.uniqid()]);
 
     return Subscription::create([
         'client_id' => $client->id,
@@ -39,7 +39,15 @@ test('applicableReminderDays keeps every configured day for an annual subscripti
 test('applicableReminderDays drops days that do not fit a monthly subscription\'s cycle', function () {
     $subscription = makeReminderTestSubscription(SubscriptionRenewalType::RecurringMonthly, 7);
 
-    expect($subscription->applicableReminderDays([30, 14, 7]))->toBe([14, 7]);
+    expect($subscription->applicableReminderDays([30, 14, 7]))->toBe([7]);
+});
+
+test('a 14-day reminder is excluded for monthly but kept for annual', function () {
+    $monthly = makeReminderTestSubscription(SubscriptionRenewalType::RecurringMonthly, 14);
+    $annual = makeReminderTestSubscription(SubscriptionRenewalType::RecurringAnnually, 14);
+
+    expect($monthly->applicableReminderDays([30, 14, 7]))->toBe([7]);
+    expect($annual->applicableReminderDays([30, 14, 7]))->toBe([30, 14, 7]);
 });
 
 test('applicableReminderDays keeps every configured day for bare OneTime (no fixed cycle)', function () {

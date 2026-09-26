@@ -154,7 +154,7 @@
                 <div>
                     <x-ui.form-input label="Reminder Days" model="reminderDays" placeholder="30,14,7" :error="$errors->first('reminderDays')" />
                     <p class="text-xs text-secondary mt-2">Comma-separated list of days before expiry to send reminders. Example: <code class="text-xs bg-slate-100 px-1.5 py-0.5 rounded">30,14,7</code></p>
-                    <p class="text-xs text-secondary mt-1">Each subscription only uses the values that fit its own billing cycle — a monthly subscription won't get a 30-day reminder, since its whole cycle is about 30 days.</p>
+                    <p class="text-xs text-secondary mt-1">Each subscription only uses the values that give it meaningful lead time — e.g. a monthly subscription won't get a 14 or 30-day reminder, since those land past the halfway point of its own cycle.</p>
                 </div>
             </div>
         </x-ui.card>

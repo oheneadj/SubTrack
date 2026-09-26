@@ -96,11 +96,14 @@ class Subscription extends Model
 
     /**
      * Filters a site-wide configured list of "remind N days before expiry"
-     * values down to the ones that actually fit this subscription's billing
-     * cycle — a 30-day reminder is meaningless for a monthly subscription
-     * whose entire cycle is ~30 days (it would fire right as the previous
-     * cycle started). Types with no fixed cycle (bare OneTime) keep every
-     * configured value, since there's no cycle length to compare against.
+     * values down to the ones that make sense for this subscription's own
+     * billing cycle. A reminder only counts as meaningful lead time if it
+     * falls within roughly the last third of the cycle — 14 days out is a
+     * good heads-up on a 365-day cycle, but on a 30-day cycle it lands
+     * around the halfway point, barely past the last renewal, which reads
+     * as noise rather than a warning. Types with no fixed cycle (bare
+     * OneTime) keep every configured value, since there's no cycle length
+     * to compare against.
      *
      * @param  array<int, int>  $configuredDays
      * @return array<int, int>
@@ -114,8 +117,9 @@ class Subscription extends Model
         }
 
         $cycleDays = $cycleMonths * 30;
+        $maxLeadDays = $cycleDays / 3;
 
-        return array_values(array_filter($configuredDays, fn (int $day) => $day < $cycleDays));
+        return array_values(array_filter($configuredDays, fn (int $day) => $day <= $maxLeadDays));
     }
 
     public function client(): BelongsTo
