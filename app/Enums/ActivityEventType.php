@@ -8,6 +8,7 @@ enum ActivityEventType: string
 {
     case SubscriptionExpiring = 'subscription.expiring';
     case SubscriptionExpired = 'subscription.expired';
+    case SubscriptionAutoCancelled = 'subscription.auto_cancelled';
     case SubscriptionCreated = 'subscription.created';
     case ReminderSent = 'reminder.sent';
     case InvoiceCreated = 'invoice.created';

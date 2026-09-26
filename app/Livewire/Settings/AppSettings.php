@@ -52,6 +52,11 @@ class AppSettings extends Component
     // Notifications
     public $reminderDays;
 
+    // Overdue payment policy
+    public $penaltyPercentage;
+
+    public $gracePeriodDays;
+
     protected $rules = [
         'appName' => 'required|string|max:50',
         'companyName' => 'required|string|max:100',
@@ -68,6 +73,8 @@ class AppSettings extends Component
         'senderName' => 'nullable|string|max:100',
         'senderTitle' => 'nullable|string|max:100',
         'reminderDays' => 'nullable|string|max:50',
+        'penaltyPercentage' => 'nullable|numeric|min:0|max:100',
+        'gracePeriodDays' => 'nullable|integer|min:0|max:365',
         'logo' => 'nullable|image|max:1024',
     ];
 
@@ -91,6 +98,8 @@ class AppSettings extends Component
         $this->senderName = $s['sender_name'] ?? '';
         $this->senderTitle = $s['sender_title'] ?? '';
         $this->reminderDays = $s['reminder_days'] ?? '30,14,7';
+        $this->penaltyPercentage = $s['penalty_percentage'] ?? '5';
+        $this->gracePeriodDays = $s['grace_period_days'] ?? 14;
     }
 
     public function save()
@@ -124,6 +133,8 @@ class AppSettings extends Component
         Setting::set('sender_name', $this->senderName);
         Setting::set('sender_title', $this->senderTitle);
         Setting::set('reminder_days', $this->reminderDays);
+        Setting::set('penalty_percentage', $this->penaltyPercentage);
+        Setting::set('grace_period_days', $this->gracePeriodDays);
 
         session()->flash('success', 'Settings updated successfully.');
     }

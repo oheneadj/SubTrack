@@ -39,6 +39,8 @@ class DatabaseSeeder extends Seeder
             'sender_title' => '',
             'app_name' => 'SubTrack',
             'reminder_days' => '30,14,7',
+            'penalty_percentage' => '5',
+            'grace_period_days' => '14',
         ];
 
         foreach ($defaults as $key => $value) {

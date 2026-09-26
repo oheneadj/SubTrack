@@ -157,6 +157,25 @@
                     <p class="text-xs text-secondary mt-1">Each subscription only uses the values that give it meaningful lead time — e.g. a monthly subscription won't get a 14 or 30-day reminder, since those land past the halfway point of its own cycle.</p>
                 </div>
             </div>
+
+            <div class="divider"></div>
+
+            <h4 class="text-sm font-bold text-primary flex items-center gap-2 mb-2">
+                <x-icon-alert-triangle class="w-4 h-4 text-amber-500" />
+                Overdue Payment Policy
+            </h4>
+            <p class="text-sm text-secondary mb-6">Stated in reminder emails once a client misses a renewal — not automatically charged.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-ui.form-input label="Penalty Percentage" model="penaltyPercentage" type="number" step="0.01" placeholder="5" :error="$errors->first('penaltyPercentage')" />
+                    <p class="text-xs text-secondary mt-2">Applied per missed renewal cycle and stated in the reminder email (e.g. 5% per missed cycle — 2 missed cycles states a 10% penalty). Never applied to the actual invoice automatically.</p>
+                </div>
+                <div>
+                    <x-ui.form-input label="Grace Period (Days)" model="gracePeriodDays" type="number" placeholder="14" :error="$errors->first('gracePeriodDays')" />
+                    <p class="text-xs text-secondary mt-2">Days after expiry before the subscription is automatically cancelled. Stated in the reminder email as the payment deadline.</p>
+                </div>
+            </div>
         </x-ui.card>
 
         {{-- Bottom Save Bar --}}

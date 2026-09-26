@@ -61,9 +61,29 @@
         </table>
     </div>
 
-    <p style="line-height: 1.6; color: #4b5563; margin-top: 32px;">
-        To ensure continued service and avoid any potential downtime, please arrange for renewal as soon as possible.
-    </p>
+    @if($subscription->missed_payments_count)
+        <div style="margin-top: 24px; padding: 20px; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+            <p style="margin: 0 0 12px 0; font-size: 15px; font-weight: 800; color: #b91c1c;">
+                Payment Overdue Notice
+            </p>
+            <p style="margin: 0 0 12px 0; line-height: 1.6; color: #7f1d1d; font-size: 14px;">
+                This service has missed {{ $subscription->missed_payments_count }} renewal payment{{ $subscription->missed_payments_count > 1 ? 's' : '' }}.
+                @if($subscription->formatted_stated_penalty_amount)
+                    A late renewal penalty of <strong>{{ $subscription->stated_penalty_percentage }}%</strong> (<strong>{{ $subscription->formatted_stated_penalty_amount }}</strong>) will apply to your renewal amount if paid now. This penalty is not yet charged — it only applies once you renew.
+                @endif
+            </p>
+            @if($subscription->grace_period_deadline)
+                <p style="margin: 0; line-height: 1.6; color: #7f1d1d; font-size: 14px;">
+                    <strong>You must renew by {{ $subscription->grace_period_deadline->format('F d, Y') }}.</strong>
+                    If payment is not received by this date, this service will be automatically cancelled and access terminated, at no cost or liability to {{ \App\Models\Setting::get('business_name') ?: config('app.name') }}.
+                </p>
+            @endif
+        </div>
+    @else
+        <p style="line-height: 1.6; color: #4b5563; margin-top: 32px;">
+            To ensure continued service and avoid any potential downtime, please arrange for renewal as soon as possible.
+        </p>
+    @endif
 
     @if(!empty($paymentUrl))
     <div style="text-align: center; margin-top: 32px; margin-bottom: 8px;">

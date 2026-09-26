@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\ActivityEventType;
 use App\Enums\SubscriptionStatus;
+use App\Models\DashboardActivityLog;
 use App\Models\Setting;
 use App\Models\Subscription;
 use App\Services\NotificationService;
@@ -48,6 +50,7 @@ class CheckSubscriptionExpiries extends Command
         $subscriptions = Subscription::where('status', '!=', SubscriptionStatus::Cancelled)->get();
         $processedCount = 0;
         $notifiedCount = 0;
+        $cancelledCount = 0;
 
         foreach ($subscriptions as $subscription) {
             $processedCount++;
@@ -60,6 +63,24 @@ class CheckSubscriptionExpiries extends Command
                     $this->warn("Subscription #{$subscription->id} ({$subscription->domain_name}) has EXPIRED.");
                     $this->notificationService->sendExpiryReminder($subscription);
                     $notifiedCount++;
+                }
+
+                // Auto-cancel once the grace period has fully lapsed — the
+                // client was told in the reminder email that this would
+                // happen, with no cost or liability on our side.
+                $deadline = $subscription->grace_period_deadline;
+                if ($deadline && now()->greaterThan($deadline)) {
+                    $subscription->update(['status' => SubscriptionStatus::Cancelled]);
+                    $this->warn("Subscription #{$subscription->id} ({$subscription->domain_name}) auto-CANCELLED — grace period lapsed.");
+
+                    DashboardActivityLog::record(
+                        ActivityEventType::SubscriptionAutoCancelled,
+                        "{$subscription->domain_name} auto-cancelled after grace period lapsed ({$subscription->missed_payments_count} missed payment(s))",
+                        $subscription->effective_client?->id,
+                        ['subscription_id' => $subscription->id, 'missed_payments' => $subscription->missed_payments_count]
+                    );
+
+                    $cancelledCount++;
                 }
 
                 continue;
@@ -82,6 +103,6 @@ class CheckSubscriptionExpiries extends Command
             }
         }
 
-        $this->info("Done! Processed {$processedCount} subscriptions and sent {$notifiedCount} notifications.");
+        $this->info("Done! Processed {$processedCount} subscriptions, sent {$notifiedCount} notifications, auto-cancelled {$cancelledCount}.");
     }
 }

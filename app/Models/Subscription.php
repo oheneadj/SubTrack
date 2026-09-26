@@ -40,6 +40,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CarbonImmutable $expiry_date
  * @property int $days_until_expiry
  * @property int|null $missed_payments_count
+ * @property float|null $stated_penalty_percentage
+ * @property int|null $stated_penalty_amount
+ * @property string|null $formatted_stated_penalty_amount
+ * @property CarbonImmutable|null $grace_period_deadline
  * @property string $traffic_light
  * @property-read Client|null $client
  * @property-read Project|null $project
@@ -214,6 +218,58 @@ class Subscription extends Model
         $daysOverdue = abs($this->days_until_expiry);
 
         return (int) floor($daysOverdue / $cycleDays) + 1;
+    }
+
+    /**
+     * The penalty amount to *state* in a reminder email once this
+     * subscription is overdue — the configured percentage applied per
+     * missed cycle. This is disclosure only: it's never added to an actual
+     * invoice, only shown so the client knows what will apply if they
+     * renew late. Null while not overdue (nothing has been missed yet) or
+     * if no penalty percentage is configured.
+     */
+    public function getStatedPenaltyPercentageAttribute(): ?float
+    {
+        if (! $this->missed_payments_count) {
+            return null;
+        }
+
+        $percentage = (float) Setting::get('penalty_percentage', '0');
+
+        return $percentage > 0 ? $percentage * $this->missed_payments_count : null;
+    }
+
+    /** @return int|null Amount in cents. */
+    public function getStatedPenaltyAmountAttribute(): ?int
+    {
+        if (! $this->stated_penalty_percentage) {
+            return null;
+        }
+
+        return (int) round($this->client_renewal_cost_usd * ($this->stated_penalty_percentage / 100));
+    }
+
+    public function getFormattedStatedPenaltyAmountAttribute(): ?string
+    {
+        return $this->stated_penalty_amount === null
+            ? null
+            : '$'.number_format($this->stated_penalty_amount / 100, 2);
+    }
+
+    /**
+     * The date by which an overdue client must pay before the subscription
+     * is automatically cancelled (see CheckSubscriptionExpiries). Null
+     * while not overdue, or if no grace period is configured.
+     */
+    public function getGracePeriodDeadlineAttribute(): ?CarbonImmutable
+    {
+        if (! $this->missed_payments_count) {
+            return null;
+        }
+
+        $graceDays = (int) Setting::get('grace_period_days', '0');
+
+        return $graceDays > 0 ? $this->expiry_date->addDays($graceDays) : null;
     }
 
     public function getTrafficLightAttribute(): string
