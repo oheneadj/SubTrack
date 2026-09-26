@@ -59,12 +59,14 @@
                             <x-ui.button as="a" variant="warning" size="xs"
                                 href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid, 'template' => 'subscription-reminder']) }}"
                                 title="Send Renewal Reminder" wire:navigate>
-                                <x-icon-bell class="w-3.5 h-3.5" /> Reminder
+                                <x-icon-bell class="w-3.5 h-3.5" />
+                                Reminder
                             </x-ui.button>
                             <x-ui.button as="a" variant="ghost" size="xs"
                                 href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid]) }}"
                                 title="Send Custom Email" wire:navigate>
-                                <x-icon-mail class="w-3.5 h-3.5" /> Email
+                                <x-icon-mail class="w-3.5 h-3.5" />
+                                Email
                             </x-ui.button>
                             <x-ui.button variant="primary" size="xs"
                                 wire:click="openRenewalModal('{{ $sub->ulid }}')"

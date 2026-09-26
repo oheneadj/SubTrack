@@ -58,30 +58,21 @@
                             editAction="window.location.href='{{ route('invoices.edit', $invoice) }}'"
                             :slotCount="$invoice->status !== 'Paid' ? 3 : 2"
                         >
-                            <x-ui.button wire:click="downloadPdf('{{ $invoice->ulid }}')" wire:loading.attr="disabled" title="Download PDF" size="xs">
-                                <span wire:loading.remove class="flex items-center gap-1">
-                                    <x-icon-photo class="w-4 h-4" />Download
-                                </span>
-                                <span wire:loading>
-                                    <span class="loading loading-spinner loading-xs"></span>
-                                </span>
+                            <x-ui.button wire:click="downloadPdf('{{ $invoice->ulid }}')" wire:loading.attr="disabled" wire:target="downloadPdf('{{ $invoice->ulid }}')" title="Download PDF" size="xs">
+                                <x-icon-photo class="w-3.5 h-3.5" wire:loading.remove wire:target="downloadPdf('{{ $invoice->ulid }}')" />
+                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="downloadPdf('{{ $invoice->ulid }}')"></span>
+                                Download
                             </x-ui.button>
-                            <x-ui.button wire:click="sendInvoice('{{ $invoice->ulid }}')" wire:loading.attr="disabled" title="Send to Client" variant="info" size="xs">
-                                <span wire:loading.remove class="flex items-center gap-1">
-                                    <x-icon-mail class="w-4 h-4" />Send
-                                </span>
-                                <span wire:loading>
-                                    <span class="loading loading-spinner loading-xs"></span>
-                                </span>
+                            <x-ui.button wire:click="sendInvoice('{{ $invoice->ulid }}')" wire:loading.attr="disabled" wire:target="sendInvoice('{{ $invoice->ulid }}')" title="Send to Client" variant="info" size="xs">
+                                <x-icon-mail class="w-3.5 h-3.5" wire:loading.remove wire:target="sendInvoice('{{ $invoice->ulid }}')" />
+                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="sendInvoice('{{ $invoice->ulid }}')"></span>
+                                Send
                             </x-ui.button>
                             @if($invoice->status !== 'Paid')
-                                <x-ui.button wire:click="markAsPaid('{{ $invoice->ulid }}')" wire:loading.attr="disabled" title="Mark as Paid" variant="success" size="xs">
-                                    <span wire:loading.remove class="flex items-center gap-1">
-                                        <x-icon-circle-check class="w-4 h-4" />Paid
-                                    </span>
-                                    <span wire:loading>
-                                        <span class="loading loading-spinner loading-xs"></span>
-                                    </span>
+                                <x-ui.button wire:click="markAsPaid('{{ $invoice->ulid }}')" wire:loading.attr="disabled" wire:target="markAsPaid('{{ $invoice->ulid }}')" title="Mark as Paid" variant="success" size="xs">
+                                    <x-icon-circle-check class="w-3.5 h-3.5" wire:loading.remove wire:target="markAsPaid('{{ $invoice->ulid }}')" />
+                                    <span class="loading loading-spinner loading-xs" wire:loading wire:target="markAsPaid('{{ $invoice->ulid }}')"></span>
+                                    Paid
                                 </x-ui.button>
                             @endif
                         </x-ui.action-menu>
