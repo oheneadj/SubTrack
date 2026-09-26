@@ -60,17 +60,17 @@
             </div>
 
             <div class="bg-slate-50 px-6 py-4 sm:px-8 sm:flex sm:flex-row-reverse gap-3">
-                <button type="button"
-                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors w-full sm:w-auto"
+                <x-ui.button type="button" variant="error" full
                         wire:click="{{ $confirmAction }}"
-                        @click="open = false">
+                        @click="open = false"
+                        class="sm:w-auto">
                     Confirm Action
-                </button>
-                <button type="button"
-                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-transparent text-slate-600 hover:bg-slate-100 transition-colors w-full sm:w-auto mt-3 sm:mt-0"
-                        @click="open = false">
+                </x-ui.button>
+                <x-ui.button type="button" variant="ghost" full
+                        @click="open = false"
+                        class="mt-3 sm:mt-0 sm:w-auto">
                     Cancel
-                </button>
+                </x-ui.button>
             </div>
         </div>
     </div>

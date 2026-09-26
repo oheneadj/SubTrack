@@ -37,7 +37,7 @@
                         @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
                     @endif
                 @endif
-                class="inline-flex items-center justify-center gap-2 px-2 py-1 text-xs font-medium rounded-lg bg-sky-50 border border-sky-100 text-sky-700 hover:bg-sky-100 transition-colors">
+                class="inline-flex items-center justify-center gap-2 px-2 py-1 text-xs font-medium rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 transition-colors">
                 <x-icon-edit class="w-3.5 h-3.5" />
                 <span>Edit</span>
             </button>
@@ -90,8 +90,8 @@
                             @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
                         @endif
                     @endif
-                    class="flex items-center gap-2.5 px-4 py-2 text-sm text-sky-700 hover:bg-slate-50 transition-colors w-full text-left" role="menuitem">
-                    <x-icon-edit class="w-4 h-4 text-sky-400" />
+                    class="flex items-center gap-2.5 px-4 py-2 text-sm text-blue-700 hover:bg-slate-50 transition-colors w-full text-left" role="menuitem">
+                    <x-icon-edit class="w-4 h-4 text-blue-400" />
                     <span class="font-medium">Edit Details</span>
                 </button>
             @endif
