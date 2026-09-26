@@ -55,25 +55,25 @@
                         <x-ui.badge-status :status="$sub->status" />
                     </td>
                     <td class="text-right">
-                        <div class="flex items-center justify-end gap-1.5">
-                            <a href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid, 'template' => 'subscription-reminder']) }}"
-                               class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-colors" title="Send Renewal Reminder" wire:navigate>
+                        <x-ui.action-menu :slotCount="3">
+                            <x-ui.button as="a" variant="warning" size="xs"
+                                href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid, 'template' => 'subscription-reminder']) }}"
+                                title="Send Renewal Reminder" wire:navigate>
                                 <x-icon-bell class="w-3.5 h-3.5" /> Reminder
-                            </a>
-                            <a href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid]) }}"
-                               class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors" title="Send Custom Email" wire:navigate>
+                            </x-ui.button>
+                            <x-ui.button as="a" variant="ghost" size="xs"
+                                href="{{ route('mail-mailer.index', ['clientId' => $sub->effective_client?->ulid, 'subscriptionId' => $sub->ulid]) }}"
+                                title="Send Custom Email" wire:navigate>
                                 <x-icon-mail class="w-3.5 h-3.5" /> Email
-                            </a>
-                            <button
-                                type="button"
+                            </x-ui.button>
+                            <x-ui.button variant="primary" size="xs"
                                 wire:click="openRenewalModal('{{ $sub->ulid }}')"
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                            >
+                                wire:loading.attr="disabled" wire:target="openRenewalModal('{{ $sub->ulid }}')">
                                 <x-icon-refresh class="w-3.5 h-3.5" wire:loading.remove wire:target="openRenewalModal('{{ $sub->ulid }}')" />
                                 <span class="loading loading-spinner loading-xs" wire:loading wire:target="openRenewalModal('{{ $sub->ulid }}')"></span>
                                 Renew
-                            </button>
-                        </div>
+                            </x-ui.button>
+                        </x-ui.action-menu>
                     </td>
                 </tr>
             @endforeach

@@ -106,11 +106,10 @@
                                         {{ $project->created_at->format('M d, Y') }}
                                     </td>
                                     <td class="text-right">
-                                        <x-ui.button
-                                            @click="$dispatch('open-modal', { id: 'project-modal' }); Livewire.dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
-                                            variant="ghost" circle title="Edit Project">
-                                            <x-icon-edit class="w-4 h-4" />
-                                        </x-ui.button>
+                                        <x-ui.action-menu
+                                            editAction="Livewire.dispatchTo('projects.project-form', 'open-project-modal', { id: '{{ $project->ulid }}' })"
+                                            editModalId="project-modal"
+                                        />
                                     </td>
                                 </tr>
                             @endforeach
@@ -160,9 +159,7 @@
                                         <x-ui.badge-status :status="$sub->status->value" />
                                     </td>
                                     <td class="text-right">
-                                        <x-ui.button as="a" variant="ghost" circle href="{{ route('subscriptions.show', $sub) }}" wire:navigate>
-                                            <x-icon-eye class="w-4 h-4" />
-                                        </x-ui.button>
+                                        <x-ui.action-menu :viewAction="route('subscriptions.show', $sub)" />
                                     </td>
                                 </tr>
                             @endforeach
@@ -198,9 +195,7 @@
                                 </td>
                                 <td class="text-secondary text-sm">{{ $invoice->issued_date->format('M d, Y') }}</td>
                                 <td class="text-right">
-                                    <x-ui.button as="a" variant="ghost" circle href="{{ route('invoices.edit', $invoice) }}">
-                                        <x-icon-edit class="w-4 h-4" />
-                                    </x-ui.button>
+                                    <x-ui.action-menu editAction="window.location.href='{{ route('invoices.edit', $invoice) }}'" />
                                 </td>
                             </tr>
                         @endforeach

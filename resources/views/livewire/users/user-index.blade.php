@@ -74,23 +74,22 @@
                             @endif
                         </td>
                         <td>
-                            <div class="flex items-center gap-2">
-                                <x-ui.button as="a" variant="ghost" size="xs" href="{{ route('users.show', $user) }}" class="text-blue-600 hover:bg-blue-50">
-                                    Details
-                                </x-ui.button>
+                            <x-ui.action-menu
+                                :viewAction="route('users.show', $user)"
+                                :deleteAction="$user->id !== auth()->id() ? 'confirmDelete(\'' . $user->ulid . '\')' : null"
+                                :slotCount="2"
+                            >
                                 @if($user->id !== auth()->id())
-                                    <x-ui.action-menu deleteAction="confirmDelete('{{ $user->ulid }}')">
-                                        <x-ui.button variant="primary" size="xs" wire:click="resendInvite('{{ $user->ulid }}')" class="text-white justify-start">
-                                            <x-icon-refresh class="w-3 h-3" />
-                                            <span>Resend Invite</span>
-                                        </x-ui.button>
-                                        <x-ui.button :variant="$user->is_active ? 'warning' : 'success'" size="xs" wire:click="openToggleModal('{{ $user->ulid }}')" class="justify-start">
-                                            <x-icon-alert-triangle class="w-3 h-3" />
-                                            <span>{{ $user->is_active ? 'Disable' : 'Enable' }}</span>
-                                        </x-ui.button>
-                                    </x-ui.action-menu>
+                                    <x-ui.button variant="primary" size="xs" wire:click="resendInvite('{{ $user->ulid }}')">
+                                        <x-icon-refresh class="w-3 h-3" />
+                                        <span>Resend Invite</span>
+                                    </x-ui.button>
+                                    <x-ui.button :variant="$user->is_active ? 'warning' : 'success'" size="xs" wire:click="openToggleModal('{{ $user->ulid }}')">
+                                        <x-icon-alert-triangle class="w-3 h-3" />
+                                        <span>{{ $user->is_active ? 'Disable' : 'Enable' }}</span>
+                                    </x-ui.button>
                                 @endif
-                            </div>
+                            </x-ui.action-menu>
                         </td>
                     </tr>
                 @endforeach

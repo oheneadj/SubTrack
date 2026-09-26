@@ -51,9 +51,9 @@
                             editModalId="client-modal"
                             deleteAction="openDeleteModal('{{ $client->ulid }}')"
                         >
-                            <x-ui.button as="a" size="xs" href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" wire:navigate class="h-8 px-3 rounded-lg">
-                                <x-icon-mail class="w-3.5 h-3.5 text-white" />
-                                <span class="font-bold uppercase tracking-tight text-[10px] text-white">Email</span>
+                            <x-ui.button as="a" variant="info" size="xs" href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" wire:navigate>
+                                <x-icon-mail class="w-3.5 h-3.5" />
+                                <span>Email</span>
                             </x-ui.button>
                         </x-ui.action-menu>
                     </td>

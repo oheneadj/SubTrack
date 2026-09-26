@@ -209,14 +209,16 @@
                                         <td class="text-sm text-slate-600">{{ $receipt->issued_date->format('M d, Y') }}</td>
                                         <td class="text-sm font-semibold text-slate-800">{{ $receipt->formatted_amount_usd }}</td>
                                         <td class="text-right">
-                                            <div class="flex items-center justify-end gap-1">
+                                            <x-ui.action-menu :slotCount="2">
                                                 <x-ui.button variant="ghost" size="xs" wire:click="viewReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="View">
                                                     <x-icon-eye class="w-3.5 h-3.5" />
+                                                    <span>View</span>
                                                 </x-ui.button>
                                                 <x-ui.button variant="ghost" size="xs" wire:click="downloadReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="Download">
                                                     <x-icon-arrow-down class="w-3.5 h-3.5" />
+                                                    <span>Download</span>
                                                 </x-ui.button>
-                                            </div>
+                                            </x-ui.action-menu>
                                         </td>
                                     </tr>
                                 @endforeach
