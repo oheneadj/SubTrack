@@ -44,6 +44,21 @@ test('search matches by client name and project name', function () {
     expect($component->subscriptions->pluck('id'))->toContain($subB->id)->not->toContain($subA->id);
 });
 
+test('filtering by renewal type only shows matching subscriptions', function () {
+    $user = User::factory()->create();
+    $provider = Provider::create(['name' => 'Test Provider']);
+    $client = Client::create(['name' => 'Acme Corp', 'email' => 'acme@test.test']);
+
+    $monthly = makeSubscription($client, $provider, ['domain_name' => 'monthly.com', 'renewal_type' => 'RecurringMonthly']);
+    $annual = makeSubscription($client, $provider, ['domain_name' => 'annual.com', 'renewal_type' => 'RecurringAnnually']);
+
+    $component = Livewire::actingAs($user)->test(SubscriptionIndex::class)->set('filterRenewalType', 'RecurringMonthly');
+    expect($component->subscriptions->pluck('id'))->toContain($monthly->id)->not->toContain($annual->id);
+
+    $component->set('filterRenewalType', '');
+    expect($component->subscriptions->pluck('id'))->toContain($monthly->id, $annual->id);
+});
+
 test('sorting by client name orders subscriptions by their effective client, ascending or descending', function () {
     $user = User::factory()->create();
     $provider = Provider::create(['name' => 'Test Provider']);

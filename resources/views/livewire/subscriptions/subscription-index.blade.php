@@ -21,6 +21,13 @@
             @endforeach
         </select>
 
+        <select wire:model.live="filterRenewalType" class="select select-bordered shrink-0 w-full md:w-44">
+            <option value="">All Renewal Types</option>
+            @foreach(\App\Enums\SubscriptionRenewalType::cases() as $type)
+                <option wire:key="renewal-type-{{ $type->value }}" value="{{ $type->value }}">{{ $type->label() }}</option>
+            @endforeach
+        </select>
+
         <input type="date" wire:model.live="filterRenewalFrom" class="input input-bordered shrink-0 w-full md:w-36" title="Renewal date from">
         <input type="date" wire:model.live="filterRenewalTo" class="input input-bordered shrink-0 w-full md:w-36" title="Renewal date to">
 

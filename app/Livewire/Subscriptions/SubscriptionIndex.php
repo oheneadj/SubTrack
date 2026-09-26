@@ -28,6 +28,8 @@ class SubscriptionIndex extends Component
 
     public ?string $filterStatus = null;
 
+    public ?string $filterRenewalType = null;
+
     public string $filterRenewalFrom = '';
 
     public string $filterRenewalTo = '';
@@ -43,6 +45,7 @@ class SubscriptionIndex extends Component
         'search' => ['except' => ''],
         'filterService' => ['except' => null],
         'filterStatus' => ['except' => null],
+        'filterRenewalType' => ['except' => null],
         'filterRenewalFrom' => ['except' => ''],
         'filterRenewalTo' => ['except' => ''],
     ];
@@ -70,6 +73,7 @@ class SubscriptionIndex extends Component
             ))
             ->when($this->filterService, fn ($q) => $q->where('service_type', $this->filterService))
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterRenewalType, fn ($q) => $q->where('renewal_type', $this->filterRenewalType))
             ->when($this->filterRenewalFrom, fn ($q) => $q->whereDate('expiry_date', '>=', $this->filterRenewalFrom))
             ->when($this->filterRenewalTo, fn ($q) => $q->whereDate('expiry_date', '<=', $this->filterRenewalTo));
     }
