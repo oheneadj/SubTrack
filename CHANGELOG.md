@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Direct Mailer & Mail Templates pages restyled to match the app's design system: replaced one-off `rounded-3xl`/`shadow-*`/`text-[10px]` custom styling with the standard `.input`/`.select`/`.textarea` primitives from `app.css`, `x-ui.page-header`, and `x-ui.empty-state`; removed a duplicated `p-6` wrapper on the templates index (layout already applies page padding)
+- Removed `shadow-*` utility classes from `x-ui.card`, `x-ui.stat-card`, `x-ui.data-table`, `x-ui.toolbar`, and several ad-hoc card-styled containers (public invoice page, client login/invoice portal, client/project forms) app-wide
+- App background changed from `bg-slate-50` to `bg-gray-100`
+- `DirectMailer`: "Select All" now selects every client matching the current search across all pages (previously only the 6 on the current page); searching resets pagination back to page 1; recipient list pagination switched to `simplePaginate` (compact Prev/Next) so it fits the narrow sidebar without overflowing
+- `GenericClientMail` now implements `ShouldQueue` (dedicated `emails` queue, `tries=3`, `timeout=30`, `backoff=[10,30,60]`, logs to `Log::error` on final failure via `failed()`) — bulk sends from Direct Mailer no longer block the request; local dev's `queue:listen` now listens on `emails,default`
+- User show page: removed raw internal `id` from the Meta Data card; fixed the initials avatar rendering as an oval instead of a circle (missing explicit height)
+
+### Added
+- User show page "Account History" now shows real `ActivityLog` entries for the user (as actor or subject) instead of a static placeholder; `toggleActive`/`confirmPasswordReset` now log to `ActivityLog`
+- `warning` toast type wired into the global flash-message layout (previously only `success`/`error`)
+- `ClientFactory`, `MailTemplateFactory`
+- Tests: `DirectMailerTest`, `MailTemplateIndexTest` — auth/authorization, validation, happy path, select-all-across-pages, search-resets-pagination
+
 ### Fixed
 - Two missing icon components — `icon-file-x` (crashed the public invoice page and the client invoice portal with "Unable to locate a class or view for component") and `icon-chevron-down` (client invoice portal's expand/collapse toggle) — added both, matching the app's existing Tabler-icon SVG style
 - Tests: `NoMissingIconComponentsTest` — statically scans every Blade file for `<x-icon-*>` references with no matching component, so a missing icon can't sit broken again until someone happens to render that exact page (which is how `icon-file-x` went unnoticed all session)
