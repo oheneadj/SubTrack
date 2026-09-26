@@ -29,7 +29,7 @@
     </div>
 
     {{-- Comparison Chart Section --}}
-    <x-ui.card x-data="comparisonChart({{ json_encode($comparisonData) }})">
+    <x-ui.card x-data="comparisonChart({{ json_encode($comparisonData) }})" class="mb-8">
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h3 class="font-bold text-slate-800 text-lg">Revenue vs. Expenses</h3>

@@ -1,6 +1,6 @@
 @props(['headers' => [], 'sortColumn' => null, 'sortDirection' => 'asc', 'selectable' => false])
 
-<div {{ $attributes->merge(['class' => 'bg-white rounded-xl border border-slate-200 shadow-sm']) }}>
+<div {{ $attributes->merge(['class' => 'bg-white rounded-xl']) }}>
     <div class="overflow-x-auto">
         <table class="table w-full">
             <thead>

@@ -8,14 +8,24 @@ use App\Models\Client;
 use App\Models\Setting;
 use App\Models\Subscription;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class GenericClientMail extends Mailable
+class GenericClientMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public int $tries = 3;
+
+    public int $timeout = 30;
+
+    /** @var array<int, int> */
+    public array $backoff = [10, 30, 60];
 
     /**
      * Create a new message instance.
@@ -25,7 +35,21 @@ class GenericClientMail extends Mailable
         public string $customSubject,
         public string $customBody,
         public ?Subscription $subscription = null,
-    ) {}
+    ) {
+        $this->onQueue('emails');
+    }
+
+    /**
+     * Handle a job failure after all retries have been exhausted.
+     */
+    public function failed(Throwable $exception): void
+    {
+        Log::error('Direct mailer failed to deliver to client after retries', [
+            'client_id' => $this->client->id,
+            'client_email' => $this->client->email,
+            'error' => $exception->getMessage(),
+        ]);
+    }
 
     /**
      * Get the message envelope.

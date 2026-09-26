@@ -20,7 +20,7 @@
             <x-ui.card>
                     <div class="flex items-center gap-4 mb-6">
                         <div class="avatar placeholder">
-                            <div class="bg-primary text-primary-content rounded-full w-16">
+                            <div class="bg-primary text-primary-content rounded-full w-16 h-16 flex items-center justify-center">
                                 <span class="text-xl">{{ $user->initials() }}</span>
                             </div>
                         </div>
@@ -69,12 +69,26 @@
                     </div>
             </x-ui.card>
 
-            <!-- Activity / Recent Actions (Placeholder for now) -->
+            <!-- Activity / Recent Actions -->
             <x-ui.card title="Account History">
-                    <div class="text-center py-8 text-slate-400">
-                        <x-icon-list-details class="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p>No recent activity recorded for this user.</p>
-                    </div>
+                    @forelse($this->recentActivity as $log)
+                        <div class="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+                                <x-icon-clock class="w-4 h-4" />
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-slate-700">
+                                    {{ $log->description ?? str($log->action)->replace('.', ' ')->title() }}
+                                </p>
+                                <p class="text-xs text-slate-400">{{ $log->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8 text-slate-400">
+                            <x-icon-list-details class="w-12 h-12 mx-auto mb-2 opacity-20" />
+                            <p>No recent activity recorded for this user.</p>
+                        </div>
+                    @endforelse
             </x-ui.card>
         </div>
 
@@ -82,10 +96,6 @@
         <div class="space-y-6">
             <x-ui.card title="Meta Data">
                     <div class="space-y-4 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-slate-500">ID:</span>
-                            <span class="font-mono">{{ $user->id }}</span>
-                        </div>
                         <div class="flex justify-between">
                             <span class="text-slate-500">Created At:</span>
                             <span>{{ $user->created_at->format('M d, Y') }}</span>

@@ -1,10 +1,5 @@
-<div class="p-6">
-    <div class="mb-6 flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-slate-800">Email Templates</h1>
-            <p class="text-slate-500">Manage the content of emails sent to your clients.</p>
-        </div>
-    </div>
+<div>
+    <x-ui.page-header title="Email Templates" subtitle="Manage the content of emails sent to your clients." />
 
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         @foreach ($this->templates as $template)

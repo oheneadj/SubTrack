@@ -27,28 +27,28 @@
         {{-- ═══════════════ LEFT COLUMN: RECIPIENTS ═══════════════ --}}
         <div class="lg:col-span-4 space-y-4">
             <x-ui.card :padding="false" class="h-[calc(100vh-220px)] flex flex-col sticky top-6">
-                <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                <div class="p-5 border-b border-slate-100 bg-slate-50">
                     <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4">
                         <x-icon-users class="w-5 h-5 text-blue-500" />
                         Select Recipients
                     </h3>
-                    
+
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <x-icon-search class="h-4 w-4 text-slate-400" />
                         </div>
-                        <input wire:model.live.debounce.300ms="search" type="text" 
-                               class="input input-bordered w-full pl-10 h-10 text-sm rounded-xl focus:ring-blue-500 bg-white" 
+                        <input wire:model.live.debounce.300ms="search" type="text"
+                               class="input input-bordered w-full pl-10"
                                placeholder="Search clients..." />
                     </div>
 
                     <div class="flex items-center justify-between mt-4">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                             {{ count($selectedClients) }} Selected
                         </span>
                         <label class="flex items-center gap-2 p-0">
-                            <span class="label-text font-bold text-slate-500 text-[11px] uppercase tracking-wider">Select All</span>
-                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-primary checkbox-xs rounded" />
+                            <span class="label-text-alt font-medium uppercase tracking-wider">Select All</span>
+                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-primary checkbox-xs" />
                         </label>
                     </div>
                 </div>
@@ -67,150 +67,138 @@
                                     <span class="font-bold text-slate-700 text-sm truncate group-hover:text-blue-600 transition-colors">
                                         {{ $client->name }}
                                     </span>
-                                    <span class="text-[11px] text-slate-400 truncate font-medium">
+                                    <span class="text-xs text-slate-400 truncate font-medium">
                                         {{ $client->company_name ?: $client->email }}
                                     </span>
                                 </div>
                             </div>
                         </label>
                     @empty
-                        <div class="flex flex-col items-center justify-center py-16 px-6 text-center">
-                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                                <x-icon-search class="w-8 h-8 text-slate-200" />
-                            </div>
-                            <p class="text-sm font-bold text-slate-400">No matches found</p>
-                            <p class="text-[11px] text-slate-400 mt-1 max-w-[150px] mx-auto">Try a different name or email address.</p>
-                        </div>
+                        <x-ui.empty-state
+                            icon="search"
+                            title="No matches found"
+                            message="Try a different name or email address."
+                        />
                     @endforelse
                 </div>
+
+                @if($this->clients->hasPages())
+                    <div class="p-3 border-t border-slate-100">
+                        {{ $this->clients->links() }}
+                    </div>
+                @endif
             </x-ui.card>
-            @error('selectedClients') <span class="text-error text-[11px] font-bold uppercase tracking-wider px-2">{{ $message }}</span> @enderror
+            @error('selectedClients') <span class="label-text-alt text-error px-2">{{ $message }}</span> @enderror
         </div>
 
         {{-- ═══════════════ RIGHT COLUMN: COMPOSER ═══════════════ --}}
         <div class="lg:col-span-8">
             <x-ui.card :padding="false" class="flex flex-col h-[calc(100vh-220px)] max-h-[900px]">
-                <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
+                <div class="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
                     <h3 class="font-bold text-slate-800 flex items-center gap-2">
                         <x-icon-mail class="w-5 h-5 text-blue-500" />
                         Compose Message
                     </h3>
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-white px-3 py-1 rounded-full border border-slate-100">
-                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                            Live Editor
-                        </div>
-                    </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-8 space-y-8">
+                <div class="flex-1 overflow-y-auto p-6 space-y-6">
                     {{-- Template Selection --}}
-                    <div class="group">
-                        <label class="label py-0 mb-3">
-                            <span class="label-text font-bold text-slate-500 uppercase tracking-wider text-[11px]">Use Template <span class="text-slate-300 font-normal ml-1 hover:text-blue-400 transition-colors">(Optional)</span></span>
+                    <div>
+                        <label class="label py-0 mb-2">
+                            <span class="label-text">Use Template <span class="label-text-alt font-normal">(Optional)</span></span>
                         </label>
-                        <div class="relative">
-                            <select wire:model.live="selectedTemplate" class="select select-bordered w-full rounded-2xl bg-white border-slate-200 focus:border-blue-500 transition-all font-bold text-slate-700 shadow-sm h-12">
-                                <option value="">Draft from scratch...</option>
-                                @foreach($this->templates as $template)
-                                    <option value="{{ $template->slug }}">{{ $template->name }}</option>
-                                @endforeach
-                            </select>
-                            <p class="text-[11px] text-slate-400 mt-3 font-medium flex items-center gap-1.5 px-1">
-                                <x-icon-info-circle class="w-4 h-4 text-blue-400" /> 
-                                Note: Selecting a template will replace the current subject and body content.
-                            </p>
-                        </div>
+                        <select wire:model.live="selectedTemplate" class="select select-bordered w-full">
+                            <option value="">Draft from scratch...</option>
+                            @foreach($this->templates as $template)
+                                <option value="{{ $template->slug }}">{{ $template->name }}</option>
+                            @endforeach
+                        </select>
+                        <p class="label-text-alt mt-2 flex items-center gap-1.5">
+                            <x-icon-info-circle class="w-4 h-4 text-blue-400" />
+                            Selecting a template will replace the current subject and body content.
+                        </p>
                     </div>
 
-                    <div class="divider before:bg-slate-50 after:bg-slate-50 opacity-60"></div>
+                    <div class="divider"></div>
 
                     {{-- Subject --}}
-                    <div class="space-y-2">
+                    <div class="form-control">
                         <label class="label py-0">
-                            <span class="label-text font-bold text-slate-500 uppercase tracking-wider text-[11px]">Subject Line</span>
+                            <span class="label-text">Subject Line</span>
                         </label>
-                        <input wire:model="subject" type="text" 
-                               class="input input-bordered w-full rounded-2xl h-12 font-bold text-slate-800 placeholder:text-slate-300 border-slate-200 focus:border-blue-500 shadow-sm"
+                        <input wire:model="subject" type="text"
+                               class="input input-bordered w-full"
                                placeholder="e.g. Important Update Regarding Your Subscription" />
-                        @error('subject') <span class="text-error text-[11px] font-bold uppercase">{{ $message }}</span> @enderror
+                        @error('subject') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
                     </div>
 
                     {{-- Body --}}
-                    <div class="space-y-3">
+                    <div class="form-control">
                         <label class="label py-0">
-                            <span class="label-text font-bold text-slate-500 uppercase tracking-wider text-[11px]">Message Content</span>
+                            <span class="label-text">Message Content</span>
                         </label>
-                        <div class="relative group">
-                            <textarea 
-                                x-ref="messageBody"
-                                wire:model="body" 
-                                class="textarea textarea-bordered w-full rounded-3xl p-8 text-base leading-relaxed bg-white border-slate-300/60 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all resize-none shadow-inner min-h-[400px] font-medium text-slate-700 placeholder:text-slate-200"
-                                placeholder="Start typing your personalized message here..."
-                            ></textarea>
-                            
-                            {{-- Placeholder chips --}}
-                            <div class="mt-6 flex flex-wrap gap-2 items-center px-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2 border-r border-slate-200 pr-3">Quick Insert:</span>
-                                @foreach(['{client_name}', '{company_name}', '{company_email}', '{app_name}'] as $var)
-                                    <button 
-                                        type="button"
-                                        @click="insertPlaceholder('{{ $var }}')"
-                                        class="badge bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 border-none transition-all cursor-pointer py-4 px-4 rounded-xl text-[11px] font-bold shadow-sm active:scale-95"
-                                    >
-                                        {{ $var }}
-                                    </button>
-                                @endforeach
-                            </div>
+                        <textarea
+                            x-ref="messageBody"
+                            wire:model="body"
+                            class="textarea textarea-bordered w-full min-h-[350px]"
+                            placeholder="Start typing your personalized message here..."
+                        ></textarea>
+
+                        {{-- Placeholder chips --}}
+                        <div class="mt-3 flex flex-wrap gap-2 items-center">
+                            <span class="label-text-alt font-medium uppercase tracking-wider mr-1">Quick Insert:</span>
+                            @foreach(['{client_name}', '{company_name}', '{company_email}', '{app_name}'] as $var)
+                                <button
+                                    type="button"
+                                    @click="insertPlaceholder('{{ $var }}')"
+                                    class="badge bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 border-none transition-colors cursor-pointer py-3 px-3 text-xs font-semibold"
+                                >
+                                    {{ $var }}
+                                </button>
+                            @endforeach
                         </div>
-                        @error('body') <span class="text-error text-[11px] font-bold uppercase">{{ $message }}</span> @enderror
+                        @error('body') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
                 <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0">
-                    <div class="flex items-center gap-5">
+                    <div class="flex items-center gap-4">
                         <div class="flex -space-x-3">
                             @php $displayLimit = 4; @endphp
                             @forelse(array_slice($selectedClients, 0, $displayLimit) as $index => $cid)
                                 @php $recipient = $this->selectedClientModels->get($cid); @endphp
-                                <div class="w-10 h-10 rounded-full border-4 border-slate-50 bg-white ring-1 ring-slate-200 flex items-center justify-center font-bold text-xs text-blue-600 shadow-sm overflow-hidden z-[{{ 10 - $index }}]">
+                                <div class="w-9 h-9 rounded-full border-2 border-slate-50 bg-white ring-1 ring-slate-200 flex items-center justify-center font-bold text-xs text-blue-600 overflow-hidden z-[{{ 10 - $index }}]">
                                     {{ strtoupper(substr($recipient?->name ?? '?', 0, 1)) }}
                                 </div>
                             @empty
-                                <div class="w-10 h-10 rounded-full border-4 border-slate-50 bg-slate-200 ring-1 ring-slate-300 flex items-center justify-center text-slate-400 z-10">
+                                <div class="w-9 h-9 rounded-full border-2 border-slate-50 bg-slate-200 ring-1 ring-slate-300 flex items-center justify-center text-slate-400 z-10">
                                     <x-icon-users class="w-4 h-4" />
                                 </div>
                             @endforelse
                             @if(count($selectedClients) > $displayLimit)
-                                <div class="w-10 h-10 rounded-full border-4 border-slate-50 bg-slate-800 text-white flex items-center justify-center font-bold text-[10px] z-0 shadow-sm">
+                                <div class="w-9 h-9 rounded-full border-2 border-slate-50 bg-slate-800 text-white flex items-center justify-center font-bold text-xs z-0">
                                     +{{ count($selectedClients) - $displayLimit }}
                                 </div>
                             @endif
                         </div>
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-slate-800">
-                                {{ count($selectedClients) ?: 'No' }} recipients selected
-                            </span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                Finalizing preparation...
-                            </span>
-                        </div>
+                        <span class="text-sm font-semibold text-slate-700">
+                            {{ count($selectedClients) ?: 'No' }} recipients selected
+                        </span>
                     </div>
 
                     <x-ui.button
                         wire:click="send"
                         wire:loading.attr="disabled"
                         size="lg"
-                        class="px-12 rounded-2xl shadow-xl shadow-blue-500/20 flex items-center gap-3 group transition-all"
                         :disabled="empty($selectedClients)"
                     >
-                        <span wire:loading.remove wire:target="send" class="flex items-center gap-3">
-                             <span class="font-bold tracking-tight">Send Message Now</span>
-                             <x-icon-send class="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        <span wire:loading.remove wire:target="send" class="flex items-center gap-2">
+                             <span>Send Message Now</span>
+                             <x-icon-send class="w-4 h-4" />
                         </span>
                         <span wire:loading wire:target="send">
                             <span class="loading loading-spinner loading-sm"></span>
-                            <span class="font-bold">Broadcasting...</span>
+                            <span>Broadcasting...</span>
                         </span>
                     </x-ui.button>
                 </div>

@@ -3,7 +3,7 @@
     'padding' => true,
 ])
 
-<section {{ $attributes->merge(['class' => 'bg-white rounded-2xl border border-slate-200 shadow-sm ' . ($padding ? 'p-6' : 'overflow-hidden')]) }}>
+<section {{ $attributes->merge(['class' => 'bg-white rounded-2xl border border-slate-200 ' . ($padding ? 'p-6' : 'overflow-hidden')]) }}>
     @if($title || isset($actions))
         <div class="{{ $padding ? 'mb-5' : 'p-6 border-b border-slate-100' }} flex items-center justify-between">
             @if($title)

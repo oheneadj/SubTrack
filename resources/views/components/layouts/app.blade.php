@@ -25,7 +25,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased bg-slate-50 text-slate-900">
+<body class="font-sans antialiased bg-gray-100 text-slate-900">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <x-nav.sidebar />
@@ -46,6 +46,7 @@
 
     {{-- Global Flash Toasts --}}
     <x-ui.toast type="success" :message="session('success')" />
+    <x-ui.toast type="warning" :message="session('warning')" />
     <x-ui.toast type="error" :message="session('error')" />
 
     @stack('scripts')

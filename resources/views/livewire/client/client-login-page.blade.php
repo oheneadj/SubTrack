@@ -1,5 +1,5 @@
 <div class="max-w-sm mx-auto">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+    <div class="bg-white rounded-2xl border border-slate-200 p-8">
         <div class="text-center mb-8">
             <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-4">
                 <x-icon-mail class="w-6 h-6 text-blue-600" />

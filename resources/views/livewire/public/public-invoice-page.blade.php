@@ -1,7 +1,7 @@
 <div>
     @if($isPaid)
         {{-- Paid state --}}
-        <div class="bg-white rounded-2xl border border-green-200 shadow-sm p-10 text-center">
+        <div class="bg-white rounded-2xl border border-green-200 p-10 text-center">
             <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
                 <x-icon-circle-check class="w-8 h-8 text-green-600" />
             </div>
@@ -12,7 +12,7 @@
 
     @elseif($invoice->status->value === 'Draft')
         {{-- Inactive/cancelled state --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-10 text-center">
+        <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center">
             <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
                 <x-icon-file-x class="w-8 h-8 text-slate-400" />
             </div>
@@ -35,7 +35,7 @@
         @endif
 
         {{-- Invoice summary card --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
             <div class="p-6 border-b border-slate-100">
                 <div class="flex items-start justify-between">
                     <div>
@@ -88,7 +88,7 @@
 
         {{-- Payment method selection --}}
         @if(!empty($gateways))
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6">
                 <h2 class="text-base font-bold text-slate-800 mb-4">Choose a payment method</h2>
                 <div class="space-y-3">
                     @foreach($gateways as $slug => $label)

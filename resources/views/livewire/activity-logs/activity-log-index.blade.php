@@ -19,7 +19,7 @@
     </x-ui.toolbar>
 
     <div class="">
-        <div class="overflow-x-auto bg-white rounded-xl shadow-sm py-2 border border-slate-200">
+        <div class="overflow-x-auto bg-white rounded-xl py-2 border border-slate-200">
             <table class="table table-zebra table-sm">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-slate-500">

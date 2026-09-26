@@ -20,14 +20,14 @@
     </div>
 
     @if($this->invoices->isEmpty())
-        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
             <x-icon-file-x class="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <p class="text-slate-500 text-sm">No invoices found.</p>
         </div>
     @else
         <div class="space-y-4">
             @foreach($this->invoices as $invoice)
-                <div wire:key="invoice-{{ $invoice->id }}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" x-data="{ expanded: false }">
+                <div wire:key="invoice-{{ $invoice->id }}" class="bg-white rounded-2xl border border-slate-200 overflow-hidden" x-data="{ expanded: false }">
                     <div class="p-5 flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div>

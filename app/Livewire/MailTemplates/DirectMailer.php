@@ -12,9 +12,12 @@ use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class DirectMailer extends Component
 {
+    use WithPagination;
+
     public array $selectedClients = [];
 
     public ?string $selectedTemplate = null;
@@ -55,10 +58,15 @@ class DirectMailer extends Component
         'body' => 'required|string',
     ];
 
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function clients()
     {
-        return Client::search($this->search)->orderBy('name')->paginate(6);
+        return Client::search($this->search)->orderBy('name')->simplePaginate(6);
     }
 
     #[Computed]
@@ -88,7 +96,7 @@ class DirectMailer extends Component
     public function updatedSelectAll($value)
     {
         if ($value) {
-            $this->selectedClients = $this->clients->pluck('ulid')->toArray();
+            $this->selectedClients = Client::search($this->search)->pluck('ulid')->toArray();
         } else {
             $this->selectedClients = [];
         }
@@ -98,26 +106,22 @@ class DirectMailer extends Component
     {
         $this->validate();
 
-        $count = 0;
         $clients = Client::whereIn('ulid', $this->selectedClients)->get();
         $subscription = $this->selectedSubscriptionId ? Subscription::find($this->selectedSubscriptionId) : null;
 
         foreach ($clients as $client) {
-            try {
-                Mail::to($client->email)->send(new GenericClientMail(
-                    $client,
-                    $this->subject,
-                    $this->body,
-                    $subscription
-                ));
-                $count++;
-            } catch (\Exception $e) {
-                // Log or handle error for specific client
-            }
+            Mail::to($client->email)->queue(new GenericClientMail(
+                $client,
+                $this->subject,
+                $this->body,
+                $subscription
+            ));
         }
 
+        $count = $clients->count();
+
         $this->reset(['selectedClients', 'selectedTemplate', 'subject', 'body', 'selectAll']);
-        session()->flash('success', "Successfully sent emails to {$count} clients.");
+        session()->flash('success', "Queued emails to {$count} clients for delivery.");
     }
 
     #[Layout('components.layouts.app')]

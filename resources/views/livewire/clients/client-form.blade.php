@@ -10,7 +10,7 @@
     @endif
 
     <div class="{{ $isModal ? 'p-1' : 'max-w-4xl mx-auto' }}">
-        <div class="{{ $isModal ? '' : 'bg-white rounded-2xl border border-slate-200 p-8 shadow-sm' }}">
+        <div class="{{ $isModal ? '' : 'bg-white rounded-2xl border border-slate-200 p-8' }}">
             @if($isModal)
                 <div class="mb-8">
                     <h3 class="text-xl font-bold text-slate-800">{{ $pageTitle }}</h3>

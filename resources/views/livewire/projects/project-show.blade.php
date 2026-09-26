@@ -123,7 +123,7 @@
             </x-ui.card>
 
             {{-- Client Info --}}
-            <section class="bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-200 p-6 shadow-sm relative overflow-hidden group">
+            <section class="bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-200 p-6 relative overflow-hidden group">
                 <!-- Decorative element -->
                 <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors duration-500"></div>
 
