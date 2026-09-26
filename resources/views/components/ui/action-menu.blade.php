@@ -19,7 +19,7 @@
 @if($shouldUnfold)
     <div class="flex items-center justify-end gap-2">
         @if($viewAction)
-            <a href="{{ $viewAction }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-tight rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors" wire:navigate>
+            <a href="{{ $viewAction }}" class="inline-flex items-center justify-center gap-1.5 px-2 py-1 text-xs font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors" wire:navigate>
                 <x-icon-eye class="w-3.5 h-3.5" />
                 <span>View</span>
             </a>
@@ -37,7 +37,7 @@
                         @click="$dispatch('open-modal', { id: '{{ $editModalId }}' })"
                     @endif
                 @endif
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-tight rounded-lg bg-sky-50 border border-sky-100 text-sky-700 hover:bg-sky-100 transition-colors">
+                class="inline-flex items-center justify-center gap-1.5 px-2 py-1 text-xs font-medium rounded-lg bg-sky-50 border border-sky-100 text-sky-700 hover:bg-sky-100 transition-colors">
                 <x-icon-edit class="w-3.5 h-3.5" />
                 <span>Edit</span>
             </button>
@@ -48,7 +48,7 @@
         @endif
 
         @if($deleteAction)
-            <button wire:click="{{ $deleteAction }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-tight rounded-lg bg-red-50 border border-red-100 text-red-700 hover:bg-red-100 transition-colors">
+            <button wire:click="{{ $deleteAction }}" class="inline-flex items-center justify-center gap-1.5 px-2 py-1 text-xs font-medium rounded-lg bg-red-50 border border-red-100 text-red-700 hover:bg-red-100 transition-colors">
                 <x-icon-trash class="w-3.5 h-3.5" />
                 <span>Delete</span>
             </button>

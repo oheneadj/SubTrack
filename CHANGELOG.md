@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- `x-ui.action-menu`'s built-in View/Edit/Delete pill buttons now match `x-ui.button`'s `xs` sizing exactly (`px-2 py-1`, `font-medium`, no uppercase/tracking) — previously they used bespoke `px-3 py-1.5 font-bold uppercase` classes, so they visibly clashed with any slotted `x-ui.button` sitting right next to them (e.g. invoice-index, renewal-tracker)
 - Standardized table row actions app-wide onto the shared `x-ui.action-menu` component — fixes 5 different inconsistent patterns found in an audit (hand-rolled buttons with bespoke colors in `renewal-tracker`, a 4-button row instead of a collapsible menu in `invoice-index`, 3 different single-icon-button styles with no delete option in `client-show`'s three tables, a view button living outside the menu in `user-index`, and a slotted button with hardcoded white-text overrides in `client-index`)
 - Direct Mailer & Mail Templates pages restyled to match the app's design system: replaced one-off `rounded-3xl`/`shadow-*`/`text-[10px]` custom styling with the standard `.input`/`.select`/`.textarea` primitives from `app.css`, `x-ui.page-header`, and `x-ui.empty-state`; removed a duplicated `p-6` wrapper on the templates index (layout already applies page padding)
 - Removed `shadow-*` utility classes from `x-ui.card`, `x-ui.stat-card`, `x-ui.data-table`, `x-ui.toolbar`, and several ad-hoc card-styled containers (public invoice page, client login/invoice portal, client/project forms) app-wide
