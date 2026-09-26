@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Neither the project detail page nor the provider detail page let you click through to a listed subscription — the row's action menu only had Edit/Delete, no view, and the service name wasn't a link either. Both now link the service name and add a view action, matching `subscription-index.blade.php`'s existing pattern. Tests: `SubscriptionRowLinkTest`
+
 ### Changed
 - `Subscription::applicableReminderDays()` now keeps a configured day only if it falls within roughly the last third of that subscription's billing cycle, not just "under the cycle length." A 14-day reminder is a fine heads-up on a 365-day annual cycle, but on a 30-day monthly cycle it lands right around the halfway point — barely past the last renewal, not a meaningful warning — so it's now excluded for monthly while still kept for annual
 

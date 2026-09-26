@@ -50,8 +50,10 @@
                         @foreach($this->subscriptions as $sub)
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td>
-                                    <div class="font-bold text-primary">{{ $sub->service_name ?? $sub->service_type->label() }}</div>
-                                    <div class="text-xs text-secondary truncate max-w-xs">{{ $sub->domain_name ?? 'N/A' }}</div>
+                                    <a href="{{ route('subscriptions.show', $sub) }}" class="group block" wire:navigate>
+                                        <div class="font-bold text-primary group-hover:text-blue-600 group-hover:underline transition-colors">{{ $sub->service_name ?? $sub->service_type->label() }}</div>
+                                        <div class="text-xs text-secondary truncate max-w-xs">{{ $sub->domain_name ?? 'N/A' }}</div>
+                                    </a>
                                 </td>
                                 <td>
                                     @if($sub->project && $sub->project->client)
@@ -81,8 +83,9 @@
                                     {{ $sub->expiry_date->format('M d, Y') }}
                                 </td>
                                 <td class="text-right">
-                                    <x-ui.action-menu 
-                                        editAction="window.location.href='{{ route('subscriptions.edit', $sub) }}'" 
+                                    <x-ui.action-menu
+                                        viewAction="{{ route('subscriptions.show', $sub) }}"
+                                        editAction="window.location.href='{{ route('subscriptions.edit', $sub) }}'"
                                         deleteAction="$wire.deleteSubscription('{{ $sub->ulid }}')"
                                     />
                                 </td>
