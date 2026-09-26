@@ -44,15 +44,25 @@ class GenericClientMail extends Mailable implements ShouldQueue
     }
 
     /**
-     * Tag the outgoing message with its EmailLog id so the global MessageSent
-     * listener can mark the right row as delivered. Done via the headers()
-     * hook (plain serializable data) rather than withSymfonyMessage(), whose
-     * closure can't survive queue job serialization.
+     * Tag the outgoing message with its EmailLog id (for our own MessageSent
+     * listener) and a stable Message-ID built from the log's ULID (so the
+     * mail provider's delivery/bounce webhook can be correlated back to this
+     * row without ever exposing the internal integer id). Done via the
+     * headers() hook — plain serializable data — rather than
+     * withSymfonyMessage(), whose closure can't survive queue job
+     * serialization.
      */
     public function headers(): Headers
     {
+        if (! $this->emailLogId) {
+            return new Headers;
+        }
+
+        $log = EmailLog::find($this->emailLogId);
+
         return new Headers(
-            text: $this->emailLogId ? ['X-Email-Log-Id' => (string) $this->emailLogId] : [],
+            messageId: $log?->message_id ?? $log?->generateMessageId(),
+            text: ['X-Email-Log-Id' => (string) $this->emailLogId],
         );
     }
 

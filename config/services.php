@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'brevo' => [
+        'webhook_token' => env('BREVO_WEBHOOK_TOKEN'),
+    ],
+
 ];

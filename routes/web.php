@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ServiceType;
+use App\Http\Controllers\BrevoWebhookController;
 use App\Http\Controllers\ClientAuthController;
 use App\Http\Controllers\InvoicePaymentController;
 use App\Http\Controllers\WebhookController;
@@ -133,6 +134,7 @@ Route::post('/pay/{invoice:ulid}/checkout/{gateway}', [InvoicePaymentController:
 |--------------------------------------------------------------------------
 */
 Route::post('/webhooks/{gateway}', WebhookController::class)->name('webhooks.handle');
+Route::post('/webhooks/email/brevo', BrevoWebhookController::class)->name('webhooks.email.brevo');
 
 /*
 |--------------------------------------------------------------------------

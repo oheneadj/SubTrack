@@ -8,6 +8,10 @@ enum EmailLogStatus: string
 {
     case Queued = 'Queued';
     case Sent = 'Sent';
+    case Delivered = 'Delivered';
+    case Bounced = 'Bounced';
+    case Blocked = 'Blocked';
+    case Complained = 'Complained';
     case Failed = 'Failed';
 
     public function label(): string
@@ -19,8 +23,9 @@ enum EmailLogStatus: string
     {
         return match ($this) {
             self::Queued => 'neutral',
-            self::Sent => 'success',
-            self::Failed => 'error',
+            self::Sent => 'info',
+            self::Delivered => 'success',
+            self::Bounced, self::Blocked, self::Complained, self::Failed => 'error',
         };
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\EmailLogs;
 
 use App\Actions\DispatchClientMailAction;
-use App\Enums\EmailLogStatus;
 use App\Models\EmailLog;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -22,9 +21,32 @@ class EmailBatchShow extends Component
 
     public string $statusFilter = '';
 
+    public bool $showEventsModal = false;
+
+    public ?string $selectedLogUlid = null;
+
     public function mount(string $batchId): void
     {
         $this->batchId = $batchId;
+    }
+
+    #[Computed]
+    public function selectedLog(): ?EmailLog
+    {
+        return $this->selectedLogUlid
+            ? EmailLog::with('events')->where('ulid', $this->selectedLogUlid)->first()
+            : null;
+    }
+
+    public function viewEvents(string $ulid): void
+    {
+        $this->selectedLogUlid = $ulid;
+        $this->showEventsModal = true;
+    }
+
+    public function closeEvents(): void
+    {
+        $this->showEventsModal = false;
     }
 
     /** @return Collection<int, EmailLog> */
@@ -32,7 +54,7 @@ class EmailBatchShow extends Component
     public function logs(): Collection
     {
         return EmailLog::forBatch($this->batchId)
-            ->with('client')
+            ->with(['client', 'events'])
             ->when($this->statusFilter !== '', fn ($query) => $query->where('status', $this->statusFilter))
             ->orderBy('created_at')
             ->get();
@@ -41,14 +63,14 @@ class EmailBatchShow extends Component
     #[Computed]
     public function failedCount(): int
     {
-        return EmailLog::forBatch($this->batchId)->failed()->count();
+        return EmailLog::forBatch($this->batchId)->resendable()->count();
     }
 
     public function resend(string $ulid, DispatchClientMailAction $dispatcher): void
     {
-        $log = EmailLog::forBatch($this->batchId)->where('ulid', $ulid)->firstOrFail();
+        $log = EmailLog::forBatch($this->batchId)->resendable()->where('ulid', $ulid)->first();
 
-        if ($log->status !== EmailLogStatus::Failed) {
+        if (! $log) {
             return;
         }
 
@@ -58,13 +80,13 @@ class EmailBatchShow extends Component
 
     public function resendAllFailed(DispatchClientMailAction $dispatcher): void
     {
-        $failedLogs = EmailLog::forBatch($this->batchId)->failed()->get();
+        $logs = EmailLog::forBatch($this->batchId)->resendable()->get();
 
-        foreach ($failedLogs as $log) {
+        foreach ($logs as $log) {
             $dispatcher->resend($log);
         }
 
-        session()->flash('success', "Resent {$failedLogs->count()} failed email(s).");
+        session()->flash('success', "Resent {$logs->count()} failed email(s).");
     }
 
     #[Layout('components.layouts.app')]

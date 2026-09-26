@@ -33,10 +33,24 @@ class EmailLogIndex extends Component
     #[Computed]
     public function batches()
     {
+        $deliveredStatuses = [EmailLogStatus::Sent->value, EmailLogStatus::Delivered->value];
+        $failedStatuses = [
+            EmailLogStatus::Failed->value,
+            EmailLogStatus::Bounced->value,
+            EmailLogStatus::Blocked->value,
+            EmailLogStatus::Complained->value,
+        ];
+        $resendableStatuses = [
+            EmailLogStatus::Failed->value,
+            EmailLogStatus::Bounced->value,
+            EmailLogStatus::Blocked->value,
+        ];
+
         $query = EmailLog::query()
             ->selectRaw('batch_id, user_id, MIN(created_at) as created_at, COUNT(*) as total_count')
-            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as sent_count', [EmailLogStatus::Sent->value])
-            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed_count', [EmailLogStatus::Failed->value])
+            ->selectRaw('SUM(CASE WHEN status IN ('.implode(',', array_fill(0, count($deliveredStatuses), '?')).') THEN 1 ELSE 0 END) as sent_count', $deliveredStatuses)
+            ->selectRaw('SUM(CASE WHEN status IN ('.implode(',', array_fill(0, count($failedStatuses), '?')).') THEN 1 ELSE 0 END) as failed_count', $failedStatuses)
+            ->selectRaw('SUM(CASE WHEN status IN ('.implode(',', array_fill(0, count($resendableStatuses), '?')).') THEN 1 ELSE 0 END) as resendable_count', $resendableStatuses)
             ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as queued_count', [EmailLogStatus::Queued->value])
             ->selectRaw('MIN(subject) as sample_subject')
             ->with('user')
@@ -55,16 +69,16 @@ class EmailLogIndex extends Component
         return $query->paginate(15);
     }
 
-    /** Resend every failed email in a batch. */
+    /** Resend every failed/bounced/blocked email in a batch. */
     public function resendAllFailed(string $batchId, DispatchClientMailAction $dispatcher): void
     {
-        $failedLogs = EmailLog::forBatch($batchId)->failed()->get();
+        $logs = EmailLog::forBatch($batchId)->resendable()->get();
 
-        foreach ($failedLogs as $log) {
+        foreach ($logs as $log) {
             $dispatcher->resend($log);
         }
 
-        session()->flash('success', "Resent {$failedLogs->count()} failed email(s).");
+        session()->flash('success', "Resent {$logs->count()} failed email(s).");
     }
 
     #[Layout('components.layouts.app')]

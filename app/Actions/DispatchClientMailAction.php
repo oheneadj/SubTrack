@@ -49,6 +49,8 @@ class DispatchClientMailAction
             'status' => EmailLogStatus::Queued,
         ]);
 
+        $log->update(['message_id' => $log->generateMessageId()]);
+
         Mail::to($client->email)->queue(new GenericClientMail(
             $client,
             $rendered['subject'],
@@ -87,6 +89,8 @@ class DispatchClientMailAction
             'status' => EmailLogStatus::Queued,
             'error_message' => null,
             'sent_at' => null,
+            'delivered_at' => null,
+            'bounced_at' => null,
         ]);
 
         Mail::to($log->to_email)->queue(new GenericClientMail(

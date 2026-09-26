@@ -33,10 +33,10 @@
                     <td class="text-right">
                         <x-ui.action-menu
                             :viewAction="route('email-logs.show', $batch->batch_id)"
-                            :slotCount="$batch->failed_count > 0 ? 1 : 0"
+                            :slotCount="$batch->resendable_count > 0 ? 1 : 0"
                         >
-                            @if($batch->failed_count > 0)
-                                <x-ui.button variant="error" size="xs" wire:click="resendAllFailed('{{ $batch->batch_id }}')" wire:confirm="Resend all {{ $batch->failed_count }} failed email(s) in this batch?">
+                            @if($batch->resendable_count > 0)
+                                <x-ui.button variant="error" size="xs" wire:click="resendAllFailed('{{ $batch->batch_id }}')" wire:confirm="Resend all {{ $batch->resendable_count }} failed email(s) in this batch?">
                                     <x-icon-refresh class="w-3.5 h-3.5" />
                                     <span>Resend Failed</span>
                                 </x-ui.button>
