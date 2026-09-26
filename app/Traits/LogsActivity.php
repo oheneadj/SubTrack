@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use App\Models\ActivityLog;
@@ -40,17 +42,17 @@ trait LogsActivity
         }
 
         ActivityLog::create([
-            'user_id'      => Auth::id(),
-            'action'       => "model.{$action}",
+            'user_id' => Auth::id(),
+            'action' => "model.{$action}",
             'subject_type' => get_class($model),
-            'subject_id'   => $model->getKey(),
-            'description'  => ucfirst($action) . ' ' . class_basename($model),
-            'properties'   => [
+            'subject_id' => $model->getKey(),
+            'description' => ucfirst($action).' '.class_basename($model),
+            'properties' => [
                 'attributes' => $model->getAttributes(),
-                'old'        => $action === 'updated' ? array_intersect_key($model->getOriginal(), $model->getChanges()) : null,
+                'old' => $action === 'updated' ? array_intersect_key($model->getOriginal(), $model->getChanges()) : null,
             ],
-            'ip_address'   => Request::ip(),
-            'user_agent'   => Request::userAgent(),
+            'ip_address' => Request::ip(),
+            'user_agent' => Request::userAgent(),
         ]);
     }
 }

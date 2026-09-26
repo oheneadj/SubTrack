@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Dev;
 
 use Livewire\Component;
-use App\Enums\SubscriptionStatus;
-use App\Enums\PaymentStatus;
 
 class ComponentsPreview extends Component
 {
     public $inputText = '';
+
     public $selectValue = '';
+
     public $textareaText = '';
+
     public $confirmDelete = false;
 
     public function delete()

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Nav;
 
-use Livewire\Component;
+use App\Models\User;
 use Illuminate\View\View;
+use Livewire\Component;
 
 class NotificationBell extends Component
 {
@@ -21,7 +24,7 @@ class NotificationBell extends Component
 
     public function refreshCount(): void
     {
-        /** @var \App\Models\User $user */
+        /** @var User|null $user */
         $user = auth()->user();
 
         if ($user) {

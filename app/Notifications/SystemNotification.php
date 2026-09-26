@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
@@ -36,8 +38,8 @@ class SystemNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title'      => $this->title,
-            'message'    => $this->message,
+            'title' => $this->title,
+            'message' => $this->message,
             'action_url' => $this->actionUrl,
         ];
     }

@@ -1,5 +1,5 @@
 <button type="button" 
-    class="btn btn-text btn-circle relative hover:bg-slate-100 transition-colors" 
+    class="relative p-2 rounded-full hover:bg-slate-100 transition-colors focus:outline-none" 
     @click="$dispatch('open-notifications')"
     aria-label="View notifications">
     

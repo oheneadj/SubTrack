@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Dashboard;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\SubscriptionStatus;
 use App\Models\Client;
 use App\Models\DashboardActivityLog;
 use App\Models\Invoice;
@@ -19,14 +22,16 @@ use Livewire\Component;
 #[Layout('components.layouts.app')]
 class OverviewDashboard extends Component
 {
-    public array $revenueData    = [];
-    public array $revenueChange  = [];
+    public array $revenueData = [];
+
+    public array $revenueChange = [];
+
     public array $comparisonData = [];
 
     public function mount(RevenueService $revenue): void
     {
-        $this->revenueData    = $revenue->lastSixMonths();
-        $this->revenueChange  = $revenue->monthOverMonthChange();
+        $this->revenueData = $revenue->lastSixMonths();
+        $this->revenueChange = $revenue->monthOverMonthChange();
         $this->comparisonData = $revenue->comparisonData(12);
     }
 
@@ -34,7 +39,7 @@ class OverviewDashboard extends Component
     public function criticalSubscriptions()
     {
         return Subscription::critical()
-            ->with('project.client')
+            ->with(['client', 'project.client'])
             ->orderBy('expiry_date')
             ->take(5)
             ->get();
@@ -44,7 +49,7 @@ class OverviewDashboard extends Component
     public function warningSubscriptions()
     {
         return Subscription::warning()
-            ->with('project.client')
+            ->with(['client', 'project.client'])
             ->orderBy('expiry_date')
             ->take(5)
             ->get();
@@ -71,13 +76,14 @@ class OverviewDashboard extends Component
     #[Computed]
     public function financeStats(): array
     {
-        $annualRecurring = Subscription::where('status', '=', \App\Enums\SubscriptionStatus::Active)->sum('renewal_cost_usd');
+        $activeSubscriptions = Subscription::where('status', '=', SubscriptionStatus::Active)->get();
+        $annualRecurringCents = $activeSubscriptions->sum('client_renewal_cost_usd');
 
         return [
-            'total_revenue' => Invoice::where('status', '=', \App\Enums\InvoiceStatus::Paid)->sum('total_amount'),
-            'outstanding'   => Invoice::whereIn('status', [\App\Enums\InvoiceStatus::Sent, \App\Enums\InvoiceStatus::Overdue])->sum('total_amount'),
-            'mrr'           => $annualRecurring / 12,
-            'costs'         => $annualRecurring,
+            'total_revenue' => Invoice::where('status', '=', InvoiceStatus::Paid)->sum('total_amount') / 100,
+            'outstanding' => Invoice::whereIn('status', [InvoiceStatus::Sent, InvoiceStatus::Overdue])->sum('total_amount') / 100,
+            'mrr' => $annualRecurringCents / 12 / 100,
+            'costs' => Renewal::sum('provider_cost_usd') / 100,
         ];
     }
 
@@ -85,23 +91,23 @@ class OverviewDashboard extends Component
     public function stats(): array
     {
         return [
-            'critical'       => Subscription::critical()->count(),
-            'warning'        => Subscription::warning()->count(),
-            'healthy'        => Subscription::healthy()->count(),
-            'awaiting'       => Renewal::where('payment_status', '=', PaymentStatus::Invoiced)->count(),
-            'overdue'        => Invoice::where('status', '=', InvoiceStatus::Overdue)->count(),
-            'total_clients'  => Client::count(),
+            'critical' => Subscription::critical()->count(),
+            'warning' => Subscription::warning()->count(),
+            'healthy' => Subscription::healthy()->count(),
+            'awaiting' => Renewal::where('payment_status', '=', PaymentStatus::Invoiced)->count(),
+            'overdue' => Invoice::where('status', '=', InvoiceStatus::Overdue)->count(),
+            'total_clients' => Client::count(),
         ];
     }
 
-    public function sendReminder(int $subscriptionId): void
+    public function sendReminder(string $subscriptionUlid): void
     {
-        $subscription = Subscription::with('project.client')->findOrFail($subscriptionId);
-        $daysLeft     = $subscription->days_until_expiry;
+        $subscription = Subscription::with(['client', 'project.client'])->where('ulid', $subscriptionUlid)->firstOrFail();
 
         app(NotificationService::class)->sendExpiryReminder($subscription);
 
-        session()->flash('success', "Reminder sent to {$subscription->project->client->name}.");
+        $clientName = $subscription->effective_client->name ?? 'client';
+        session()->flash('success', "Reminder sent to {$clientName}.");
     }
 
     public function render(): View

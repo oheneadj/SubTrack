@@ -2,7 +2,7 @@
     <div class="flex flex-1 items-center justify-between">
         <div class="flex items-center gap-4">
             {{-- Hamburger Toggle (Mobile Only) --}}
-            <button type="button" class="btn btn-text btn-circle lg:hidden text-slate-500 hover:bg-slate-100 transition-colors" data-overlay="#main-sidebar"
+            <button type="button" class="p-2 rounded-full lg:hidden text-slate-500 hover:bg-slate-100 transition-colors focus:outline-none" data-overlay="#main-sidebar"
                 aria-controls="main-sidebar" aria-label="Toggle navigation">
                 <x-icon-list-details class="w-6 h-6" />
             </button>

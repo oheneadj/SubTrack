@@ -1,26 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\SubscriptionStatus;
 use App\Models\Invoice;
+use App\Models\Subscription;
 
 class RevenueService
 {
     public function lastSixMonths(): array
     {
         $months = collect(range(5, 0))->map(function ($monthsAgo) {
-            $date  = now()->subMonths($monthsAgo);
+            $date = now()->subMonths($monthsAgo);
             $total = Invoice::where('status', '=', InvoiceStatus::Paid)
                 ->whereYear('issued_date', '=', $date->year)
                 ->whereMonth('issued_date', $date->month)
                 ->sum('total_amount');
 
             return [
-                'label'  => $date->format('M'),
-                'total'  => (float) $total,
-                'year'   => $date->year,
-                'month'  => $date->month,
+                'label' => $date->format('M'),
+                'total' => (float) $total,
+                'year' => $date->year,
+                'month' => $date->month,
             ];
         });
 
@@ -45,17 +49,17 @@ class RevenueService
 
     public function monthOverMonthChange(): array
     {
-        $current  = $this->currentMonthTotal();
+        $current = $this->currentMonthTotal();
         $previous = $this->previousMonthTotal();
-        $diff     = $current - $previous;
-        $pct      = $previous > 0 ? round(($diff / $previous) * 100) : 0;
+        $diff = $current - $previous;
+        $pct = $previous > 0 ? round(($diff / $previous) * 100) : 0;
 
         return [
-            'current'    => $current,
-            'previous'   => $previous,
-            'diff'       => $diff,
+            'current' => $current,
+            'previous' => $previous,
+            'diff' => $diff,
             'percentage' => $pct,
-            'direction'  => $diff >= 0 ? 'up' : 'down',
+            'direction' => $diff >= 0 ? 'up' : 'down',
         ];
     }
 
@@ -63,7 +67,7 @@ class RevenueService
     {
         $data = collect(range($months - 1, 0))->map(function ($monthsAgo) {
             $date = now()->subMonths($monthsAgo);
-            
+
             // Revenue: Paid Invoices for that month
             $revenue = (float) Invoice::where('status', InvoiceStatus::Paid)
                 ->whereYear('issued_date', $date->year)
@@ -72,13 +76,13 @@ class RevenueService
 
             // Expenses: Estimated monthly provider costs (calculated from active subscriptions' renewal_cost_usd / 12)
             // Note: This is an "Expected Monthly Cost" baseline rather than literal expense tracking
-            $expenses = (float) \App\Models\Subscription::where('status', \App\Enums\SubscriptionStatus::Active)
+            $expenses = (float) Subscription::where('status', SubscriptionStatus::Active)
                 // We use established costs as a baseline for the line chart comparison
                 ->sum('renewal_cost_usd') / 12;
 
             return [
-                'label'    => $date->format('M Y'),
-                'revenue'  => $revenue,
+                'label' => $date->format('M Y'),
+                'revenue' => $revenue,
                 'expenses' => round($expenses, 2),
             ];
         });

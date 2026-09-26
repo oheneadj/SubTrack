@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Traits\LogsActivity;
@@ -16,10 +18,20 @@ class InvoiceItem extends Model
     ];
 
     protected $casts = [
-        'quantity'   => 'float',
-        'unit_price' => 'float',
-        'total'      => 'float',
+        'quantity' => 'float',
+        'unit_price' => 'integer',
+        'total' => 'integer',
     ];
+
+    public function getFormattedUnitPriceAttribute(): string
+    {
+        return '$'.number_format($this->unit_price / 100, 2);
+    }
+
+    public function getFormattedTotalAttribute(): string
+    {
+        return '$'.number_format($this->total / 100, 2);
+    }
 
     public function invoice(): BelongsTo
     {

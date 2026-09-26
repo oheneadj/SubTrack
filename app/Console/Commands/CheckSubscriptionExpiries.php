@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\SubscriptionStatus;
@@ -52,10 +54,11 @@ class CheckSubscriptionExpiries extends Command
                     $this->warn("Subscription #{$subscription->id} ({$subscription->domain_name}) has EXPIRED.");
                     $this->notificationService->sendExpiryReminder($subscription);
                     $notifiedCount++;
+
                     continue;
                 }
-            } 
-            
+            }
+
             // 2. Update status if expiring soon (<= 30 days)
             if ($daysLeft <= 30 && $daysLeft > 0) {
                 if ($subscription->status === SubscriptionStatus::Active) {

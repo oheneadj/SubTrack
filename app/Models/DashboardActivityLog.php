@@ -1,18 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\ActivityEventType;
+use App\Traits\HasPublicUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DashboardActivityLog extends Model
 {
+    use HasPublicUlid;
+
     protected $fillable = ['client_id', 'event_type', 'description', 'meta'];
 
     protected $casts = [
         'event_type' => ActivityEventType::class,
-        'meta'       => 'array',
+        'meta' => 'array',
     ];
 
     public function client(): BelongsTo
@@ -30,10 +35,10 @@ class DashboardActivityLog extends Model
         array $meta = []
     ): self {
         return static::create([
-            'event_type'  => $type,
+            'event_type' => $type,
             'description' => $description,
-            'client_id'   => $clientId,
-            'meta'        => $meta,
+            'client_id' => $clientId,
+            'meta' => $meta,
         ]);
     }
 }

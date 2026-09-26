@@ -1,25 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Providers;
 
 use App\Models\Provider;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 
 class ProviderIndex extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
     public bool $showModal = false;
+
     public ?int $editingId = null;
 
     public string $name = '';
+
     public string $website = '';
+
     public string $support_email = '';
 
     public bool $showDeleteModal = false;
+
     public ?int $deletingId = null;
 
     protected $queryString = [
@@ -34,7 +41,7 @@ class ProviderIndex extends Component
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:providers,name' . ($this->editingId ? ',' . $this->editingId : ''),
+            'name' => 'required|string|max:255|unique:providers,name'.($this->editingId ? ','.$this->editingId : ''),
             'website' => 'nullable|url|max:255',
             'support_email' => 'nullable|email|max:255',
         ];
@@ -47,14 +54,14 @@ class ProviderIndex extends Component
         $this->showModal = true;
     }
 
-    public function edit(int $id): void
+    public function edit(string $ulid): void
     {
-        $provider = Provider::findOrFail($id);
+        $provider = Provider::where('ulid', $ulid)->firstOrFail();
         $this->editingId = $provider->id;
         $this->name = $provider->name;
         $this->website = $provider->website ?? '';
         $this->support_email = $provider->support_email ?? '';
-        
+
         $this->resetValidation();
         $this->showModal = true;
     }
@@ -74,9 +81,9 @@ class ProviderIndex extends Component
         $this->showModal = false;
     }
 
-    public function openDeleteModal(int $id): void
+    public function openDeleteModal(string $ulid): void
     {
-        $this->deletingId = $id;
+        $this->deletingId = Provider::where('ulid', $ulid)->firstOrFail()->id;
         $this->showDeleteModal = true;
     }
 
@@ -99,7 +106,7 @@ class ProviderIndex extends Component
             ->paginate(15);
 
         return view('livewire.providers.provider-index', [
-            'providers' => $providers
+            'providers' => $providers,
         ]);
     }
 }

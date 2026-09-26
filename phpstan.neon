@@ -1,0 +1,31 @@
+includes:
+    - vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+    level: 5
+    # Defensive nullsafe operators in CSV exports and mail — relationships can be
+    # null in practice even when Larastan infers them as non-null from BelongsTo.
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # Livewire computed properties (getXxxProperty) are magic — PHPStan can't
+        # see them as class properties without a full Livewire PHPStan extension.
+        - '#Access to an undefined property App\\Livewire\\.*::\$clients#'
+        - '#Access to an undefined property App\\Livewire\\.*::\$subscriptions#'
+        # Fortify scaffolding — emailRules() PHPDoc type in trait context.
+        - '#Method App\\Actions\\Fortify\\CreateNewUser::emailRules\(\) should return#'
+        - '#Method App\\Livewire\\Settings\\Profile::emailRules\(\) should return#'
+        # Larastan infers BelongsTo results as non-null in chunk/eager contexts,
+        # but these relationships are genuinely nullable at runtime. Defensive
+        # nullsafe access is correct — suppressing the false positives here.
+        - message: '#Using nullsafe property access.*on left side of \?\? is unnecessary#'
+          path: app/Livewire/Invoices/InvoiceIndex.php
+        - message: '#Using nullsafe property access.*on left side of \?\? is unnecessary#'
+          path: app/Livewire/Subscriptions/SubscriptionIndex.php
+        - message: '#Using nullsafe property access.*on left side of \?\? is unnecessary#'
+          path: app/Mail/GenericClientMail.php
+        - message: '#Using nullsafe property access.*on left side of \?\? is unnecessary#'
+          path: app/Mail/SubscriptionReminderMail.php
+        # Fortify scaffolded MustVerifyEmail instanceof check — safe to suppress.
+        - '#Instanceof between Illuminate\\Contracts\\Auth\\MustVerifyEmail#'

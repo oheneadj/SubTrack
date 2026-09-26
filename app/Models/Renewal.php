@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
@@ -19,11 +21,23 @@ class Renewal extends Model
     ];
 
     protected $casts = [
-        'due_date'                 => 'date',
-        'payment_received_date'    => 'date',
-        'renewal_confirmed_date'   => 'date',
-        'payment_status'           => PaymentStatus::class,
+        'due_date' => 'date',
+        'payment_received_date' => 'date',
+        'renewal_confirmed_date' => 'date',
+        'payment_status' => PaymentStatus::class,
+        'provider_cost_usd' => 'integer',
+        'client_cost_usd' => 'integer',
     ];
+
+    public function getFormattedProviderCostUsdAttribute(): string
+    {
+        return '$'.number_format($this->provider_cost_usd / 100, 2);
+    }
+
+    public function getFormattedClientCostUsdAttribute(): string
+    {
+        return '$'.number_format($this->client_cost_usd / 100, 2);
+    }
 
     public function subscription(): BelongsTo
     {
@@ -35,8 +49,14 @@ class Renewal extends Model
         return $this->belongsTo(Invoice::class);
     }
 
-    public function getMarginAttribute(): float
+    /** Returns margin in cents (integer minor units). */
+    public function getMarginAttribute(): int
     {
-        return (float) ($this->client_cost_usd - $this->provider_cost_usd);
+        return $this->client_cost_usd - $this->provider_cost_usd;
+    }
+
+    public function getFormattedMarginAttribute(): string
+    {
+        return '$'.number_format($this->margin / 100, 2);
     }
 }

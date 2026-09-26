@@ -1,1 +1,1 @@
-import 'flyonui/flyonui.js';
+// Alpine.js is loaded via CDN in the layout

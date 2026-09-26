@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum PaymentStatus: string
 {
-    case Pending  = 'Pending';
+    case Pending = 'Pending';
     case Invoiced = 'Invoiced';
-    case Paid     = 'Paid';
-    case Renewed  = 'Renewed';
-    case Lapsed   = 'Lapsed';
+    case Paid = 'Paid';
+    case Renewed = 'Renewed';
+    case Lapsed = 'Lapsed';
 
     public function label(): string
     {
@@ -17,12 +19,12 @@ enum PaymentStatus: string
 
     public function color(): string
     {
-        return match($this) {
-            self::Pending  => 'neutral',
+        return match ($this) {
+            self::Pending => 'neutral',
             self::Invoiced => 'info',
-            self::Paid     => 'success',
-            self::Renewed  => 'primary',
-            self::Lapsed   => 'error',
+            self::Paid => 'success',
+            self::Renewed => 'primary',
+            self::Lapsed => 'error',
         };
     }
 }

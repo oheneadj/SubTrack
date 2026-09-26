@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Users;
 
 use App\Models\User;
@@ -12,7 +14,9 @@ use Livewire\Component;
 class UserShow extends Component
 {
     public User $user;
+
     public bool $passwordResetDone = false;
+
     public string $newPassword = '';
 
     public function mount(User $user): void
@@ -24,6 +28,7 @@ class UserShow extends Component
     {
         if ($this->user->id === auth()->id()) {
             session()->flash('error', 'You cannot disable your own account.');
+
             return;
         }
 
@@ -48,7 +53,7 @@ class UserShow extends Component
         ]);
 
         $this->passwordResetDone = true;
-        session()->flash('success', "Password has been reset successfully.");
+        session()->flash('success', 'Password has been reset successfully.');
     }
 
     public function render()

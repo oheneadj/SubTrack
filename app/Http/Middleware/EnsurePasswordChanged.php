@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Facades\Auth;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsurePasswordChanged
@@ -17,7 +19,7 @@ class EnsurePasswordChanged
         // Now that this runs only on targeted routes AFTER auth middleware,
         // we can safely assume auth()->user() is resolved if authenticated.
         if (Auth::check() && Auth::user()->requires_password_change) {
-            
+
             // Allow Livewire updates to pass through
             if ($request->is('livewire/*')) {
                 return $next($request);

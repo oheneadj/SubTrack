@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use App\Enums\UserRole;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureSuperAdmin
@@ -14,7 +17,10 @@ class EnsureSuperAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user() || $request->user()->role !== UserRole::SuperAdmin) {
+        /** @var User|null $user */
+        $user = $request->user();
+
+        if (! $user || $user->role !== UserRole::SuperAdmin) {
             abort(403, 'Access denied. Super Admin privileges required.');
         }
 

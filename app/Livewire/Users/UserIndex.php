@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Users;
 
-use App\Enums\UserRole;
 use App\Mail\UserInviteMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -35,8 +36,11 @@ class UserIndex extends Component
 
     // Toggle Modal
     public bool $showToggleModal = false;
+
     public ?int $toggleUserId = null;
+
     public bool $toggleUserIsActive = false;
+
     public string $confirmPassword = '';
 
     // ─── Computed ─────────────────────────────────────
@@ -67,10 +71,10 @@ class UserIndex extends Component
         $plainPassword = Str::random(12);
 
         $user = User::create([
-            'name'     => $this->inviteName,
-            'email'    => $this->inviteEmail,
+            'name' => $this->inviteName,
+            'email' => $this->inviteEmail,
             'password' => $plainPassword,
-            'role'     => $this->inviteRole,
+            'role' => $this->inviteRole,
             'is_active' => true,
             'requires_password_change' => true,
         ]);
@@ -88,9 +92,9 @@ class UserIndex extends Component
         session()->flash('success', "Invitation sent to {$user->email} successfully.");
     }
 
-    public function openToggleModal(int $userId): void
+    public function openToggleModal(string $userUlid): void
     {
-        $user = User::findOrFail($userId);
+        $user = User::where('ulid', $userUlid)->firstOrFail();
         $this->toggleUserId = $user->id;
         $this->toggleUserIsActive = $user->is_active;
         $this->confirmPassword = '';
@@ -104,6 +108,7 @@ class UserIndex extends Component
 
         if (! Hash::check($this->confirmPassword, auth()->user()->password)) {
             $this->addError('confirmPassword', 'Incorrect password.');
+
             return;
         }
 
@@ -112,6 +117,7 @@ class UserIndex extends Component
         if ($user->id === auth()->id()) {
             session()->flash('error', 'You cannot disable your own account.');
             $this->showToggleModal = false;
+
             return;
         }
 
@@ -124,9 +130,9 @@ class UserIndex extends Component
         $this->reset('confirmPassword', 'toggleUserId', 'toggleUserIsActive');
     }
 
-    public function resendInvite(int $userId): void
+    public function resendInvite(string $userUlid): void
     {
-        $user = User::findOrFail($userId);
+        $user = User::where('ulid', $userUlid)->firstOrFail();
 
         $plainPassword = Str::random(12);
         $user->update([
@@ -144,12 +150,13 @@ class UserIndex extends Component
         session()->flash('success', "New credentials sent to {$user->email}.");
     }
 
-    public function confirmDelete(int $userId): void
+    public function confirmDelete(string $userUlid): void
     {
-        $user = User::findOrFail($userId);
+        $user = User::where('ulid', $userUlid)->firstOrFail();
 
         if ($user->id === auth()->id()) {
             session()->flash('error', 'You cannot delete your own account.');
+
             return;
         }
 

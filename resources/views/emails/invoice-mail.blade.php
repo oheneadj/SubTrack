@@ -35,11 +35,23 @@
                     Total Amount
                 </td>
                 <td align="right" style="padding-top: 16px; font-size: 18px; font-weight: 800; color: #2563eb;">
-                    ${{ number_format($invoice->total_amount, 2) }}
+                    {{ $invoice->formatted_total_amount }}
                 </td>
             </tr>
         </table>
     </div>
+
+    @if(!empty($paymentUrl))
+    <div style="text-align: center; margin-top: 32px; margin-bottom: 8px;">
+        <a href="{{ $paymentUrl }}"
+           style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 36px; border-radius: 8px; letter-spacing: 0.01em;">
+            Pay Now →
+        </a>
+    </div>
+    <p style="text-align: center; font-size: 12px; color: #94a3b8; margin-top: 12px;">
+        This payment link is valid until the invoice is settled.
+    </p>
+    @endif
 
     <p style="line-height: 1.6; color: #64748b; font-size: 14px; margin-top: 32px;">
         You can find the full breakdown in the attached PDF file. If you have any questions regarding this invoice, please don't hesitate to reach out to us.

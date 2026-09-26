@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Providers;
 
+use App\Enums\SubscriptionStatus;
 use App\Models\Provider;
+use App\Models\Subscription;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Computed;
 
 class ProviderShow extends Component
 {
@@ -23,8 +27,7 @@ class ProviderShow extends Component
     public function subscriptions()
     {
         return $this->provider->subscriptions()
-            ->whereHas('project.client')
-            ->with(['project.client'])
+            ->with(['client', 'project.client'])
             ->orderBy('expiry_date')
             ->paginate(15);
     }
@@ -33,16 +36,17 @@ class ProviderShow extends Component
     public function stats()
     {
         $subs = $this->provider->subscriptions()->get();
+
         return [
             'total_subscriptions' => $subs->count(),
-            'active_subscriptions' => $subs->where('status', \App\Enums\SubscriptionStatus::Active)->count(),
-            'total_value' => $subs->sum('renewal_cost_usd'),
+            'active_subscriptions' => $subs->where('status', SubscriptionStatus::Active)->count(),
+            'total_value' => $subs->sum('renewal_cost_usd') / 100,
         ];
     }
 
-    public function deleteSubscription(int $id)
+    public function deleteSubscription(string $ulid): void
     {
-        \App\Models\Subscription::findOrFail($id)->delete();
+        Subscription::where('ulid', $ulid)->firstOrFail()->delete();
         unset($this->stats); // Recalculate stats
     }
 

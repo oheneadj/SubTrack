@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use App\Models\Client;
 use App\Models\Setting;
+use App\Models\Subscription;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -21,7 +24,7 @@ class GenericClientMail extends Mailable
         public Client $client,
         public string $customSubject,
         public string $customBody,
-        public ?\App\Models\Subscription $subscription = null,
+        public ?Subscription $subscription = null,
     ) {}
 
     /**
@@ -42,7 +45,7 @@ class GenericClientMail extends Mailable
         return new Content(
             view: 'emails.generic-client-mail',
             with: [
-                'body'   => $this->replaceVariables($this->customBody),
+                'body' => $this->replaceVariables($this->customBody),
                 'client' => $this->client,
             ],
         );
@@ -54,15 +57,15 @@ class GenericClientMail extends Mailable
     protected function replaceVariables(string $content): string
     {
         $vars = [
-            '{client_name}'             => $this->client->name,
-            '{company_name}'            => Setting::get('business_name', config('app.name')),
-            '{company_email}'           => Setting::get('business_email', ''),
-            '{company_contact_details}' => Setting::get('business_phone', '') . ' ' . Setting::get('business_website', ''),
-            '{app_name}'                => config('app.name'),
+            '{client_name}' => $this->client->name,
+            '{company_name}' => Setting::get('business_name', config('app.name')),
+            '{company_email}' => Setting::get('business_email', ''),
+            '{company_contact_details}' => Setting::get('business_phone', '').' '.Setting::get('business_website', ''),
+            '{app_name}' => config('app.name'),
         ];
 
         if ($this->subscription) {
-            $vars['{project_name}'] = $this->subscription->project->project_name ?? '';
+            $vars['{project_name}'] = $this->subscription->project?->project_name ?? '';
             $vars['{service_name}'] = $this->subscription->domain_name ?: ($this->subscription->service_type->label() ?? '');
             $vars['{provider}'] = $this->subscription->provider?->name ?? '';
             $vars['{expiry_date}'] = $this->subscription->expiry_date?->format('F j, Y') ?? '';

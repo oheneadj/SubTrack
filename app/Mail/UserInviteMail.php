@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
+use App\Models\MailTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-
-use App\Models\MailTemplate;
 
 class UserInviteMail extends Mailable
 {
@@ -31,12 +33,12 @@ class UserInviteMail extends Mailable
     {
         $template = MailTemplate::getBySlug('user-invite');
         $subject = $template ? $template->render([
-            '{user_name}'  => $this->userName,
+            '{user_name}' => $this->userName,
             '{user_email}' => $this->userEmail,
-            '{password}'   => $this->plainPassword,
-            '{login_url}'  => $this->loginUrl,
-            '{app_name}'   => config('app.name'),
-        ])->subject : "You've been invited to " . config('app.name');
+            '{password}' => $this->plainPassword,
+            '{login_url}' => $this->loginUrl,
+            '{app_name}' => config('app.name'),
+        ])->subject : "You've been invited to ".config('app.name');
 
         return new Envelope(
             subject: $subject,
@@ -50,11 +52,11 @@ class UserInviteMail extends Mailable
     {
         $template = MailTemplate::getBySlug('user-invite');
         $body = $template ? $template->render([
-            '{user_name}'  => $this->userName,
+            '{user_name}' => $this->userName,
             '{user_email}' => $this->userEmail,
-            '{password}'   => $this->plainPassword,
-            '{login_url}'  => $this->loginUrl,
-            '{app_name}'   => config('app.name'),
+            '{password}' => $this->plainPassword,
+            '{login_url}' => $this->loginUrl,
+            '{app_name}' => config('app.name'),
         ])->body : null;
 
         return new Content(
@@ -68,7 +70,7 @@ class UserInviteMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

@@ -1,25 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\MailTemplates;
 
-use App\Models\MailTemplate;
-use Livewire\Component;
-use Livewire\Attributes\Computed;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\UserInviteMail;
-use App\Mail\SubscriptionReminderMail;
 use App\Mail\InvoiceMail;
-use App\Models\Subscription;
-use App\Models\Invoice;
+use App\Mail\SubscriptionReminderMail;
+use App\Mail\UserInviteMail;
 use App\Models\Client;
+use App\Models\Invoice;
+use App\Models\MailTemplate;
 use App\Models\Project;
+use App\Models\Subscription;
+use Illuminate\Support\Facades\Mail;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class MailTemplateIndex extends Component
 {
     public bool $showEditModal = false;
+
     public ?MailTemplate $editingTemplate = null;
-    
+
     public string $editSubject = '';
+
     public string $editBody = '';
 
     protected $rules = [
@@ -33,9 +37,9 @@ class MailTemplateIndex extends Component
         return MailTemplate::orderBy('name')->get();
     }
 
-    public function edit(int $id)
+    public function edit(string $ulid): void
     {
-        $this->editingTemplate = MailTemplate::findOrFail($id);
+        $this->editingTemplate = MailTemplate::where('ulid', $ulid)->firstOrFail();
         $this->editSubject = $this->editingTemplate->subject;
         $this->editBody = $this->editingTemplate->body;
         $this->showEditModal = true;
@@ -52,17 +56,17 @@ class MailTemplateIndex extends Component
 
         $this->showEditModal = false;
         $this->reset(['editingTemplate', 'editSubject', 'editBody']);
-        
+
         session()->flash('success', 'Template updated successfully.');
     }
 
-    public function sendTest(int $id)
+    public function sendTest(string $ulid): void
     {
-        $template = MailTemplate::findOrFail($id);
+        $template = MailTemplate::where('ulid', $ulid)->firstOrFail();
         $user = auth()->user();
 
         try {
-            match($template->slug) {
+            match ($template->slug) {
                 'user-invite' => Mail::to($user->email)->send(new UserInviteMail(
                     $user->name,
                     $user->email,
@@ -76,15 +80,16 @@ class MailTemplateIndex extends Component
                     ])
                 )),
                 'invoice-mail' => Mail::to($user->email)->send(new InvoiceMail(
-                    Invoice::with(['client', 'project'])->first() ?? (function() {
+                    Invoice::with(['client', 'project'])->first() ?? (function () {
                         $invoice = new Invoice([
                             'invoice_number' => 'INV-TEST-001',
                             'due_date' => now()->addDays(14),
-                            'total_amount' => 1250.00,
+                            'total_amount' => 125000, // 1250.00 in cents
                         ]);
                         // Mock relationships for the test email to avoid crash
                         $invoice->setRelation('client', new Client(['name' => 'Test Client']));
                         $invoice->setRelation('project', new Project(['project_name' => 'Test Project']));
+
                         return $invoice;
                     })()
                 )),
@@ -93,33 +98,33 @@ class MailTemplateIndex extends Component
 
             session()->flash('success', "Test email for '{$template->name}' sent to your email.");
         } catch (\Exception $e) {
-            session()->flash('error', "Failed to send test email: " . $e->getMessage());
+            session()->flash('error', 'Failed to send test email: '.$e->getMessage());
         }
     }
 
-    public function resetToDefault(int $id)
+    public function resetToDefault(string $ulid): void
     {
-        $template = MailTemplate::findOrFail($id);
-        
+        $template = MailTemplate::where('ulid', $ulid)->firstOrFail();
+
         $defaults = [
             'user-invite' => [
-                'subject' => "You've been invited to " . config('app.name'),
+                'subject' => "You've been invited to ".config('app.name'),
                 'body' => "You've been invited to join {app_name}. In order to access your new account, please use the temporary login credentials provided below:",
             ],
             'subscription-reminder' => [
                 'subject' => 'Service Renewal Reminder — {service_name}',
-                'body' => "This is an automated notification regarding the active service attached to your project: {project_name}.",
+                'body' => 'This is an automated notification regarding the active service attached to your project: {project_name}.',
             ],
             'invoice-mail' => [
-                'subject' => 'New Invoice: {invoice_number} from ' . config('app.name'),
-                'body' => "Please find the summary of your latest invoice attached for your project: {project_name}.",
+                'subject' => 'New Invoice: {invoice_number} from '.config('app.name'),
+                'body' => 'Please find the summary of your latest invoice attached for your project: {project_name}.',
             ],
         ];
 
         if (isset($defaults[$template->slug])) {
             $this->editSubject = $defaults[$template->slug]['subject'];
             $this->editBody = $defaults[$template->slug]['body'];
-            
+
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Fields reset to default values. Don\'t forget to save.']);
         }
     }

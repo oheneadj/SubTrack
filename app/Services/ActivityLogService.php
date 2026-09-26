@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\ActivityLog;
@@ -18,14 +20,14 @@ class ActivityLogService
         array $properties = []
     ): ActivityLog {
         return ActivityLog::create([
-            'user_id'      => Auth::id(),
-            'action'       => $action,
+            'user_id' => Auth::id(),
+            'action' => $action,
             'subject_type' => $subject ? get_class($subject) : null,
-            'subject_id'   => $subject ? $subject->getKey() : null,
-            'description'  => $description,
-            'properties'   => $properties,
-            'ip_address'   => Request::ip(),
-            'user_agent'   => Request::userAgent(),
+            'subject_id' => $subject ? $subject->getKey() : null,
+            'description' => $description,
+            'properties' => $properties,
+            'ip_address' => Request::ip(),
+            'user_agent' => Request::userAgent(),
         ]);
     }
 
@@ -43,7 +45,7 @@ class ActivityLogService
     public function logMail(string $type, string $recipient, ?string $description = null, array $metadata = []): void
     {
         $this->log('mail.sent', $description, null, array_merge([
-            'type'      => $type,
+            'type' => $type,
             'recipient' => $recipient,
         ], $metadata));
     }

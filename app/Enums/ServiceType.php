@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum ServiceType: string
 {
-    case Domain      = 'Domain';
-    case Hosting     = 'Hosting';
-    case SSL         = 'SSL';
+    case Domain = 'Domain';
+    case Hosting = 'Hosting';
+    case SSL = 'SSL';
     case Maintenance = 'Maintenance';
-    case Other       = 'Other';
+    case Other = 'Other';
 
     public function label(): string
     {
@@ -17,12 +19,12 @@ enum ServiceType: string
 
     public function icon(): string
     {
-        return match($this) {
-            self::Domain      => 'world',
-            self::Hosting     => 'server',
-            self::SSL         => 'lock',
+        return match ($this) {
+            self::Domain => 'world',
+            self::Hosting => 'server',
+            self::SSL => 'lock',
             self::Maintenance => 'tools',
-            self::Other       => 'box',
+            self::Other => 'box',
         };
     }
 }

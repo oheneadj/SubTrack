@@ -1,42 +1,55 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Projects;
 
-use Livewire\Component;
-use App\Models\Project;
 use App\Models\Client;
+use App\Models\Project;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class ProjectForm extends Component
 {
     public ?Project $project = null;
+
     public ?int $client_id = null;
+
     public string $project_name = '';
+
     public string $description = '';
+
     public bool $isModal = false;
 
-    public function mount(?Project $project = null, ?int $clientId = null)
+    public function mount(?Project $project = null, ?string $clientId = null): void
     {
         if ($project && $project->exists) {
             $this->loadProject($project);
         } elseif ($clientId) {
-            $this->client_id = $clientId;
+            $client = Client::where('ulid', $clientId)->first();
+            $this->client_id = $client?->id;
         } elseif (request()->query('clientId')) {
-            $this->client_id = (int) request()->query('clientId');
+            $client = Client::where('ulid', request()->query('clientId'))->first();
+            $this->client_id = $client?->id;
         }
     }
 
     #[On('open-project-modal')]
-    public function openProjectModal(?int $id = null, ?int $clientId = null)
+    public function openProjectModal(?string $id = null, ?string $clientId = null): void
     {
         $this->resetValidation();
-        
+
         if ($id) {
-            $project = Project::findOrFail($id);
+            $project = Project::where('ulid', $id)->firstOrFail();
             $this->loadProject($project);
         } else {
             $this->project = null;
-            $this->client_id = $clientId;
+            if ($clientId) {
+                $client = Client::where('ulid', $clientId)->first();
+                $this->client_id = $client?->id;
+            } else {
+                $this->client_id = null;
+            }
             $this->project_name = '';
             $this->description = '';
         }
@@ -53,9 +66,9 @@ class ProjectForm extends Component
     }
 
     protected $rules = [
-        'client_id'    => 'required|exists:clients,id',
+        'client_id' => 'required|exists:clients,id',
         'project_name' => 'required|string|max:255',
-        'description'  => 'nullable|string|max:1000',
+        'description' => 'nullable|string|max:1000',
     ];
 
     public function save()
@@ -75,6 +88,7 @@ class ProjectForm extends Component
             $this->dispatch('project-saved', $message);
         } else {
             session()->flash('success', $message);
+
             return redirect()->route('projects.index');
         }
     }
@@ -82,9 +96,10 @@ class ProjectForm extends Component
     public function render()
     {
         $title = $this->project && $this->project->exists ? 'Edit Project' : 'Add Project';
+
         return view('livewire.projects.project-form', [
             'pageTitle' => $title,
-            'clients' => Client::orderBy('name')->pluck('name', 'id')->toArray()
+            'clients' => Client::orderBy('name')->pluck('name', 'id')->toArray(),
         ]);
     }
 }

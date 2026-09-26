@@ -7,7 +7,7 @@
                 <tr class="bg-slate-50 border-b border-slate-200">
                     @if($selectable)
                         <th class="w-10 px-4 py-3">
-                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm checkbox-primary" />
+                            <input type="checkbox" wire:model.live="selectAll" class="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600" />
                         </th>
                     @endif
                     @foreach($headers as $key => $label)

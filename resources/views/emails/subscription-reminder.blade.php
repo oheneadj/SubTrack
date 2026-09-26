@@ -62,4 +62,16 @@
     <p style="line-height: 1.6; color: #4b5563; margin-top: 32px;">
         To ensure continued service and avoid any potential downtime, please arrange for renewal as soon as possible.
     </p>
+
+    @if(!empty($paymentUrl))
+    <div style="text-align: center; margin-top: 32px; margin-bottom: 8px;">
+        <a href="{{ $paymentUrl }}"
+           style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 36px; border-radius: 8px; letter-spacing: 0.01em;">
+            Pay Now →
+        </a>
+    </div>
+    <p style="text-align: center; font-size: 12px; color: #94a3b8; margin-top: 12px;">
+        This payment link is valid until the invoice is settled.
+    </p>
+    @endif
 </x-email.layout>

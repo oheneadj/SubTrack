@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
+
+use Illuminate\Database\Eloquent\Builder;
 
 trait WithSorting
 {
@@ -14,12 +18,12 @@ trait WithSorting
         }
     }
 
-    public function applySorting($query)
+    public function applySorting(Builder $query): Builder
     {
         // Handle sorting through relationships if needed, e.g. 'client.name'
         if (str_contains($this->sortColumn, '.')) {
             // For simple cases, we might rely on the main query if it's a joined column,
-            // or we might need specific logic in the component. 
+            // or we might need specific logic in the component.
             // By default, assuming it's a direct column or a scope handles it.
             return $query->orderBy($this->sortColumn, $this->sortDirection);
         }

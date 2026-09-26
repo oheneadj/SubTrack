@@ -87,8 +87,8 @@
                             <div class="font-bold">{{ $item->description }}</div>
                         </td>
                         <td class="text-right">{{ $item->quantity }}</td>
-                        <td class="text-right">${{ number_format($item->unit_price, 2) }}</td>
-                        <td class="text-right font-bold">${{ number_format($item->total, 2) }}</td>
+                        <td class="text-right">{{ $item->formatted_unit_price }}</td>
+                        <td class="text-right font-bold">{{ $item->formatted_total }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -97,17 +97,17 @@
         <div class="totals">
             <div class="total-row">
                 <span class="total-label">Subtotal:</span>
-                <span style="float: right;">${{ number_format($invoice->subtotal, 2) }}</span>
+                <span style="float: right;">{{ $invoice->formatted_subtotal }}</span>
             </div>
             @if($invoice->tax_amount > 0)
                 <div class="total-row">
                     <span class="total-label">Tax:</span>
-                    <span style="float: right;">${{ number_format($invoice->tax_amount, 2) }}</span>
+                    <span style="float: right;">{{ $invoice->formatted_tax_amount }}</span>
                 </div>
             @endif
             <div class="total-row grand-total">
                 <span style="color: #1e293b;">Total:</span>
-                <span style="float: right;">${{ number_format($invoice->total_amount, 2) }}</span>
+                <span style="float: right;">{{ $invoice->formatted_total_amount }}</span>
             </div>
         </div>
 

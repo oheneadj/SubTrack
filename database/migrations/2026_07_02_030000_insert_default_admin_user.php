@@ -1,9 +1,9 @@
 <?php
 
+use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Enums\UserRole;
 
 return new class extends Migration
 {

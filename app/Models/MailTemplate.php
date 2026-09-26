@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Traits\HasPublicUlid;
 use App\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use App\Models\Setting;
 
 class MailTemplate extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, HasPublicUlid, LogsActivity;
+
     protected $fillable = [
         'slug',
         'name',
@@ -45,7 +48,7 @@ class MailTemplate extends Model
         $globalVars = [
             '{company_name}' => Setting::get('business_name', config('app.name')),
             '{company_email}' => Setting::get('business_email', ''),
-            '{company_contact_details}' => Setting::get('business_phone', '') . ' ' . Setting::get('business_website', ''),
+            '{company_contact_details}' => Setting::get('business_phone', '').' '.Setting::get('business_website', ''),
             '{app_name}' => config('app.name'),
         ];
 

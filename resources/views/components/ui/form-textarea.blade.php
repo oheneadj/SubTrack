@@ -10,11 +10,9 @@
     $modelName = $model ?? $attributes->wire('model')->value();
 @endphp
 
-<div class="form-control w-full">
+<div class="flex flex-col gap-1 w-full">
     @if($label)
-        <label class="label">
-            <span class="label-text font-semibold text-primary text-sm">{{ $label }}</span>
-        </label>
+        <label class="text-sm font-semibold text-slate-700">{{ $label }}</label>
     @endif
 
     <textarea
@@ -22,14 +20,12 @@
         id="{{ $modelName }}"
         rows="{{ $rows }}"
         placeholder="{{ $placeholder }}"
-        {{ $attributes->merge(['class' => 'textarea textarea-bordered w-full focus:textarea-primary transition-all duration-200 ' . ($error ? 'textarea-error bg-red-50' : '')]) }}
+        {{ $attributes->merge(['class' => 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white transition-all resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ' . ($error ? 'border-red-400 focus:ring-red-400 bg-red-50' : '')]) }}
     ></textarea>
 
     @if($modelName)
         @error($modelName)
-            <label class="label p-1">
-                <span class="label-text-alt text-error font-medium">{{ $message }}</span>
-            </label>
+            <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
         @enderror
     @endif
 </div>

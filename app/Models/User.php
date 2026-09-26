@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
+use App\Traits\HasPublicUlid;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +18,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, HasPublicUlid, Notifiable, TwoFactorAuthenticatable;
 
     protected $fillable = [
         'name',
@@ -43,13 +46,13 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at'      => 'datetime',
-            'password'               => 'hashed',
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
             'requires_password_change' => 'boolean',
-            'role'                   => UserRole::class,
-            'is_active'              => 'boolean',
+            'role' => UserRole::class,
+            'is_active' => 'boolean',
             'invitation_accepted_at' => 'datetime',
-            'last_login_at'          => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 
