@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CarbonImmutable $purchase_date
  * @property CarbonImmutable $expiry_date
  * @property int $days_until_expiry
+ * @property int|null $missed_payments_count
  * @property string $traffic_light
  * @property-read Client|null $client
  * @property-read Project|null $project
@@ -186,6 +187,33 @@ class Subscription extends Model
     public function getDaysUntilExpiryAttribute(): int
     {
         return (int) now()->diffInDays($this->expiry_date, false);
+    }
+
+    /**
+     * How many renewal payments have been missed, for a subscription that's
+     * overdue. A raw negative day count ("-45 days") doesn't mean much on
+     * its own — for a recurring subscription it's more useful to know how
+     * many renewal cycles have actually been skipped (e.g. a monthly
+     * subscription 45 days overdue has missed roughly 2 payments, not just
+     * "some days"). Returns null when not overdue, or when this type has no
+     * fixed cycle to count against (bare OneTime) — callers should fall
+     * back to showing days overdue in that case.
+     */
+    public function getMissedPaymentsCountAttribute(): ?int
+    {
+        if ($this->days_until_expiry >= 0) {
+            return null;
+        }
+
+        $cycleMonths = $this->renewal_type->cycleMonths();
+        if ($cycleMonths === null) {
+            return null;
+        }
+
+        $cycleDays = $cycleMonths * 30;
+        $daysOverdue = abs($this->days_until_expiry);
+
+        return (int) floor($daysOverdue / $cycleDays) + 1;
     }
 
     public function getTrafficLightAttribute(): string

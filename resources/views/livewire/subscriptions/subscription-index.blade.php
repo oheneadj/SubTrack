@@ -98,7 +98,11 @@
                             </span>
                             <span class="text-[10px] uppercase font-bold tracking-tight {{ $sub->traffic_light === 'critical' ? 'text-error' : ($sub->traffic_light === 'warning' ? 'text-warning' : 'text-slate-400') }}">
                                 @if($sub->days_until_expiry < 0)
-                                    EXPIRED {{ abs($sub->days_until_expiry) }} DAYS AGO
+                                    @if($sub->missed_payments_count)
+                                        {{ $sub->missed_payments_count }} PAYMENT{{ $sub->missed_payments_count > 1 ? 'S' : '' }} MISSED
+                                    @else
+                                        EXPIRED {{ abs($sub->days_until_expiry) }} DAYS AGO
+                                    @endif
                                 @else
                                     {{ $sub->days_until_expiry }} DAYS LEFT
                                 @endif

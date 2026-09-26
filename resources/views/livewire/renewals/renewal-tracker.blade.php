@@ -48,7 +48,11 @@
                             {{ $sub->expiry_date->format('M d, Y') }}
                         </div>
                         <div class="text-[10px] uppercase text-slate-400">
-                            {{ $sub->days_until_expiry }} days left
+                            @if($sub->days_until_expiry < 0 && $sub->missed_payments_count)
+                                {{ $sub->missed_payments_count }} payment{{ $sub->missed_payments_count > 1 ? 's' : '' }} missed
+                            @else
+                                {{ $sub->days_until_expiry }} days left
+                            @endif
                         </div>
                     </td>
                     <td>

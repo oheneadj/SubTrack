@@ -24,9 +24,9 @@
             variant="info"
         />
         <x-ui.stat-card
-            label="Days Until Expiry"
-            :value="$subscription->days_until_expiry"
-            icon="clock"
+            :label="$subscription->missed_payments_count ? 'Payments Missed' : 'Days Until Expiry'"
+            :value="$subscription->missed_payments_count ?? $subscription->days_until_expiry"
+            :icon="$subscription->missed_payments_count ? 'alert-circle' : 'clock'"
             :variant="$subscription->days_until_expiry <= 7 ? 'critical' : ($subscription->days_until_expiry <= 30 ? 'warning' : 'healthy')"
         />
         <x-ui.stat-card

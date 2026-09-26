@@ -170,7 +170,7 @@
                                         <x-ui.badge-status :status="$sub->service_type->value" />
                                     </td>
                                     <td>
-                                        <x-ui.days-pill :days="$sub->days_until_expiry" />
+                                        <x-ui.days-pill :days="$sub->days_until_expiry" :missedPayments="$sub->missed_payments_count" />
                                     </td>
                                     <td>
                                         <x-ui.button
@@ -231,7 +231,7 @@
                                         <x-ui.badge-status :status="$sub->service_type->value" />
                                     </td>
                                     <td>
-                                        <x-ui.days-pill :days="$sub->days_until_expiry" />
+                                        <x-ui.days-pill :days="$sub->days_until_expiry" :missedPayments="$sub->missed_payments_count" />
                                     </td>
                                     <td>
                                         <x-ui.button

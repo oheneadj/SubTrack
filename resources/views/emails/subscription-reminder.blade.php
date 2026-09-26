@@ -44,10 +44,12 @@
             </tr>
             <tr>
                 <td style="padding-top: 16px; font-size: 16px; font-weight: 800; color: #0f172a;">
-                    Time Remaining
+                    {{ $subscription->missed_payments_count ? 'Payments Missed' : 'Time Remaining' }}
                 </td>
                 <td align="right" style="padding-top: 16px; font-size: 16px; font-weight: 800; {{ $isExpired ? 'color: #ef4444;' : 'color: #f97316;' }}">
-                    @if($subscription->days_until_expiry < 0)
+                    @if($subscription->missed_payments_count)
+                        {{ $subscription->missed_payments_count }} payment{{ $subscription->missed_payments_count > 1 ? 's' : '' }} missed
+                    @elseif($subscription->days_until_expiry < 0)
                         Expired {{ abs($subscription->days_until_expiry) }} days ago
                     @elseif($subscription->days_until_expiry == 0)
                         Expires TODAY

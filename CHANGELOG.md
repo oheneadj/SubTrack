@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `Subscription::missed_payments_count` — for an overdue subscription, how many renewal payments have actually been skipped (`days overdue ÷ cycle length`), not just a raw negative day count. Only meaningful for recurring types with a fixed cycle (`null` for bare `OneTime`, which has no cycle to count against — those still show days overdue). Replaces "-45 days" / "EXPIRED 45 DAYS AGO" style displays with e.g. "2 payments missed" across the subscriptions list, renewal tracker, subscription detail page, dashboard, and the reminder email itself. Tests: `MissedPaymentsCountTest`
+
 ### Fixed
 - Neither the project detail page nor the provider detail page let you click through to a listed subscription — the row's action menu only had Edit/Delete, no view, and the service name wasn't a link either. Both now link the service name and add a view action, matching `subscription-index.blade.php`'s existing pattern. Tests: `SubscriptionRowLinkTest`
 
