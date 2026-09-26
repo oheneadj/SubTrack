@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Enums\EmailLogStatus;
 use App\Enums\UserRole;
 use App\Livewire\ActivityLogs\ActivityLogIndex;
 use App\Livewire\Clients\ClientIndex;
 use App\Livewire\Clients\ClientShow;
 use App\Livewire\Dashboard\FinanceDashboard;
 use App\Livewire\Dashboard\OverviewDashboard;
+use App\Livewire\EmailLogs\EmailBatchShow;
+use App\Livewire\EmailLogs\EmailLogIndex;
 use App\Livewire\Invoices\InvoiceBuilder;
 use App\Livewire\Invoices\InvoiceIndex;
 use App\Livewire\MailTemplates\DirectMailer;
@@ -23,7 +26,9 @@ use App\Livewire\Settings\Security;
 use App\Livewire\Subscriptions\SubscriptionIndex;
 use App\Livewire\Users\UserIndex;
 use App\Livewire\Users\UserShow;
+use App\Mail\GenericClientMail;
 use App\Models\Client;
+use App\Models\EmailLog;
 use App\Models\Invoice;
 use App\Models\MailTemplate;
 use App\Models\Project;
@@ -31,6 +36,7 @@ use App\Models\Provider;
 use App\Models\Setting;
 use App\Models\Subscription;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 /**
@@ -56,6 +62,16 @@ test('every admin page renders without a Blade/component error', function () {
     ]);
     MailTemplate::create(['name' => 'Render Template', 'slug' => 'render-template', 'subject' => 'Hi', 'body' => 'Body']);
     Setting::query()->create(['key' => 'company_name', 'value' => 'Render Co']);
+    $emailLog = EmailLog::create([
+        'batch_id' => (string) Str::ulid(),
+        'client_id' => $client->id,
+        'mailable_class' => GenericClientMail::class,
+        'to_email' => $client->email,
+        'to_name' => $client->name,
+        'subject' => 'Hi',
+        'body' => 'Body',
+        'status' => EmailLogStatus::Queued,
+    ]);
 
     Livewire::actingAs($admin)->test(OverviewDashboard::class)->assertOk();
     Livewire::actingAs($admin)->test(FinanceDashboard::class)->assertOk();
@@ -73,6 +89,8 @@ test('every admin page renders without a Blade/component error', function () {
     Livewire::actingAs($admin)->test(ActivityLogIndex::class)->assertOk();
     Livewire::actingAs($admin)->test(MailTemplateIndex::class)->assertOk();
     Livewire::actingAs($admin)->test(DirectMailer::class)->assertOk();
+    Livewire::actingAs($admin)->test(EmailLogIndex::class)->assertOk();
+    Livewire::actingAs($admin)->test(EmailBatchShow::class, ['batchId' => $emailLog->batch_id])->assertOk();
     Livewire::actingAs($admin)->test(AppSettings::class)->assertOk();
     Livewire::actingAs($admin)->test(Profile::class)->assertOk();
     Livewire::actingAs($admin)->test(Security::class)->assertOk();

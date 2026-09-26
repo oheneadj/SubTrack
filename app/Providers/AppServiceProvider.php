@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\EmailLogStatus;
 use App\Models\Client;
+use App\Models\EmailLog;
 use App\Models\Invoice;
 use App\Models\Receipt;
 use App\Models\Renewal;
@@ -23,6 +25,7 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->registerActivityListeners();
+        $this->registerEmailLogListener();
 
         Client::observe(ClientObserver::class);
         Invoice::observe(InvoiceObserver::class);
@@ -112,6 +116,27 @@ class AppServiceProvider extends ServiceProvider
             /** @var User $resetUser */
             $resetUser = $event->user;
             app(ActivityLogService::class)->logAuth('password_reset', "User {$resetUser->email} reset their password");
+        });
+    }
+
+    /**
+     * Mark an EmailLog row as Sent once its tagged message is actually delivered
+     * — mailables that opt in tag themselves via an X-Email-Log-Id header.
+     */
+    protected function registerEmailLogListener(): void
+    {
+        Event::listen(MessageSent::class, function (MessageSent $event): void {
+            $header = $event->message->getHeaders()->get('X-Email-Log-Id');
+
+            if (! $header) {
+                return;
+            }
+
+            EmailLog::where('id', (int) $header->getBody())->update([
+                'status' => EmailLogStatus::Sent,
+                'sent_at' => now(),
+                'error_message' => null,
+            ]);
         });
     }
 

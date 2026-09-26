@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Enums\EmailLogStatus;
 use App\Models\Client;
+use App\Models\EmailLog;
 use App\Models\Subscription;
 use App\Services\ClientMailPersonalizer;
 use Illuminate\Bus\Queueable;
@@ -12,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -35,8 +38,22 @@ class GenericClientMail extends Mailable implements ShouldQueue
         public string $customSubject,
         public string $customBody,
         public ?Subscription $subscription = null,
+        public ?int $emailLogId = null,
     ) {
         $this->onQueue('emails');
+    }
+
+    /**
+     * Tag the outgoing message with its EmailLog id so the global MessageSent
+     * listener can mark the right row as delivered. Done via the headers()
+     * hook (plain serializable data) rather than withSymfonyMessage(), whose
+     * closure can't survive queue job serialization.
+     */
+    public function headers(): Headers
+    {
+        return new Headers(
+            text: $this->emailLogId ? ['X-Email-Log-Id' => (string) $this->emailLogId] : [],
+        );
     }
 
     /**
@@ -49,6 +66,13 @@ class GenericClientMail extends Mailable implements ShouldQueue
             'client_email' => $this->client->email,
             'error' => $exception->getMessage(),
         ]);
+
+        if ($this->emailLogId) {
+            EmailLog::where('id', $this->emailLogId)->update([
+                'status' => EmailLogStatus::Failed,
+                'error_message' => $exception->getMessage(),
+            ]);
+        }
     }
 
     /**

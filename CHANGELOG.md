@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Email Log (Direct Mailer only, for now): every send from the mailer — individual or bulk — is now recorded to a new `email_logs` table, one row per recipient grouped under a `batch_id`. A new "Email Log" admin page lists every batch with sent/queued/failed counts, and a batch detail page lists each individual email with its status and error message (if failed)
+- Resend: a failed individual email can be resent from the batch detail page; "Resend All Failed" resends every failed email in a batch from either the batch list or the batch detail page — reusing the exact subject/body snapshot that was supposed to go out the first time, not a freshly re-rendered version
+- `App\Actions\DispatchClientMailAction` — queues a `GenericClientMail` and creates its `EmailLog` row; the single place both the initial send and any resend go through
+- A global `MessageSent` listener marks a tagged email's log row `Sent`; `GenericClientMail::failed()` marks it `Failed` with the error once retries are exhausted
+- Tests: `EmailLogTest` (batch creation, sent/failed status transitions, individual and bulk resend), extended `AdminPagesSmokeTest` and `DirectMailerTest` coverage
+
 ### Fixed
+- Found and fixed a production-breaking bug introduced while building the above: tagging a queued mailable via `withSymfonyMessage(closure)` fails queue job serialization outright ("Serialization of 'Closure' is not allowed") the moment it's pushed to a real queue — switched to `GenericClientMail::headers()`, the serializable API meant for this
 - Finance dashboard's "Total Revenue" and "Recent Payments Received" only ever counted paid Invoices — subscription renewals paid for directly (never invoiced) were silently excluded, even though "Profit" on the same dashboard already counted them. Now both revenue figures merge paid invoices with directly-paid renewals (`Renewal::whereNull('invoice_id')`, so a renewal already counted once via its linked invoice isn't double-counted)
 - Recent Payments Received was displaying `$invoice->total_amount` (stored in cents) directly as dollars with no `/100` conversion — a 100x display bug on every row
 - Tests: `FinanceDashboardRevenueTest` — merged revenue totals, and no double-counting for invoice-linked renewals

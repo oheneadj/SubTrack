@@ -32,6 +32,7 @@
             <x-nav.item href="{{ route('activity-logs.index') }}" label="Activity Logs" icon="clipboard-list" :active="request()->routeIs('activity-logs.*')" />
             <x-nav.item href="{{ route('mail-templates.index') }}" label="Mail Templates" icon="mail" :active="request()->routeIs('mail-templates.*')" />
             <x-nav.item href="{{ route('mail-mailer.index') }}" label="Client Mailer" icon="send" :active="request()->routeIs('mail-mailer.*')" />
+            <x-nav.item href="{{ route('email-logs.index') }}" label="Email Log" icon="mail-check" :active="request()->routeIs('email-logs.*')" />
         @endif
 
         <div class="pt-6 mt-auto space-y-1">

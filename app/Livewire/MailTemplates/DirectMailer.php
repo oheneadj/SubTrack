@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\MailTemplates;
 
-use App\Mail\GenericClientMail;
+use App\Actions\DispatchClientMailAction;
 use App\Models\Client;
 use App\Models\MailTemplate;
 use App\Models\Subscription;
 use App\Services\ClientMailPersonalizer;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -160,7 +160,7 @@ class DirectMailer extends Component
         }
     }
 
-    public function send()
+    public function send(DispatchClientMailAction $dispatcher)
     {
         $this->validate();
 
@@ -177,14 +177,10 @@ class DirectMailer extends Component
 
         $clients = Client::whereIn('ulid', $this->selectedClients)->get();
         $subscription = $this->selectedSubscriptionId ? Subscription::find($this->selectedSubscriptionId) : null;
+        $batchId = (string) Str::ulid();
 
         foreach ($clients as $client) {
-            Mail::to($client->email)->queue(new GenericClientMail(
-                $client,
-                $this->subject,
-                $this->body,
-                $subscription
-            ));
+            $dispatcher->dispatch($client, $this->subject, $this->body, $subscription, $batchId, auth()->id());
         }
 
         $count = $clients->count();

@@ -14,6 +14,8 @@ use App\Livewire\Clients\ClientShow;
 use App\Livewire\Dashboard\FinanceDashboard;
 use App\Livewire\Dashboard\OverviewDashboard;
 use App\Livewire\Dev\ComponentsPreview;
+use App\Livewire\EmailLogs\EmailBatchShow;
+use App\Livewire\EmailLogs\EmailLogIndex;
 use App\Livewire\Invoices\InvoiceBuilder;
 use App\Livewire\Invoices\InvoiceIndex;
 use App\Livewire\MailTemplates\DirectMailer;
@@ -112,6 +114,8 @@ Route::middleware(['auth', 'verified', 'password_change'])->group(function () {
     })->name('mail-templates.preview')->middleware('super_admin');
 
     Route::get('mail-mailer', DirectMailer::class)->name('mail-mailer.index')->middleware('super_admin');
+    Route::get('email-logs', EmailLogIndex::class)->name('email-logs.index')->middleware('super_admin');
+    Route::get('email-logs/{batchId}', EmailBatchShow::class)->name('email-logs.show')->middleware('super_admin');
     Route::get('settings', AppSettings::class)->name('settings.index');
 });
 
