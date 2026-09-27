@@ -2,6 +2,11 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
     <head>
         @include('partials.head')
+        {{-- These auth pages are rendered by plain Fortify controllers, not Livewire
+             components, so they never get Livewire's bundled Alpine.js. Loaded
+             explicitly here only — every other layout gets Alpine via Livewire,
+             and loading it twice on the same page breaks both instances. --}}
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
     </head>
     <body class="min-h-screen bg-slate-50 antialiased font-sans flex flex-col items-center justify-center p-6 md:p-10 overflow-hidden relative">
         <!-- Mesh Gradient Background -->

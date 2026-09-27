@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- The password show/hide toggle didn't actually work: login/reset-password (and every other auth page — confirm-password, two-factor-challenge, forgot-password, verify-email) are rendered by plain Fortify controllers, not Livewire components, so they never receive Livewire's bundled Alpine.js — every `x-data`/`x-show`/`@click` on them was inert. Added an explicit Alpine.js `<script>` to the auth layout only, since every other layout already gets Alpine via Livewire and loading it twice on the same page breaks both instances
+
 ### Added
 - Show/hide password toggle on the login page and the password reset page (both password fields — new password and confirmation). Added the missing `icon-eye-off` component (matching the existing Tabler-icon style) since only `icon-eye` existed before
 - Overdue payment policy: two new settings, **Penalty Percentage** and **Grace Period (Days)**, under Notification Preferences. Once a subscription is actually overdue (nothing shown before expiry — nothing's been missed yet), the reminder email now states a clear "Payment Overdue Notice": the number of missed renewal cycles, the stated penalty percentage/amount that *would* apply on renewal (disclosure only — never charged to an actual invoice), and the exact grace-period deadline with a plain statement that the service is automatically cancelled with no cost or liability to the business if payment isn't received by then
