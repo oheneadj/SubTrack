@@ -163,8 +163,10 @@
                             @foreach($this->criticalSubscriptions as $sub)
                                 <tr class="hover:bg-slate-50/50">
                                     <td>
-                                        <div class="font-bold text-sm text-slate-800">{{ $sub->project?->client?->name }}</div>
-                                        <div class="text-[11px] text-slate-500 truncate max-w-[140px]">{{ $sub->project?->project_name }}</div>
+                                        <a href="{{ route('subscriptions.show', $sub) }}" class="group block" wire:navigate>
+                                            <div class="font-bold text-sm text-slate-800 group-hover:text-blue-600 group-hover:underline transition-colors">{{ $sub->project?->client?->name }}</div>
+                                            <div class="text-[11px] text-slate-500 truncate max-w-[140px]">{{ $sub->project?->project_name }}</div>
+                                        </a>
                                     </td>
                                     <td>
                                         <x-ui.badge-status :status="$sub->service_type->value" />
@@ -173,23 +175,27 @@
                                         <x-ui.days-pill :days="$sub->days_until_expiry" :missedPayments="$sub->missed_payments_count" />
                                     </td>
                                     <td class="text-right">
-                                        <x-ui.action-menu :viewAction="route('subscriptions.show', $sub)" :slotCount="1">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <x-ui.button as="a" href="{{ route('subscriptions.show', $sub) }}" wire:navigate variant="ghost" circle size="xs" title="View">
+                                                <x-icon-eye class="w-3.5 h-3.5" />
+                                            </x-ui.button>
                                             <x-ui.button
                                                 type="button"
                                                 wire:click="sendReminder('{{ $sub->ulid }}')"
                                                 wire:loading.attr="disabled"
+                                                variant="ghost"
+                                                circle
                                                 size="xs"
                                                 title="Send Reminder"
                                             >
-                                                <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')" class="flex items-center gap-1">
+                                                <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')">
                                                     <x-icon-send class="w-3.5 h-3.5" />
-                                                    <span>Remind</span>
                                                 </span>
                                                 <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
                                                     <span class="loading loading-spinner loading-xs"></span>
                                                 </span>
                                             </x-ui.button>
-                                        </x-ui.action-menu>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -226,8 +232,10 @@
                             @foreach($this->warningSubscriptions as $sub)
                                 <tr class="hover:bg-slate-50/50">
                                     <td>
-                                        <div class="font-bold text-sm text-slate-800">{{ $sub->project?->client?->name }}</div>
-                                        <div class="text-[11px] text-slate-500 truncate max-w-[140px]">{{ $sub->project?->project_name }}</div>
+                                        <a href="{{ route('subscriptions.show', $sub) }}" class="group block" wire:navigate>
+                                            <div class="font-bold text-sm text-slate-800 group-hover:text-blue-600 group-hover:underline transition-colors">{{ $sub->project?->client?->name }}</div>
+                                            <div class="text-[11px] text-slate-500 truncate max-w-[140px]">{{ $sub->project?->project_name }}</div>
+                                        </a>
                                     </td>
                                     <td>
                                         <x-ui.badge-status :status="$sub->service_type->value" />
@@ -236,23 +244,27 @@
                                         <x-ui.days-pill :days="$sub->days_until_expiry" :missedPayments="$sub->missed_payments_count" />
                                     </td>
                                     <td class="text-right">
-                                        <x-ui.action-menu :viewAction="route('subscriptions.show', $sub)" :slotCount="1">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <x-ui.button as="a" href="{{ route('subscriptions.show', $sub) }}" wire:navigate variant="ghost" circle size="xs" title="View">
+                                                <x-icon-eye class="w-3.5 h-3.5" />
+                                            </x-ui.button>
                                             <x-ui.button
                                                 type="button"
                                                 wire:click="sendReminder('{{ $sub->ulid }}')"
                                                 wire:loading.attr="disabled"
+                                                variant="ghost"
+                                                circle
                                                 size="xs"
                                                 title="Send Reminder"
                                             >
-                                                <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')" class="flex items-center gap-1">
+                                                <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')">
                                                     <x-icon-send class="w-3.5 h-3.5" />
-                                                    <span>Remind</span>
                                                 </span>
                                                 <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
                                                     <span class="loading loading-spinner loading-xs"></span>
                                                 </span>
                                             </x-ui.button>
-                                        </x-ui.action-menu>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
