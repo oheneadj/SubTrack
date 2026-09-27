@@ -89,6 +89,12 @@
                             <p>No recent activity recorded for this user.</p>
                         </div>
                     @endforelse
+
+                    @if($this->recentActivity->hasPages())
+                        <div class="mt-4">
+                            {{ $this->recentActivity->links() }}
+                        </div>
+                    @endif
             </x-ui.card>
         </div>
 

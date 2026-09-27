@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- User show page's "Account History" is now paginated (10 per page) instead of silently capped at the 10 most recent entries with no way to see anything older. Tests: `UserShowActivityHistoryPaginationTest`
+
 ### Fixed
 - Overview dashboard's "Critical Expirations" and "Expiring This Month" tables had no way to view a subscription individually — only a "Send Reminder" button, no link to the subscription itself. The client/project name is now a row-level link, plus icon-only view/remind buttons, matching the row-link style used elsewhere (renewal tracker, subscriptions list). Tests: `OverviewDashboardSubscriptionLinksTest`
 - The "renewals paid directly never get counted as revenue" bug (previously fixed only on the Finance Dashboard's headline total) was actually present in three more places: `RevenueService` — used by *both* dashboards' 6-month trend, month-over-month change %, and the Revenue vs Expenses chart — and `OverviewDashboard`'s own separate, duplicated `financeStats()` calculation, which showed a different (invoice-only) "Total Revenue" number than the Finance Dashboard right next to it. Centralized all of it into `RevenueService::totalRevenue()`/`revenueForMonth()`, so every revenue figure app-wide now comes from one place and both dashboards always agree. Tests: `RevenueServiceTest` (including one asserting the two dashboards report an identical number)

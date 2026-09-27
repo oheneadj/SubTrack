@@ -7,16 +7,18 @@ namespace App\Livewire\Users;
 use App\Models\ActivityLog;
 use App\Models\User;
 use App\Services\ActivityLogService;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
 class UserShow extends Component
 {
+    use WithPagination;
+
     public User $user;
 
     public bool $passwordResetDone = false;
@@ -66,10 +68,12 @@ class UserShow extends Component
     }
 
     /**
-     * Recent activity where this user is either the actor or the affected subject.
+     * Activity where this user is either the actor or the affected subject,
+     * paginated so a long-lived account's history doesn't get silently
+     * truncated to whatever the first page happened to hold.
      */
     #[Computed]
-    public function recentActivity(): Collection
+    public function recentActivity()
     {
         return ActivityLog::query()
             ->where('user_id', $this->user->id)
@@ -78,8 +82,7 @@ class UserShow extends Component
                     ->where('subject_id', $this->user->id);
             })
             ->latest()
-            ->limit(10)
-            ->get();
+            ->paginate(10);
     }
 
     public function render()
