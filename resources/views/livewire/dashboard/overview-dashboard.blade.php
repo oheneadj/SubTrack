@@ -172,22 +172,24 @@
                                     <td>
                                         <x-ui.days-pill :days="$sub->days_until_expiry" :missedPayments="$sub->missed_payments_count" />
                                     </td>
-                                    <td>
-                                        <x-ui.button
-                                            type="button"
-                                            wire:click="sendReminder('{{ $sub->ulid }}')"
-                                            wire:loading.attr="disabled"
-                                            size="xs"
-                                            class="text-white"
-                                            title="Send Reminder"
-                                        >
-                                            <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')">
-                                                <x-icon-send class="w-3.5 h-3.5" />
-                                            </span>
-                                            <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
-                                                <span class="loading loading-spinner loading-xs"></span>
-                                            </span>
-                                        </x-ui.button>
+                                    <td class="text-right">
+                                        <x-ui.action-menu :viewAction="route('subscriptions.show', $sub)" :slotCount="1">
+                                            <x-ui.button
+                                                type="button"
+                                                wire:click="sendReminder('{{ $sub->ulid }}')"
+                                                wire:loading.attr="disabled"
+                                                size="xs"
+                                                title="Send Reminder"
+                                            >
+                                                <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')" class="flex items-center gap-1">
+                                                    <x-icon-send class="w-3.5 h-3.5" />
+                                                    <span>Remind</span>
+                                                </span>
+                                                <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
+                                                    <span class="loading loading-spinner loading-xs"></span>
+                                                </span>
+                                            </x-ui.button>
+                                        </x-ui.action-menu>
                                     </td>
                                 </tr>
                             @endforeach
@@ -233,22 +235,24 @@
                                     <td>
                                         <x-ui.days-pill :days="$sub->days_until_expiry" :missedPayments="$sub->missed_payments_count" />
                                     </td>
-                                    <td>
-                                        <x-ui.button
-                                            type="button"
-                                            wire:click="sendReminder('{{ $sub->ulid }}')"
-                                            wire:loading.attr="disabled"
-                                            size="xs"
-                                            class="text-white"
-                                            title="Send Reminder"
-                                        >
-                                            <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')">
-                                                <x-icon-send class="w-3.5 h-3.5" />
-                                            </span>
-                                            <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
-                                                <span class="loading loading-spinner loading-xs"></span>
-                                            </span>
-                                        </x-ui.button>
+                                    <td class="text-right">
+                                        <x-ui.action-menu :viewAction="route('subscriptions.show', $sub)" :slotCount="1">
+                                            <x-ui.button
+                                                type="button"
+                                                wire:click="sendReminder('{{ $sub->ulid }}')"
+                                                wire:loading.attr="disabled"
+                                                size="xs"
+                                                title="Send Reminder"
+                                            >
+                                                <span wire:loading.remove wire:target="sendReminder('{{ $sub->ulid }}')" class="flex items-center gap-1">
+                                                    <x-icon-send class="w-3.5 h-3.5" />
+                                                    <span>Remind</span>
+                                                </span>
+                                                <span wire:loading wire:target="sendReminder('{{ $sub->ulid }}')">
+                                                    <span class="loading loading-spinner loading-xs"></span>
+                                                </span>
+                                            </x-ui.button>
+                                        </x-ui.action-menu>
                                     </td>
                                 </tr>
                             @endforeach
