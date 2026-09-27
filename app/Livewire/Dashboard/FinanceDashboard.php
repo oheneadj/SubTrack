@@ -21,18 +21,9 @@ class FinanceDashboard extends Component
     {
         $comparisonData = $revenue->comparisonData(12);
 
-        $invoiceRevenue = Invoice::where('status', InvoiceStatus::Paid)->sum('total_amount') / 100;
-
-        // Renewals paid for directly (not through an invoice) are just as much
-        // received revenue as a paid invoice — count them too, or a client who
-        // only ever pays via subscription renewals looks like they've never
-        // paid anything. Renewals linked to an invoice are excluded here since
-        // that revenue is already counted once via the invoice itself above.
-        $renewalRevenue = Renewal::whereNull('invoice_id')
-            ->whereIn('payment_status', [PaymentStatus::Renewed, PaymentStatus::Paid])
-            ->sum('client_cost_usd') / 100;
-
-        $totalRevenue = $invoiceRevenue + $renewalRevenue;
+        // Includes both paid invoices and renewals paid for directly without
+        // ever being invoiced — see RevenueService for why both count.
+        $totalRevenue = $revenue->totalRevenue();
 
         $outstandingRevenue = Invoice::whereIn('status', [
             InvoiceStatus::Sent,

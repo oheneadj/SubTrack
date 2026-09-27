@@ -80,7 +80,9 @@ class OverviewDashboard extends Component
         $annualRecurringCents = $activeSubscriptions->sum('client_renewal_cost_usd');
 
         return [
-            'total_revenue' => Invoice::where('status', '=', InvoiceStatus::Paid)->sum('total_amount') / 100,
+            // Includes both paid invoices and renewals paid for directly
+            // without ever being invoiced — see RevenueService.
+            'total_revenue' => app(RevenueService::class)->totalRevenue(),
             'outstanding' => Invoice::whereIn('status', [InvoiceStatus::Sent, InvoiceStatus::Overdue])->sum('total_amount') / 100,
             'mrr' => $annualRecurringCents / 12 / 100,
             'costs' => Renewal::sum('provider_cost_usd') / 100,

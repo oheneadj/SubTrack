@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- The "renewals paid directly never get counted as revenue" bug (previously fixed only on the Finance Dashboard's headline total) was actually present in three more places: `RevenueService` — used by *both* dashboards' 6-month trend, month-over-month change %, and the Revenue vs Expenses chart — and `OverviewDashboard`'s own separate, duplicated `financeStats()` calculation, which showed a different (invoice-only) "Total Revenue" number than the Finance Dashboard right next to it. Centralized all of it into `RevenueService::totalRevenue()`/`revenueForMonth()`, so every revenue figure app-wide now comes from one place and both dashboards always agree. Tests: `RevenueServiceTest` (including one asserting the two dashboards report an identical number)
 - The password show/hide toggle didn't actually work: login/reset-password (and every other auth page — confirm-password, two-factor-challenge, forgot-password, verify-email) are rendered by plain Fortify controllers, not Livewire components, so they never receive Livewire's bundled Alpine.js — every `x-data`/`x-show`/`@click` on them was inert. Added an explicit Alpine.js `<script>` to the auth layout only, since every other layout already gets Alpine via Livewire and loading it twice on the same page breaks both instances
 
 ### Added
