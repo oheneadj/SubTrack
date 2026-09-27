@@ -45,18 +45,27 @@
                 <label class="label py-1">
                     <span class="label-text font-bold text-slate-700 text-xs uppercase tracking-wider">{{ __('New Password') }}</span>
                 </label>
-                <div class="relative group">
+                <div class="relative group" x-data="{ showPassword: false }">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
                         <x-icon-lock class="w-4 h-4" />
                     </div>
-                    <input 
-                        name="password" 
-                        type="password" 
-                        required 
-                        autocomplete="new-password" 
+                    <input
+                        name="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        required
+                        autocomplete="new-password"
                         placeholder="••••••••"
-                        class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('password') input-error @enderror"
+                        class="input input-bordered w-full !pl-10 !pr-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200 @error('password') input-error @enderror"
                     />
+                    <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                        :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                    >
+                        <x-icon-eye class="w-4 h-4" x-show="!showPassword" />
+                        <x-icon-eye-off class="w-4 h-4" x-show="showPassword" x-cloak />
+                    </button>
                 </div>
                 @error('password')
                     <label class="label p-1">
@@ -70,18 +79,27 @@
                 <label class="label py-1">
                     <span class="label-text font-bold text-slate-700 text-xs uppercase tracking-wider">{{ __('Confirm New Password') }}</span>
                 </label>
-                <div class="relative group">
+                <div class="relative group" x-data="{ showPassword: false }">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
                         <x-icon-lock-check class="w-4 h-4" />
                     </div>
-                    <input 
-                        name="password_confirmation" 
-                        type="password" 
-                        required 
-                        autocomplete="new-password" 
+                    <input
+                        name="password_confirmation"
+                        :type="showPassword ? 'text' : 'password'"
+                        required
+                        autocomplete="new-password"
                         placeholder="••••••••"
-                        class="input input-bordered w-full !pl-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200"
+                        class="input input-bordered w-full !pl-10 !pr-10 h-11 bg-slate-50/50 focus:bg-white transition-all rounded-xl border-slate-200"
                     />
+                    <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                        :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                    >
+                        <x-icon-eye class="w-4 h-4" x-show="!showPassword" />
+                        <x-icon-eye-off class="w-4 h-4" x-show="showPassword" x-cloak />
+                    </button>
                 </div>
             </div>
 

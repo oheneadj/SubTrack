@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Show/hide password toggle on the login page and the password reset page (both password fields — new password and confirmation). Added the missing `icon-eye-off` component (matching the existing Tabler-icon style) since only `icon-eye` existed before
 - Overdue payment policy: two new settings, **Penalty Percentage** and **Grace Period (Days)**, under Notification Preferences. Once a subscription is actually overdue (nothing shown before expiry — nothing's been missed yet), the reminder email now states a clear "Payment Overdue Notice": the number of missed renewal cycles, the stated penalty percentage/amount that *would* apply on renewal (disclosure only — never charged to an actual invoice), and the exact grace-period deadline with a plain statement that the service is automatically cancelled with no cost or liability to the business if payment isn't received by then
 - `Subscription::statedPenaltyPercentage`/`statedPenaltyAmount`/`formattedStatedPenaltyAmount` — penalty percentage × missed-cycles, for display only
 - `Subscription::gracePeriodDeadline` — expiry date + configured grace period, null while not overdue
