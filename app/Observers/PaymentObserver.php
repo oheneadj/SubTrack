@@ -20,7 +20,8 @@ class PaymentObserver
 
         DashboardActivityLog::record(
             ActivityEventType::PaymentRecorded,
-            "Payment of {$payment->formatted_amount} recorded manually for Invoice {$payment->invoice->invoice_number}",
+            "Payment of {$payment->formatted_amount} recorded manually for Invoice {$payment->invoice->invoice_number}".
+                ($payment->notes ? " — {$payment->notes}" : ''),
             $payment->invoice->client_id,
             ['payment_id' => $payment->id, 'invoice_id' => $payment->invoice_id]
         );
@@ -45,7 +46,8 @@ class PaymentObserver
             DashboardActivityLog::record(
                 ActivityEventType::PaymentEdited,
                 "Payment for Invoice {$payment->invoice->invoice_number} corrected from \$".number_format($original / 100, 2).
-                    " to {$payment->formatted_amount}",
+                    " to {$payment->formatted_amount}".
+                    ($payment->notes ? " — {$payment->notes}" : ''),
                 $payment->invoice->client_id,
                 ['payment_id' => $payment->id, 'invoice_id' => $payment->invoice_id, 'previous_amount' => $original]
             );

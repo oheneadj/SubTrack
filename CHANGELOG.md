@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- A `notes` field on manual payments — both Record Payment and Edit Payment (Invoices list and Receipts page) now have an optional notes input (e.g. "Bank transfer ref #1234"), matching the reason field Void Payment already had. Edit Payment pre-fills the payment's existing notes, so a correction can also fix a typo in the note itself. Shown on the Receipts page's Payments table and included in the `payment.recorded`/`payment.edited` activity log entries
+- Tests: `PaymentNotesTest`
+
+## [Unreleased]
+
+### Added
 - `php artisan receipts:cleanup-legacy` — a one-off maintenance command to remove receipts generated before receipts were tied to a specific payment (i.e. from before the "two payments merge into one receipt" fix), since they can no longer be trusted to reflect the current payment history correctly. Dry-run by default (lists what it would delete); `--force` deletes the DB rows and their PDF files after an interactive confirmation. Only ever touches an invoice-linked receipt with no `payment_id` — subscription receipts and anything already linked to a payment are left alone. Safe to run more than once
 - Tests: `CleanupLegacyReceiptsCommandTest`
 

@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property PaymentRecordStatus $status
  * @property array<string, mixed>|null $gateway_response
  * @property CarbonImmutable|null $paid_at
+ * @property string|null $notes
  * @property string|null $void_reason
  * @property string $formatted_amount
  */
@@ -43,6 +44,7 @@ class Payment extends Model
         'status',
         'gateway_response',
         'paid_at',
+        'notes',
         'void_reason',
     ];
 

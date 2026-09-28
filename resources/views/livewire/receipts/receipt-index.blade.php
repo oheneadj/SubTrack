@@ -63,6 +63,8 @@
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $payment->status->color() }}">{{ $payment->status->label() }}</span>
                                             @if($payment->void_reason)
                                                 <div class="text-xs text-slate-400 mt-0.5">{{ $payment->void_reason }}</div>
+                                            @elseif($payment->notes)
+                                                <div class="text-xs text-slate-400 mt-0.5">{{ $payment->notes }}</div>
                                             @endif
                                         </td>
                                         <td class="py-2 text-right">
@@ -192,6 +194,15 @@
             <input type="date" wire:model="editPaymentDate" max="{{ now()->format('Y-m-d') }}"
                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             @error('editPaymentDate')
+                <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="flex flex-col gap-1 w-full mb-4">
+            <label class="text-sm font-semibold text-slate-700">Notes (optional)</label>
+            <input type="text" wire:model="editPaymentNotes" placeholder="e.g. Bank transfer ref #1234"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            @error('editPaymentNotes')
                 <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
             @enderror
         </div>

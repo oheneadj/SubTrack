@@ -22,12 +22,13 @@ class EditManualPaymentAction
     /**
      * @param  int  $newAmountCents  The corrected amount, in cents.
      * @param  CarbonInterface|null  $newPaidAt  The corrected received date — null leaves it unchanged. Can't be in the future.
+     * @param  string|null  $notes  Optional context for the correction — null leaves it unchanged.
      *
      * @throws PaymentNotEditableException if the payment is no longer eligible for a direct edit
      * @throws InvalidPaymentAmountException if the new amount is invalid or would overpay the invoice
      * @throws InvalidPaymentDateException if the new date is in the future
      */
-    public function execute(Payment $payment, int $newAmountCents, ?CarbonInterface $newPaidAt = null): Payment
+    public function execute(Payment $payment, int $newAmountCents, ?CarbonInterface $newPaidAt = null, ?string $notes = null): Payment
     {
         if (! $payment->isEditable()) {
             throw new PaymentNotEditableException;
@@ -52,6 +53,7 @@ class EditManualPaymentAction
         $payment->update(array_filter([
             'amount' => $newAmountCents,
             'paid_at' => $newPaidAt,
+            'notes' => $notes,
         ], fn ($value) => $value !== null));
         $invoice->recalculatePaymentStatus();
 

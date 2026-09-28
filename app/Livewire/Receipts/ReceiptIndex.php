@@ -56,6 +56,9 @@ class ReceiptIndex extends Component
     /** Date entered in the Edit Payment modal. */
     public string $editPaymentDate = '';
 
+    /** Notes entered in the Edit Payment modal. */
+    public string $editPaymentNotes = '';
+
     /** ULID of the payment currently open in the Void Payment modal. */
     public string $voidPaymentUlid = '';
 
@@ -110,6 +113,7 @@ class ReceiptIndex extends Component
         $this->editPaymentUlid = $paymentUlid;
         $this->editPaymentAmount = round($payment->amount / 100, 2);
         $this->editPaymentDate = $payment->paid_at?->format('Y-m-d') ?? CarbonImmutable::now()->format('Y-m-d');
+        $this->editPaymentNotes = $payment->notes ?? '';
 
         $this->dispatch('open-modal', id: 'edit-payment-modal');
     }
@@ -132,7 +136,7 @@ class ReceiptIndex extends Component
         $paidAt = CarbonImmutable::parse($this->editPaymentDate);
 
         try {
-            $action->execute($payment, $amountCents, $paidAt);
+            $action->execute($payment, $amountCents, $paidAt, $this->editPaymentNotes);
         } catch (PaymentNotEditableException|InvalidPaymentAmountException $e) {
             $this->addError('editPaymentAmount', $e->getMessage());
 

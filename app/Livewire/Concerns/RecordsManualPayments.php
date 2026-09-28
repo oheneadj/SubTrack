@@ -28,6 +28,9 @@ trait RecordsManualPayments
     /** Date entered in the Record Payment modal — when the payment was actually received. */
     public string $recordPaymentDate = '';
 
+    /** Notes entered in the Record Payment modal — optional context, e.g. "Bank transfer ref #1234". */
+    public string $recordPaymentNotes = '';
+
     /** Opens the Record Payment modal, pre-filled with the invoice's full remaining balance and today's date. */
     public function openRecordPayment(string $invoiceUlid): void
     {
@@ -36,6 +39,7 @@ trait RecordsManualPayments
         $this->recordPaymentInvoiceUlid = $invoiceUlid;
         $this->recordPaymentAmount = round($invoice->balance_due / 100, 2);
         $this->recordPaymentDate = CarbonImmutable::now()->format('Y-m-d');
+        $this->recordPaymentNotes = '';
 
         $this->dispatch('open-modal', id: 'record-payment-modal');
     }
@@ -58,7 +62,7 @@ trait RecordsManualPayments
         $paidAt = CarbonImmutable::parse($this->recordPaymentDate);
 
         try {
-            (new RecordManualPaymentAction)->execute($invoice, $amountCents, $paidAt);
+            (new RecordManualPaymentAction)->execute($invoice, $amountCents, $paidAt, $this->recordPaymentNotes ?: null);
         } catch (InvoiceAlreadyPaidException|InvalidPaymentAmountException $e) {
             $this->addError('recordPaymentAmount', $e->getMessage());
 

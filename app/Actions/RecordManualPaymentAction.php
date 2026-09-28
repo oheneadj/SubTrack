@@ -23,8 +23,9 @@ class RecordManualPaymentAction
     /**
      * @param  int  $amountCents  The amount received, in cents.
      * @param  CarbonInterface|null  $paidAt  When the payment was actually received — defaults to now. Can't be in the future.
+     * @param  string|null  $notes  Optional context, e.g. "Bank transfer ref #1234".
      */
-    public function execute(Invoice $invoice, int $amountCents, ?CarbonInterface $paidAt = null): Payment
+    public function execute(Invoice $invoice, int $amountCents, ?CarbonInterface $paidAt = null, ?string $notes = null): Payment
     {
         if ($invoice->isPaid()) {
             throw new InvoiceAlreadyPaidException;
@@ -47,6 +48,7 @@ class RecordManualPaymentAction
             'currency' => 'usd',
             'status' => PaymentRecordStatus::Succeeded,
             'paid_at' => $paidAt,
+            'notes' => $notes,
         ]);
 
         $invoice->recalculatePaymentStatus();
