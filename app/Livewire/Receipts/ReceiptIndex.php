@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Receipts;
 
 use App\Actions\GenerateInvoiceReceiptAction;
-use App\Actions\RecordManualPaymentAction;
-use App\Exceptions\InvalidPaymentAmountException;
-use App\Exceptions\InvoiceAlreadyPaidException;
+use App\Livewire\Concerns\RecordsManualPayments;
 use App\Mail\ReceiptMail;
 use App\Models\Invoice;
 use App\Models\Receipt;
@@ -32,7 +30,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ReceiptIndex extends Component
 {
-    use WithPagination;
+    use RecordsManualPayments, WithPagination;
 
     public string $search = '';
 
@@ -41,12 +39,6 @@ class ReceiptIndex extends Component
 
     /** Notes entered before generating a new receipt for the scoped invoice. */
     public string $newReceiptNotes = '';
-
-    /** Whether the Record Payment panel is open for the scoped invoice. */
-    public bool $showRecordPayment = false;
-
-    /** Amount entered in the Record Payment panel, in dollars. */
-    public $recordPaymentAmount = 0;
 
     #[Computed]
     public function scopedInvoice(): ?Invoice
@@ -84,45 +76,10 @@ class ReceiptIndex extends Component
             ->paginate(15);
     }
 
-    /** Opens the Record Payment panel, pre-filled with the invoice's full remaining balance. */
-    public function openRecordPayment(): void
+    /** Refreshes computed properties that depend on the invoice once a payment is recorded against it. */
+    protected function afterPaymentRecorded(Invoice $invoice): void
     {
-        if (! $this->scopedInvoice) {
-            return;
-        }
-
-        $this->recordPaymentAmount = round($this->scopedInvoice->balance_due / 100, 2);
-        $this->showRecordPayment = true;
-    }
-
-    /** Records a manual payment against the scoped invoice, without leaving the receipts page. */
-    public function submitRecordPayment(): void
-    {
-        if (! $this->scopedInvoice) {
-            return;
-        }
-
-        $this->validate([
-            'recordPaymentAmount' => 'required|numeric|min:0.01',
-        ]);
-
-        $amountCents = (int) round((float) $this->recordPaymentAmount * 100);
-
-        try {
-            (new RecordManualPaymentAction)->execute($this->scopedInvoice, $amountCents);
-        } catch (InvoiceAlreadyPaidException|InvalidPaymentAmountException $e) {
-            $this->addError('recordPaymentAmount', $e->getMessage());
-
-            return;
-        }
-
-        $this->showRecordPayment = false;
         unset($this->scopedInvoice, $this->scopedInvoiceFullyReceipted, $this->receipts);
-
-        $invoice = $this->scopedInvoice;
-        session()->flash('success', $invoice->isPaid()
-            ? "Invoice {$invoice->invoice_number} marked as Paid."
-            : "Payment recorded. Invoice {$invoice->invoice_number} is now Partially Paid — {$invoice->formatted_balance_due} remaining.");
     }
 
     /** Generates a new receipt covering everything paid so far on the scoped invoice. */

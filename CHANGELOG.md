@@ -6,8 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The Invoices table's row actions now order variable actions (that depend on the invoice's state — Record Payment, Receipts) before the actions present on every invoice regardless of state (Download, Send, Edit), instead of an inconsistent mix — consistent actions live in the fixed action menu, variable ones sit before it as standalone buttons
+
 ### Added
-- The Receipts page, when scoped to an invoice, now lets an admin record a payment against that invoice directly on the page (a "Record Payment" button next to the balance due, opening an inline amount field) instead of having to navigate back to the Invoices list first. Reuses the same `RecordManualPaymentAction` as the Invoices list's own Record Payment modal
+- Extracted the "Record Payment" modal (fields, validation, the manual-payment recording flow) into a shared `RecordsManualPayments` trait and a shared `<x-invoices.record-payment-modal>` Blade component, used by both the Invoices list and the invoice-scoped Receipts page — previously the Receipts page had its own separate inline-panel implementation of the same flow. The Receipts page now opens the same modal instead
+- The Receipts page, when scoped to an invoice, now lets an admin record a payment against that invoice directly on the page (a "Record Payment" button next to the balance due) instead of having to navigate back to the Invoices list first
 
 ### Changed
 - The invoices table's "Receipts" link was demoted to small text under the status badge to dodge the action-menu's fold-into-dropdown threshold. Restored it as a proper button, placed next to (not inside) the action menu so it doesn't count toward that threshold and the row's other actions still stay inline

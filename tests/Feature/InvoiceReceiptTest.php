@@ -157,12 +157,12 @@ test('the receipts page scoped to an unpaid invoice lets an admin record a payme
 
     Livewire::actingAs(User::factory()->create())
         ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
-        ->call('openRecordPayment')
+        ->call('openRecordPayment', $invoice->ulid)
         ->assertSet('recordPaymentAmount', 100.0)
         ->set('recordPaymentAmount', 40)
         ->call('submitRecordPayment')
         ->assertHasNoErrors()
-        ->assertSet('showRecordPayment', false);
+        ->assertDispatched('close-modal');
 
     $invoice->refresh();
     expect($invoice->status)->toBe(InvoiceStatus::PartiallyPaid)
@@ -174,7 +174,7 @@ test('the receipts page rejects a recorded payment over the balance due', functi
 
     Livewire::actingAs(User::factory()->create())
         ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
-        ->call('openRecordPayment')
+        ->call('openRecordPayment', $invoice->ulid)
         ->set('recordPaymentAmount', 500)
         ->call('submitRecordPayment')
         ->assertHasErrors('recordPaymentAmount');
@@ -188,5 +188,5 @@ test('the receipts page hides the Record Payment button once the invoice is full
 
     Livewire::actingAs(User::factory()->create())
         ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
-        ->assertDontSee('wire:click="openRecordPayment"', false);
+        ->assertDontSee("openRecordPayment('{$invoice->ulid}')", false);
 });

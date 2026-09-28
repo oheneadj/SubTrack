@@ -31,33 +31,13 @@
                         <div class="text-sm text-slate-500">{{ $this->scopedInvoice->formatted_balance_due }} due</div>
                     @endif
                 </div>
-                @if(! $this->scopedInvoice->isPaid() && ! $showRecordPayment)
-                    <x-ui.button wire:click="openRecordPayment" variant="success" size="sm">
+                @if(! $this->scopedInvoice->isPaid())
+                    <x-ui.button wire:click="openRecordPayment('{{ $this->scopedInvoice->ulid }}')" variant="success" size="sm">
                         <x-icon-circle-check class="w-4 h-4" />
                         Record Payment
                     </x-ui.button>
                 @endif
             </div>
-
-            @if($showRecordPayment)
-                <div class="mt-4 pt-4 border-t border-slate-100">
-                    <div class="flex items-end gap-3 flex-wrap">
-                        <div class="flex-1 min-w-[160px]">
-                            <label class="text-sm font-semibold text-slate-700">Amount received ($)</label>
-                            <input type="number" step="0.01" min="0.01" wire:model="recordPaymentAmount"
-                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                            @error('recordPaymentAmount')
-                                <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <x-ui.button wire:click="submitRecordPayment" wire:loading.attr="disabled" wire:target="submitRecordPayment" variant="success">
-                            <span class="loading loading-spinner loading-xs" wire:loading wire:target="submitRecordPayment"></span>
-                            Record Payment
-                        </x-ui.button>
-                        <x-ui.button type="button" variant="ghost" wire:click="$set('showRecordPayment', false)">Cancel</x-ui.button>
-                    </div>
-                </div>
-            @endif
 
             @if($this->scopedInvoice->amount_paid > 0)
                 <div class="mt-4 pt-4 border-t border-slate-100">
@@ -141,4 +121,6 @@
             {{ $this->receipts->links() }}
         </div>
     @endif
+
+    <x-invoices.record-payment-modal />
 </div>

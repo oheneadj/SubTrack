@@ -61,15 +61,24 @@
                         </td>
                     <td class="text-right">
                         <div class="flex items-center justify-end gap-2">
+                            {{-- Variable actions (depend on this invoice's state) come first --}}
+                            @if(! $invoice->isPaid())
+                                <x-ui.button wire:click="openRecordPayment('{{ $invoice->ulid }}')" title="Record Payment" variant="success" size="xs">
+                                    <x-icon-circle-check class="w-3.5 h-3.5" />
+                                    Record Payment
+                                </x-ui.button>
+                            @endif
                             @if($invoice->amount_paid > 0)
                                 <x-ui.button as="a" href="{{ route('receipts.index', ['invoice' => $invoice->ulid]) }}" title="View Receipts" variant="secondary" size="xs">
                                     <x-icon-file-invoice class="w-3.5 h-3.5" />
                                     Receipts
                                 </x-ui.button>
                             @endif
+
+                            {{-- Actions present on every invoice regardless of state come last --}}
                             <x-ui.action-menu
                                 editAction="window.location.href='{{ route('invoices.edit', $invoice) }}'"
-                                :slotCount="$invoice->isPaid() ? 2 : 3"
+                                :slotCount="2"
                             >
                                 <x-ui.button wire:click="downloadPdf('{{ $invoice->ulid }}')" wire:loading.attr="disabled" wire:target="downloadPdf('{{ $invoice->ulid }}')" title="Download PDF" size="xs">
                                     <x-icon-photo class="w-3.5 h-3.5" wire:loading.remove wire:target="downloadPdf('{{ $invoice->ulid }}')" />
@@ -81,12 +90,6 @@
                                     <span class="loading loading-spinner loading-xs" wire:loading wire:target="sendInvoice('{{ $invoice->ulid }}')"></span>
                                     Send
                                 </x-ui.button>
-                                @if(! $invoice->isPaid())
-                                    <x-ui.button wire:click="openRecordPayment('{{ $invoice->ulid }}')" title="Record Payment" variant="success" size="xs">
-                                        <x-icon-circle-check class="w-3.5 h-3.5" />
-                                        Record Payment
-                                    </x-ui.button>
-                                @endif
                             </x-ui.action-menu>
                         </div>
                     </td>
@@ -99,24 +102,5 @@
         </div>
     @endif
 
-    <x-ui.modal id="record-payment-modal" maxWidth="sm">
-        <h3 class="text-lg font-bold text-slate-800 mb-4">Record Payment</h3>
-
-        <div class="flex flex-col gap-1 w-full mb-4">
-            <label class="text-sm font-semibold text-slate-700">Amount received ($)</label>
-            <input type="number" step="0.01" min="0.01" wire:model="recordPaymentAmount"
-                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            @error('recordPaymentAmount')
-                <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="flex justify-end gap-3">
-            <x-ui.button type="button" variant="ghost" x-on:click="open = false">Cancel</x-ui.button>
-            <x-ui.button type="button" variant="success" wire:click="submitRecordPayment" wire:loading.attr="disabled" wire:target="submitRecordPayment">
-                <span class="loading loading-spinner loading-xs" wire:loading wire:target="submitRecordPayment"></span>
-                Record Payment
-            </x-ui.button>
-        </div>
-    </x-ui.modal>
+    <x-invoices.record-payment-modal />
 </div>
