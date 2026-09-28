@@ -62,8 +62,15 @@
                     <div class="text-slate-500">{{ $receipt->client->email }}</div>
                 </td>
                 <td style="border: none; padding: 0; text-align: right; width: 50%;">
-                    <div class="text-xs text-slate-500 font-bold" style="text-transform: uppercase;">Issued</div>
-                    <div class="font-bold">{{ $receipt->issued_date->format('F d, Y') }}</div>
+                    @if($receipt->payment?->paid_at)
+                        <div class="text-xs text-slate-500 font-bold" style="text-transform: uppercase;">Payment Date</div>
+                        <div class="font-bold">{{ $receipt->payment->paid_at->format('F d, Y') }}</div>
+                        <div class="text-xs text-slate-500 font-bold mb-2" style="text-transform: uppercase; margin-top: 8px;">Issued</div>
+                        <div class="text-slate-500">{{ $receipt->issued_date->format('F d, Y') }}</div>
+                    @else
+                        <div class="text-xs text-slate-500 font-bold" style="text-transform: uppercase;">Issued</div>
+                        <div class="font-bold">{{ $receipt->issued_date->format('F d, Y') }}</div>
+                    @endif
                 </td>
             </tr>
         </table>

@@ -113,7 +113,7 @@
             :message="$this->scopedInvoice ? 'Generate one from a payment in the table above once one has been received.' : 'Receipts generated for invoices and subscription renewals will show up here.'"
         />
     @else
-        <x-ui.data-table :headers="['receipt_number' => 'Receipt #', 'Client', 'Source', 'issued_date' => 'Issued', 'amount_usd' => 'Amount', 'Actions']">
+        <x-ui.data-table :headers="['receipt_number' => 'Receipt #', 'Client', 'Source', 'Payment Date', 'issued_date' => 'Issued', 'amount_usd' => 'Amount', 'Actions']">
             @foreach($this->receipts as $receipt)
                 <tr wire:key="receipt-{{ $receipt->id }}">
                     <td class="font-mono font-medium text-slate-700">{{ $receipt->receipt_number }}</td>
@@ -134,6 +134,7 @@
                             {{ $receipt->source_label }}
                         @endif
                     </td>
+                    <td class="text-sm text-slate-600">{{ $receipt->payment?->paid_at?->format('M d, Y') ?? '—' }}</td>
                     <td class="text-sm text-slate-600">{{ $receipt->issued_date->format('M d, Y') }}</td>
                     <td class="font-bold {{ $receipt->isInvalidated() ? 'text-slate-400 line-through' : '' }}">
                         {{ $receipt->formatted_amount_usd }}

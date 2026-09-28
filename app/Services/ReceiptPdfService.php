@@ -15,7 +15,7 @@ class ReceiptPdfService
     /** Render the receipt PDF, store it, and persist its path on the record. Returns the stored path. */
     public function generate(Receipt $receipt): string
     {
-        $receipt->load(['client', 'subscription', 'invoice']);
+        $receipt->load(['client', 'subscription', 'invoice', 'payment']);
         $settings = Setting::getAllAsArray();
 
         $pdf = Pdf::loadView('pdf.receipt', compact('receipt', 'settings'))

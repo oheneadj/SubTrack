@@ -86,7 +86,7 @@ class ReceiptIndex extends Component
     #[Computed]
     public function receipts()
     {
-        return Receipt::with(['client', 'invoice', 'subscription'])
+        return Receipt::with(['client', 'invoice', 'subscription', 'payment'])
             ->when($this->scopedInvoice, fn ($query) => $query->where('invoice_id', $this->scopedInvoice->id))
             ->when($this->search, function ($query) {
                 $query->where('receipt_number', 'like', '%'.$this->search.'%')

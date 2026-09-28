@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Receipts (now tied to a specific payment — see previous entry) show the actual **Payment Date** alongside the issue date, wherever a receipt appears: the PDF, the emailed receipt, and the Receipts page table. Previously only "Issued" (when the receipt was generated) was shown, which can be a different date than when the money was actually received — especially now that a payment's date can be backdated
+- Tests: `ReceiptShowsPaymentDateTest`
+
+## [Unreleased]
+
 ### Fixed
 - **Two separate payments made before either was receipted merged into a single receipt** for their combined total instead of each getting its own — receipts captured the invoice's *cumulative* amount paid at generation time rather than a specific transaction. Fixed by tying each receipt to the specific `Payment` it documents (`receipts.payment_id`): `GenerateInvoiceReceiptAction` now takes a `Payment` instead of an `Invoice` and captures exactly that payment's amount, the Receipts page now shows a per-payment "Receipt" action (or a "Receipted" badge once one exists) in the Payments table instead of one invoice-level "Generate Receipt for $X" button, and a gateway-confirmed payment auto-generates a receipt for itself specifically rather than for the invoice's running total
 - This also made `Payment::isEditable()`'s "no receipt issued since" check exact instead of a heuristic — it was previously inferred from any receipt existing on the invoice on or after the payment's timestamp (a coarse approximation), and voiding a payment now invalidates precisely its own receipt instead of inferring which receipt(s) "no longer add up" from the invoice's new total

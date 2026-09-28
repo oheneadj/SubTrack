@@ -16,6 +16,16 @@
                     {{ $receipt->receipt_number }}
                 </td>
             </tr>
+            @if($receipt->payment?->paid_at)
+                <tr>
+                    <td style="padding-top: 12px; padding-bottom: 12px; border-bottom: 1px dashed #cbd5e1; font-size: 15px; font-weight: 600; color: #64748b;">
+                        Payment Date
+                    </td>
+                    <td align="right" style="padding-top: 12px; padding-bottom: 12px; border-bottom: 1px dashed #cbd5e1; font-size: 15px; font-weight: 600; color: #0f172a;">
+                        {{ $receipt->payment->paid_at->format('F d, Y') }}
+                    </td>
+                </tr>
+            @endif
             <tr>
                 <td style="padding-top: 12px; padding-bottom: 12px; border-bottom: 1px dashed #cbd5e1; font-size: 15px; font-weight: 600; color: #64748b;">
                     Issued
