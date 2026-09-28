@@ -60,6 +60,56 @@
                     @endif
                 </div>
             @endif
+
+            @if($this->invoicePayments->isNotEmpty())
+                <div class="mt-4 pt-4 border-t border-slate-100">
+                    <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Payments</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-xs text-slate-400 uppercase">
+                                    <th class="pb-2 font-semibold">Date</th>
+                                    <th class="pb-2 font-semibold">Method</th>
+                                    <th class="pb-2 font-semibold">Amount</th>
+                                    <th class="pb-2 font-semibold">Status</th>
+                                    <th class="pb-2 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($this->invoicePayments as $payment)
+                                    <tr wire:key="payment-{{ $payment->id }}" class="border-t border-slate-100">
+                                        <td class="py-2 text-slate-600">{{ $payment->created_at->format('M d, Y') }}</td>
+                                        <td class="py-2 text-slate-600 capitalize">{{ $payment->gateway }}</td>
+                                        <td class="py-2 font-semibold {{ $payment->status->value === 'voided' ? 'text-slate-400 line-through' : 'text-slate-800' }}">{{ $payment->formatted_amount }}</td>
+                                        <td class="py-2">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $payment->status->color() }}">{{ $payment->status->label() }}</span>
+                                            @if($payment->void_reason)
+                                                <div class="text-xs text-slate-400 mt-0.5">{{ $payment->void_reason }}</div>
+                                            @endif
+                                        </td>
+                                        <td class="py-2 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                @if($payment->isEditable())
+                                                    <x-ui.button wire:click="openEditPayment('{{ $payment->ulid }}')" title="Edit" size="xs">
+                                                        <x-icon-edit class="w-3.5 h-3.5" />
+                                                        Edit
+                                                    </x-ui.button>
+                                                @endif
+                                                @if($payment->isVoidable())
+                                                    <x-ui.button wire:click="openVoidPayment('{{ $payment->ulid }}')" title="Void" variant="error" size="xs">
+                                                        <x-icon-x class="w-3.5 h-3.5" />
+                                                        Void
+                                                    </x-ui.button>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
         </x-ui.card>
     @endif
 
@@ -123,4 +173,44 @@
     @endif
 
     <x-invoices.record-payment-modal />
+
+    <x-ui.modal id="edit-payment-modal" maxWidth="sm">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Edit Payment</h3>
+
+        <div class="flex flex-col gap-1 w-full mb-4">
+            <label class="text-sm font-semibold text-slate-700">Corrected amount ($)</label>
+            <input type="number" step="0.01" min="0.01" wire:model="editPaymentAmount"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            @error('editPaymentAmount')
+                <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <x-ui.button type="button" variant="ghost" x-on:click="open = false">Cancel</x-ui.button>
+            <x-ui.button type="button" variant="success" wire:click="submitEditPayment" wire:loading.attr="disabled" wire:target="submitEditPayment">
+                <span class="loading loading-spinner loading-xs" wire:loading wire:target="submitEditPayment"></span>
+                Save Correction
+            </x-ui.button>
+        </div>
+    </x-ui.modal>
+
+    <x-ui.modal id="void-payment-modal" maxWidth="sm">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Void Payment</h3>
+        <p class="text-sm text-slate-500 mb-4">The original record is kept for audit — this only excludes it from the invoice's amount paid.</p>
+
+        <div class="flex flex-col gap-1 w-full mb-4">
+            <label class="text-sm font-semibold text-slate-700">Reason (optional)</label>
+            <input type="text" wire:model="voidReason" placeholder="e.g. Entered wrong amount"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <x-ui.button type="button" variant="ghost" x-on:click="open = false">Cancel</x-ui.button>
+            <x-ui.button type="button" variant="error" wire:click="submitVoidPayment" wire:loading.attr="disabled" wire:target="submitVoidPayment">
+                <span class="loading loading-spinner loading-xs" wire:loading wire:target="submitVoidPayment"></span>
+                Void Payment
+            </x-ui.button>
+        </div>
+    </x-ui.modal>
 </div>

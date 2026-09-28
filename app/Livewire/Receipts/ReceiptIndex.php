@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Livewire\Receipts;
 
+use App\Actions\EditManualPaymentAction;
 use App\Actions\GenerateInvoiceReceiptAction;
+use App\Actions\VoidManualPaymentAction;
+use App\Exceptions\InvalidPaymentAmountException;
+use App\Exceptions\PaymentNotEditableException;
+use App\Exceptions\PaymentNotVoidableException;
 use App\Livewire\Concerns\RecordsManualPayments;
 use App\Mail\ReceiptMail;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Receipt;
 use App\Services\EmailLogger;
 use App\Services\ReceiptPdfService;
@@ -40,6 +46,18 @@ class ReceiptIndex extends Component
     /** Notes entered before generating a new receipt for the scoped invoice. */
     public string $newReceiptNotes = '';
 
+    /** ULID of the payment currently open in the Edit Payment modal. */
+    public string $editPaymentUlid = '';
+
+    /** Amount entered in the Edit Payment modal, in dollars. */
+    public $editPaymentAmount = 0;
+
+    /** ULID of the payment currently open in the Void Payment modal. */
+    public string $voidPaymentUlid = '';
+
+    /** Reason entered in the Void Payment modal. */
+    public string $voidReason = '';
+
     #[Computed]
     public function scopedInvoice(): ?Invoice
     {
@@ -63,6 +81,17 @@ class ReceiptIndex extends Component
             ->exists();
     }
 
+    /** Every payment (manual and gateway) recorded against the scoped invoice, most recent first. */
+    #[Computed]
+    public function invoicePayments()
+    {
+        if (! $this->scopedInvoice) {
+            return collect();
+        }
+
+        return $this->scopedInvoice->payments()->latest()->get();
+    }
+
     #[Computed]
     public function receipts()
     {
@@ -79,7 +108,76 @@ class ReceiptIndex extends Component
     /** Refreshes computed properties that depend on the invoice once a payment is recorded against it. */
     protected function afterPaymentRecorded(Invoice $invoice): void
     {
-        unset($this->scopedInvoice, $this->scopedInvoiceFullyReceipted, $this->receipts);
+        $this->refreshInvoiceComputedState();
+    }
+
+    /** Opens the Edit Payment modal, pre-filled with the payment's current amount. */
+    public function openEditPayment(string $paymentUlid): void
+    {
+        $payment = Payment::where('ulid', $paymentUlid)->firstOrFail();
+
+        $this->editPaymentUlid = $paymentUlid;
+        $this->editPaymentAmount = round($payment->amount / 100, 2);
+
+        $this->dispatch('open-modal', id: 'edit-payment-modal');
+    }
+
+    /** Corrects a manually-recorded payment's amount. */
+    public function submitEditPayment(EditManualPaymentAction $action): void
+    {
+        $this->validate([
+            'editPaymentAmount' => 'required|numeric|min:0.01',
+        ]);
+
+        $payment = Payment::where('ulid', $this->editPaymentUlid)->firstOrFail();
+        $amountCents = (int) round((float) $this->editPaymentAmount * 100);
+
+        try {
+            $action->execute($payment, $amountCents);
+        } catch (PaymentNotEditableException|InvalidPaymentAmountException $e) {
+            $this->addError('editPaymentAmount', $e->getMessage());
+
+            return;
+        }
+
+        $this->dispatch('close-modal', id: 'edit-payment-modal');
+        $this->refreshInvoiceComputedState();
+
+        session()->flash('success', 'Payment corrected.');
+    }
+
+    /** Opens the Void Payment modal. */
+    public function openVoidPayment(string $paymentUlid): void
+    {
+        $this->voidPaymentUlid = $paymentUlid;
+        $this->voidReason = '';
+
+        $this->dispatch('open-modal', id: 'void-payment-modal');
+    }
+
+    /** Voids a manually-recorded payment made by mistake, keeping the original record for audit. */
+    public function submitVoidPayment(VoidManualPaymentAction $action): void
+    {
+        $payment = Payment::where('ulid', $this->voidPaymentUlid)->firstOrFail();
+
+        try {
+            $action->execute($payment, $this->voidReason ?: null);
+        } catch (PaymentNotVoidableException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        }
+
+        $this->dispatch('close-modal', id: 'void-payment-modal');
+        $this->refreshInvoiceComputedState();
+
+        session()->flash('success', 'Payment voided.');
+    }
+
+    /** Busts every computed property whose value depends on the scoped invoice's payment state. */
+    private function refreshInvoiceComputedState(): void
+    {
+        unset($this->scopedInvoice, $this->scopedInvoiceFullyReceipted, $this->invoicePayments, $this->receipts);
     }
 
     /** Generates a new receipt covering everything paid so far on the scoped invoice. */

@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- A mistakenly-recorded manual payment can now be corrected: a "Payments" table on the invoice-scoped Receipts page lists every payment against the invoice, with Edit and Void actions on manual ones. Editing (in place) is only allowed the same day, before any receipt has been generated since — otherwise Void is the only path, which keeps the original record (amount, date, who recorded it) untouched for audit and simply excludes it from the invoice's amount paid, so a fresh correct payment can be recorded afterward. Gateway payments (Stripe, etc.) can never be edited or voided — they represent a real external charge. All three actions (record, edit, void) are logged to the dashboard activity feed. Tests: `EditVoidManualPaymentTest`
+
+### Fixed
+- `Invoice::recalculatePaymentStatus()` never reverted status off Paid/Partially Paid if every payment against an invoice was voided (amount_paid back to 0) — found while building payment voiding. It now reverts to Sent (or leaves Draft/Overdue as they are)
+- Found and fixed a subtle Eloquent bug while wiring up payment voiding: calling `$payment->invoice` immediately after creating both the payment and its parent invoice in the same request resolves to a stale, auto-cached snapshot of the invoice taken before any status recalculation ran. Calling `recalculatePaymentStatus()` on that stale snapshot computed the correct new values but silently failed to persist them — Eloquent's dirty-checking compared against the stale snapshot's original attributes, which coincidentally already matched the freshly computed ones, so `save()` saw "no changes" and skipped the `UPDATE` entirely. Fixed by always re-querying the invoice fresh (`$payment->invoice()->first()`) before recalculating, rather than relying on the cached relation
+
 ### Changed
 - The Invoices table's row actions now order variable actions (that depend on the invoice's state — Record Payment, Receipts) before the actions present on every invoice regardless of state (Download, Send, Edit), instead of an inconsistent mix — consistent actions live in the fixed action menu, variable ones sit before it as standalone buttons
 

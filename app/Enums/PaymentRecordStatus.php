@@ -14,6 +14,7 @@ enum PaymentRecordStatus: string
     case Succeeded = 'succeeded';
     case Failed = 'failed';
     case Refunded = 'refunded';
+    case Voided = 'voided';
 
     /** Human-readable label for display. */
     public function label(): string
@@ -23,6 +24,7 @@ enum PaymentRecordStatus: string
             self::Succeeded => 'Succeeded',
             self::Failed => 'Failed',
             self::Refunded => 'Refunded',
+            self::Voided => 'Voided',
         };
     }
 
@@ -34,6 +36,7 @@ enum PaymentRecordStatus: string
             self::Succeeded => 'bg-green-100 text-green-700',
             self::Failed => 'bg-red-100 text-red-700',
             self::Refunded => 'bg-slate-100 text-slate-600',
+            self::Voided => 'bg-slate-100 text-slate-400 line-through',
         };
     }
 }

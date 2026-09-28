@@ -12,6 +12,9 @@ $config = match($type) {
     \App\Enums\ActivityEventType::SubscriptionExpired  => ['bg-red-50',    'text-red-600',    'alert-triangle'],
     \App\Enums\ActivityEventType::SubscriptionCreated  => ['bg-green-50',  'text-green-600',  'plus'],
     \App\Enums\ActivityEventType::ReceiptGenerated     => ['bg-emerald-50', 'text-emerald-600', 'file-invoice'],
+    \App\Enums\ActivityEventType::PaymentRecorded      => ['bg-green-50',  'text-green-600',  'circle-check'],
+    \App\Enums\ActivityEventType::PaymentEdited        => ['bg-amber-50',  'text-amber-600',  'edit'],
+    \App\Enums\ActivityEventType::PaymentVoided        => ['bg-red-50',    'text-red-600',    'x'],
     default                                        => ['bg-slate-50',  'text-slate-500',  'list-details'],
 };
 @endphp

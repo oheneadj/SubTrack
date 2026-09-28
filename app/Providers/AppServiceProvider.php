@@ -8,6 +8,7 @@ use App\Enums\EmailLogStatus;
 use App\Models\Client;
 use App\Models\EmailLog;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\Renewal;
 use App\Models\Setting;
@@ -15,6 +16,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Observers\ClientObserver;
 use App\Observers\InvoiceObserver;
+use App\Observers\PaymentObserver;
 use App\Observers\ReceiptObserver;
 use App\Observers\RenewalObserver;
 use App\Observers\SubscriptionObserver;
@@ -61,6 +63,7 @@ class AppServiceProvider extends ServiceProvider
         Subscription::observe(SubscriptionObserver::class);
         Renewal::observe(RenewalObserver::class);
         Receipt::observe(ReceiptObserver::class);
+        Payment::observe(PaymentObserver::class);
 
         $this->configureDynamicMail();
     }

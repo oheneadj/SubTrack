@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property PaymentRecordStatus $status
  * @property array<string, mixed>|null $gateway_response
  * @property CarbonImmutable|null $paid_at
+ * @property string|null $void_reason
  * @property string $formatted_amount
  */
 class Payment extends Model
@@ -41,6 +42,7 @@ class Payment extends Model
         'status',
         'gateway_response',
         'paid_at',
+        'void_reason',
     ];
 
     /** @return array<string, mixed> */
@@ -64,5 +66,33 @@ class Payment extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * A manually-recorded payment can be voided any time it's still
+     * Succeeded — voiding always preserves the original record (it never
+     * overwrites the amount), so it's safe regardless of receipts already
+     * issued.
+     */
+    public function isVoidable(): bool
+    {
+        return $this->gateway === 'manual' && $this->status === PaymentRecordStatus::Succeeded;
+    }
+
+    /**
+     * A manual payment's amount can only be edited in place — rather than
+     * voided and re-recorded — while it's still same-day and no receipt
+     * has been issued for the invoice since it was recorded. Once either
+     * of those is no longer true, a receipt may already document the
+     * original amount, so editing in place would silently invalidate it;
+     * voiding and recording a fresh payment is the safe path instead.
+     */
+    public function isEditable(): bool
+    {
+        if (! $this->isVoidable() || ! $this->created_at->isToday()) {
+            return false;
+        }
+
+        return ! $this->invoice->receipts()->where('created_at', '>=', $this->created_at)->exists();
     }
 }

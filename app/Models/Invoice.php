@@ -170,10 +170,16 @@ class Invoice extends Model
             ->where('status', PaymentRecordStatus::Succeeded)
             ->sum('amount');
 
+        // $amountPaid dropping back to 0 — e.g. voiding the only payment
+        // recorded against the invoice — must revert status off Paid/Partially
+        // Paid, or the invoice would misrepresent itself as paid with nothing
+        // actually received. Draft/Overdue are left as they are; anything
+        // else (i.e. Paid/Partially Paid itself) reverts to Sent.
         $status = match (true) {
             $amountPaid >= $this->total_amount && $this->total_amount > 0 => InvoiceStatus::Paid,
             $amountPaid > 0 => InvoiceStatus::PartiallyPaid,
-            default => $this->status,
+            in_array($this->status, [InvoiceStatus::Draft, InvoiceStatus::Overdue], true) => $this->status,
+            default => InvoiceStatus::Sent,
         };
 
         $this->update([
