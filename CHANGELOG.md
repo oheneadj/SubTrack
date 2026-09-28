@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The invoices table's "Receipts" link was demoted to small text under the status badge to dodge the action-menu's fold-into-dropdown threshold. Restored it as a proper button, placed next to (not inside) the action menu so it doesn't count toward that threshold and the row's other actions still stay inline
+
 ### Fixed
 - On the Receipts page, "View" and "Download" did exactly the same thing — both forced a save-as dialog. Livewire's file-download response mechanism always forces `download` client-side regardless of the response's `Content-Disposition` header, so a Livewire action can never produce a true inline "view". Added `ReceiptPdfController@view` (a plain, non-Livewire route) and pointed "View" at it as a real `target="_blank"` link, so it now actually opens the PDF in a new tab while "Download" still forces a save-as. Fixed the same pre-existing bug on the subscription page's own receipts list, which had the identical issue
 - Generating a receipt for an invoice could be done any number of times for the same amount paid, creating exact duplicate receipts. `GenerateInvoiceReceiptAction` now rejects generating again once a receipt already covers everything paid so far (a new payment must come in first), and the Receipts page hides the "Generate Receipt" button in favor of a message once that's the case
