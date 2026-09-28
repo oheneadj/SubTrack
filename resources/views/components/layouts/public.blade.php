@@ -7,7 +7,8 @@
 
     @php
         $appName = \App\Models\Setting::get('app_name') ?: config('app.name', 'SubTrack');
-        $companyName = \App\Models\Setting::get('business_name') ?: $appName;
+        $companyName = \App\Models\Setting::get('company_name') ?: (\App\Models\Setting::get('business_name') ?: $appName);
+        $companyLogoPath = \App\Models\Setting::get('logo_path');
     @endphp
     <title>{{ filled($title ?? null) ? $title.' — '.$companyName : $companyName }}</title>
 
@@ -22,7 +23,13 @@
         <!-- Minimal header -->
         <header class="bg-white border-b border-slate-200 px-6 py-4">
             <div class="max-w-2xl mx-auto flex items-center justify-between">
-                <span class="text-lg font-bold text-slate-800">{{ $companyName }}</span>
+                <span class="flex items-center gap-2">
+                    @if($companyLogoPath)
+                        <img src="{{ Storage::url($companyLogoPath) }}" alt="" class="h-8 w-auto max-w-[160px] object-contain">
+                    @else
+                        <span class="text-lg font-bold text-slate-800">{{ $companyName }}</span>
+                    @endif
+                </span>
                 @if(isset($headerRight))
                     {{ $headerRight }}
                 @endif

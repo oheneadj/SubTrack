@@ -18,9 +18,14 @@
       <tr>
         <td align="center" style="padding: 24px; background-color: #ffffff; font-family: 'Outfit', Helvetica, Arial, sans-serif;">
           @php
-              $brandingName = \App\Models\Setting::get('business_name') ?: \App\Models\Setting::get('app_name') ?: config('app.name', 'SubTrack');
+              $brandingName = \App\Models\Setting::get('company_name') ?: (\App\Models\Setting::get('business_name') ?: (\App\Models\Setting::get('app_name') ?: config('app.name', 'SubTrack')));
+              $brandingLogoPath = \App\Models\Setting::get('logo_path');
           @endphp
-          <span style="font-size: 26px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; font-family: 'Outfit', Helvetica, Arial, sans-serif;">{{ $brandingName }}</span>
+          @if($brandingLogoPath)
+              <img src="{{ Storage::disk('public')->url($brandingLogoPath) }}" alt="{{ $brandingName }}" style="max-height: 40px; max-width: 220px;">
+          @else
+              <span style="font-size: 26px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; font-family: 'Outfit', Helvetica, Arial, sans-serif;">{{ $brandingName }}</span>
+          @endif
         </td>
       </tr>
 

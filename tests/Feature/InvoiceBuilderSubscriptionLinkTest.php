@@ -29,7 +29,7 @@ function makeInvoiceBuilderSubscription(Project $project, Provider $provider, ar
     ], $overrides));
 }
 
-test('the project subscriptions list only shows once a project is selected', function () {
+test('the subscriptions list only shows once a client is selected', function () {
     $client = Client::create(['name' => 'Acme Co', 'email' => 'acme@test.test']);
     $project = Project::create(['client_id' => $client->id, 'project_name' => 'Acme Project']);
     $provider = Provider::create(['name' => 'Test Provider']);
@@ -42,6 +42,38 @@ test('the project subscriptions list only shows once a project is selected', fun
     $component->set('client_id', $client->id)->set('project_id', $project->id);
 
     expect($component->get('projectSubscriptions'))->toHaveCount(1);
+});
+
+test('a subscription billed directly to the client with no project shows up and can be invoiced', function () {
+    $client = Client::create(['name' => 'Acme Co', 'email' => 'acme@test.test']);
+    $provider = Provider::create(['name' => 'Test Provider']);
+    $subscription = Subscription::create([
+        'client_id' => $client->id,
+        'provider_id' => $provider->id,
+        'service_type' => 'Domain',
+        'renewal_type' => 'RecurringAnnually',
+        'domain_name' => 'direct-'.uniqid().'.com',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addYear(),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 5000,
+        'status' => 'Active',
+    ]);
+
+    $component = Livewire::actingAs(User::factory()->create())
+        ->test(InvoiceBuilder::class)
+        ->set('client_id', $client->id);
+
+    // No project selected — the subscription has none, and shouldn't need one.
+    expect($component->get('projectSubscriptions'))->toHaveCount(1);
+
+    $component->call('addSubscriptionItem', $subscription->id)
+        ->call('removeItem', 0)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $invoice = Invoice::where('client_id', $client->id)->firstOrFail();
+    expect($invoice->project_id)->toBeNull();
 });
 
 test('adding a subscription as a line item pre-fills the description and marked-up renewal cost', function () {

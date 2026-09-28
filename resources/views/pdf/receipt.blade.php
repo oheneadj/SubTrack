@@ -43,8 +43,11 @@
                     <div style="color: #94a3b8;">{{ $receipt->receipt_number }}</div>
                 </td>
                 <td style="border: none; padding: 0; text-align: right;">
-                    <div class="font-bold" style="font-size: 18px;">{{ config('app.name', 'SubTrack') }}</div>
-                    <div class="text-sm" style="color: #94a3b8;">{{ $settings['company_address'] ?? 'Your Address Here' }}</div>
+                    @if(! empty($settings['logo_path']) && \Illuminate\Support\Facades\Storage::disk('public')->exists($settings['logo_path']))
+                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->path($settings['logo_path']) }}" style="max-height: 40px; max-width: 180px; margin-bottom: 6px;" alt="">
+                    @endif
+                    <div class="font-bold" style="font-size: 18px;">{{ $settings['company_name'] ?? $settings['business_name'] ?? config('app.name', 'SubTrack') }}</div>
+                    <div class="text-sm" style="color: #94a3b8;">{{ $settings['company_address'] ?? '' }}</div>
                 </td>
             </tr>
         </table>
@@ -99,7 +102,7 @@
     </div>
 
     <div class="footer">
-        {{ $settings['company_name'] ?? config('app.name') }} &bull; {{ $settings['company_email'] ?? 'support@example.com' }}
+        {{ $settings['company_name'] ?? $settings['business_name'] ?? config('app.name') }} &bull; {{ $settings['contact_email'] ?? $settings['business_email'] ?? 'support@example.com' }}
     </div>
 </body>
 </html>

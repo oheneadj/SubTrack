@@ -60,8 +60,8 @@
                             @endforeach
                         </x-ui.form-select>
 
-                        <x-ui.form-select model="project_id" label="Project" required :live="true">
-                            <option value="">Select a Project</option>
+                        <x-ui.form-select model="project_id" label="Project (optional)" :live="true">
+                            <option value="">No Project — Bill Client Directly</option>
                             @foreach($this->projects as $project)
                                 <option value="{{ $project->id }}">{{ $project->project_name }}</option>
                             @endforeach
@@ -69,9 +69,9 @@
                     </div>
                 </div>
 
-                @if($project_id && $this->projectSubscriptions->isNotEmpty())
+                @if($client_id && $this->projectSubscriptions->isNotEmpty())
                     <div class="px-6 pb-6">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">This project's subscriptions</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">This client's subscriptions</p>
                         <div class="space-y-2">
                             @foreach($this->projectSubscriptions as $subscription)
                                 @php $added = in_array($subscription->id, $this->addedSubscriptionIds, true); @endphp

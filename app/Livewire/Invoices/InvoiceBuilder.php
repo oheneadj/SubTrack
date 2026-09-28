@@ -251,7 +251,7 @@ class InvoiceBuilder extends Component
     {
         $this->validate([
             'client_id' => 'required|exists:clients,id',
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,id',
             'invoice_number' => 'required|string|unique:invoices,invoice_number,'.($this->invoice->id ?? 'NULL'),
             'issued_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issued_date',
@@ -268,7 +268,7 @@ class InvoiceBuilder extends Component
 
         $data = [
             'client_id' => $this->client_id,
-            'project_id' => $this->project_id,
+            'project_id' => $this->project_id ?: null,
             'invoice_number' => $this->invoice_number,
             'issued_date' => $this->issued_date,
             'due_date' => $this->due_date,
@@ -328,14 +328,20 @@ class InvoiceBuilder extends Component
         return Project::where('client_id', $this->client_id)->orderBy('project_name')->get();
     }
 
-    /** The selected project's own subscriptions, offered as one-click line items. */
+    /**
+     * The selected client's subscriptions, offered as one-click line items —
+     * both subscriptions billed directly to the client and ones linked
+     * through any of their projects, since a subscription doesn't require
+     * a project (many clients are billed directly with no project at all).
+     */
     public function getProjectSubscriptionsProperty(): Collection
     {
-        if (! $this->project_id) {
+        if (! $this->client_id) {
             return collect();
         }
 
-        return Subscription::where('project_id', $this->project_id)
+        return Subscription::where('client_id', $this->client_id)
+            ->orWhereHas('project', fn ($query) => $query->where('client_id', $this->client_id))
             ->with('provider')
             ->orderBy('domain_name')
             ->get();
