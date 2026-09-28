@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Real regression from last session's renewal rework**: Finance dashboard's Total Costs and Profit summed *every* `Renewal` row regardless of payment status. That was harmless under the old flow (a renewal only ever got created once already confirmed/paid), but the new flow creates one in `Pending` the moment "Start Renewal" raises its invoice — so costs/profit were inflated the instant a renewal was started, before any payment came in, making a later payment look like it changed nothing (the number was already wrong from the start). Now only counts renewals with payment_status `Paid`/`Renewed`
+- A subscription's "Payments Missed" stat incorrectly applied to one-time purchases (`OneTime`, `OneTimeMonthly`, `OneTimeAnnually`) once their term had passed — a one-time purchase never expects another payment once it's over, so nothing was actually "missed". `Subscription::missed_payments_count` now returns null for any non-recurring type, and the subscription show page reflects this: a completed one-time purchase shows a neutral "Completed" card instead of an alarming red "Payments Missed" one, and its Expiry Date field no longer gets the urgent red/orange styling meant for a subscription that's actually about to lapse
+- The subscription show page's first stat card always labeled itself "Renewal Cost .../yr" regardless of the subscription's actual billing cycle — a monthly subscription showed "/yr", and a one-time purchase showed a renewal cadence it doesn't have. Now shows "Renewal Cost" with "/mo" or "/yr" for recurring types, and "Purchase Cost" with no cadence suffix for one-time ones
+
+### Added
+- Five new service types: Theme, Page Builder, AI Tool, Plugin, Mail Box (alongside the existing Domain/Hosting/SSL/Maintenance/Other) — appear automatically everywhere `ServiceType::cases()` is already iterated (the subscription form and index filter), no other wiring needed
+- Tests: `SubscriptionOneTimeDisplayTest`
+
+## [Unreleased]
+
 ### Changed
 - **Rebuilt the subscription renewal workflow** to match the invoice/payment/receipt system built this session — the subscription page's "Generate Receipt" predated all of it: it created a `Receipt` with an admin-typed arbitrary amount, no `Payment` record, no gateway/payment-link support, and no connection to `recalculatePaymentStatus`, void, or invalidation. "Process Renewal" separately rolled the expiry date immediately with no payment check at all. The new lifecycle, on both the subscription page and the Renewal Tracker:
   1. **Start Renewal** (`PrepareRenewalAction`) — records what's owed as a `Renewal` (payment_status `Pending`) and raises a real invoice for it, reusing an already-open draft/sent invoice for the subscription's current cycle if one exists (e.g. from an automated expiry reminder) instead of billing twice. Never touches the expiry date.

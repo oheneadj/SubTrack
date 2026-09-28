@@ -18,17 +18,27 @@
     {{-- Stats Row --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <x-ui.stat-card
-            label="Renewal Cost"
-            :value="$subscription->formatted_renewal_cost_usd . '/yr'"
+            :label="$subscription->cost_label"
+            :value="$subscription->formatted_renewal_cost_usd . $subscription->cost_cycle_suffix"
             icon="currency-dollar"
             variant="info"
         />
-        <x-ui.stat-card
-            :label="$subscription->missed_payments_count ? 'Payments Missed' : 'Days Until Expiry'"
-            :value="$subscription->missed_payments_count ?? $subscription->days_until_expiry"
-            :icon="$subscription->missed_payments_count ? 'alert-circle' : 'clock'"
-            :variant="$subscription->days_until_expiry <= 7 ? 'critical' : ($subscription->days_until_expiry <= 30 ? 'warning' : 'healthy')"
-        />
+        @if($subscription->renewal_type->isRecurring())
+            <x-ui.stat-card
+                :label="$subscription->missed_payments_count ? 'Payments Missed' : 'Days Until Expiry'"
+                :value="$subscription->missed_payments_count ?? $subscription->days_until_expiry"
+                :icon="$subscription->missed_payments_count ? 'alert-circle' : 'clock'"
+                :variant="$subscription->days_until_expiry <= 7 ? 'critical' : ($subscription->days_until_expiry <= 30 ? 'warning' : 'healthy')"
+            />
+        @else
+            {{-- A one-time purchase isn't "at risk" once its term passes — it's just over, not overdue. --}}
+            <x-ui.stat-card
+                :label="$subscription->days_until_expiry >= 0 ? 'Days Remaining' : 'Completed'"
+                :value="$subscription->days_until_expiry >= 0 ? $subscription->days_until_expiry : $subscription->expiry_date->format('M d, Y')"
+                icon="check"
+                variant="neutral"
+            />
+        @endif
         <x-ui.stat-card
             label="Total Renewals"
             :value="$this->stats['total_renewals']"
@@ -78,8 +88,8 @@
                         <p class="text-slate-800 text-sm">{{ $subscription->purchase_date?->format('M d, Y') ?? '—' }}</p>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Expiry Date</label>
-                        <p class="text-sm font-bold {{ $subscription->days_until_expiry <= 7 ? 'text-red-600' : ($subscription->days_until_expiry <= 30 ? 'text-orange-500' : 'text-slate-800') }}">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">{{ $subscription->renewal_type->isRecurring() ? 'Expiry Date' : 'Term Ends' }}</label>
+                        <p class="text-sm font-bold {{ $subscription->renewal_type->isRecurring() && $subscription->days_until_expiry <= 7 ? 'text-red-600' : ($subscription->renewal_type->isRecurring() && $subscription->days_until_expiry <= 30 ? 'text-orange-500' : 'text-slate-800') }}">
                             {{ $subscription->expiry_date->format('M d, Y') }}
                         </p>
                     </div>

@@ -36,6 +36,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $formatted_purchase_cost_usd
  * @property string $formatted_renewal_cost_usd
  * @property string $formatted_client_renewal_cost_usd
+ * @property string $cost_cycle_suffix
+ * @property string $cost_label
  * @property CarbonImmutable $purchase_date
  * @property CarbonImmutable $expiry_date
  * @property int $days_until_expiry
@@ -97,6 +99,22 @@ class Subscription extends Model
     public function getFormattedClientRenewalCostUsdAttribute(): string
     {
         return '$'.number_format($this->client_renewal_cost_usd / 100, 2);
+    }
+
+    /** "/mo", "/yr", or "" for a bare OneTime purchase with no fixed term — for display next to a cost figure. */
+    public function getCostCycleSuffixAttribute(): string
+    {
+        return match ($this->renewal_type->cycleMonths()) {
+            1 => '/mo',
+            12 => '/yr',
+            default => '',
+        };
+    }
+
+    /** "Renewal Cost" for a recurring subscription, "Purchase Cost" for a one-time one — for stat-card labeling. */
+    public function getCostLabelAttribute(): string
+    {
+        return $this->renewal_type->isRecurring() ? 'Renewal Cost' : 'Purchase Cost';
     }
 
     /**
@@ -206,7 +224,11 @@ class Subscription extends Model
      */
     public function getMissedPaymentsCountAttribute(): ?int
     {
-        if ($this->days_until_expiry >= 0) {
+        // A one-time purchase (bare OneTime, or a term-bound
+        // OneTimeMonthly/OneTimeAnnually) never expects another payment
+        // once its term ends — it's just over, nothing was "missed". Only
+        // a Recurring* subscription actually needs, and can miss, a next payment.
+        if ($this->days_until_expiry >= 0 || ! $this->renewal_type->isRecurring()) {
             return null;
         }
 

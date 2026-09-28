@@ -35,8 +35,14 @@ class FinanceDashboard extends Component
         $annualRecurring = $activeSubscriptions->sum('client_renewal_cost_usd') / 100;
         $mrr = $annualRecurring / 12;
 
-        $totalCosts = Renewal::sum('provider_cost_usd') / 100;
-        $profit = Renewal::sum('client_cost_usd') / 100 - $totalCosts;
+        // Only renewals actually paid for — a renewal is now created Pending
+        // the moment "Start Renewal" raises its invoice (see
+        // PrepareRenewalAction), before any payment has been collected, so
+        // counting every renewal here would inflate costs/profit for money
+        // that hasn't come in yet.
+        $paidRenewalStatuses = [PaymentStatus::Paid, PaymentStatus::Renewed];
+        $totalCosts = Renewal::whereIn('payment_status', $paidRenewalStatuses)->sum('provider_cost_usd') / 100;
+        $profit = Renewal::whereIn('payment_status', $paidRenewalStatuses)->sum('client_cost_usd') / 100 - $totalCosts;
 
         $recentPayments = $this->recentPayments();
 
