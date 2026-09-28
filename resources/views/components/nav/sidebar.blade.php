@@ -25,6 +25,7 @@
         <x-nav.item href="{{ route('subscriptions.index') }}" label="Subscriptions" icon="refresh" :active="request()->routeIs('subscriptions.*')" />
         <x-nav.item href="{{ route('renewals.index') }}" label="Renewals" icon="calendar-due" :active="request()->routeIs('renewals.*')" />
         <x-nav.item href="{{ route('invoices.index') }}" label="Invoices" icon="file-invoice" :active="request()->routeIs('invoices.*')" />
+        <x-nav.item href="{{ route('receipts.index') }}" label="Receipts" icon="circle-check" :active="request()->routeIs('receipts.*')" />
         
         @if(auth()->user()->isSuperAdmin())
             <div class="pt-4 pb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Administration</div>

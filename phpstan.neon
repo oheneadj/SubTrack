@@ -13,6 +13,7 @@ parameters:
         # see them as class properties without a full Livewire PHPStan extension.
         - '#Access to an undefined property App\\Livewire\\.*::\$clients#'
         - '#Access to an undefined property App\\Livewire\\.*::\$subscriptions#'
+        - '#Access to an undefined property App\\Livewire\\.*::\$scopedInvoice#'
         # Fortify scaffolding — emailRules() PHPDoc type in trait context.
         - '#Method App\\Actions\\Fortify\\CreateNewUser::emailRules\(\) should return#'
         - '#Method App\\Livewire\\Settings\\Profile::emailRules\(\) should return#'

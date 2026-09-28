@@ -141,6 +141,11 @@ class Invoice extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
+    }
+
     /** True when the invoice has been paid in full. */
     public function isPaid(): bool
     {

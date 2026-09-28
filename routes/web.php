@@ -26,6 +26,7 @@ use App\Livewire\Projects\ProjectShow;
 use App\Livewire\Providers\ProviderIndex;
 use App\Livewire\Providers\ProviderShow;
 use App\Livewire\Public\PublicInvoicePage;
+use App\Livewire\Receipts\ReceiptIndex;
 use App\Livewire\Renewals\RenewalTracker;
 use App\Livewire\Settings\AppSettings;
 use App\Livewire\Subscriptions\SubscriptionForm;
@@ -84,6 +85,7 @@ Route::middleware(['auth', 'verified', 'password_change'])->group(function () {
         Route::get('/create', InvoiceBuilder::class)->name('create');
         Route::get('/{invoice}', InvoiceBuilder::class)->name('edit');
     });
+    Route::get('receipts', ReceiptIndex::class)->name('receipts.index');
     Route::get('users', UserIndex::class)->name('users.index')->middleware('super_admin');
     Route::get('users/{user}', UserShow::class)->name('users.show')->middleware('super_admin');
     Route::get('activity-logs', ActivityLogIndex::class)->name('activity-logs.index')->middleware('super_admin');

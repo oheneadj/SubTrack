@@ -20,7 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property string $ulid
- * @property int $subscription_id
+ * @property int|null $subscription_id
+ * @property int|null $invoice_id
  * @property int $client_id
  * @property string $receipt_number
  * @property int $amount_usd
@@ -28,7 +29,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $notes
  * @property string|null $pdf_path
  * @property string $formatted_amount_usd
- * @property-read Subscription $subscription
+ * @property string $source_label
+ * @property-read Subscription|null $subscription
+ * @property-read Invoice|null $invoice
  * @property-read Client $client
  */
 class Receipt extends Model
@@ -37,7 +40,7 @@ class Receipt extends Model
 
     /** @var list<string> */
     protected $fillable = [
-        'subscription_id', 'client_id', 'receipt_number',
+        'subscription_id', 'invoice_id', 'client_id', 'receipt_number',
         'amount_usd', 'issued_date', 'notes', 'pdf_path',
     ];
 
@@ -56,10 +59,30 @@ class Receipt extends Model
         return '$'.number_format($this->amount_usd / 100, 2);
     }
 
+    /** Short description of what this receipt was issued for, for display in listings. */
+    public function getSourceLabelAttribute(): string
+    {
+        if ($this->invoice) {
+            return "Invoice {$this->invoice->invoice_number}";
+        }
+
+        if ($this->subscription) {
+            return $this->subscription->domain_name ?: $this->subscription->service_type->label();
+        }
+
+        return 'N/A';
+    }
+
     /** @return BelongsTo<Subscription, $this> */
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(Subscription::class);
+    }
+
+    /** @return BelongsTo<Invoice, $this> */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 
     /** @return BelongsTo<Client, $this> */

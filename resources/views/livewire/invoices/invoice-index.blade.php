@@ -46,12 +46,12 @@
                     </td>
                     <td>
                         <div class="text-sm font-medium">{{ $invoice->issued_date->format('M d, Y') }}</div>
-                        <div class="text-[10px] uppercase {{ $invoice->status !== 'Paid' && $invoice->due_date->isPast() ? 'text-red-500 font-bold' : 'text-slate-400' }}">
+                        <div class="text-[10px] uppercase {{ ! $invoice->isPaid() && $invoice->due_date->isPast() ? 'text-red-500 font-bold' : 'text-slate-400' }}">
                             Due: {{ $invoice->due_date->format('M d, Y') }}
                         </div>
                     </td>
                     <td class="font-bold">
-                        ${{ number_format($invoice->total_amount, 2) }}
+                        {{ $invoice->formatted_total_amount }}
                         @if($invoice->status === App\Enums\InvoiceStatus::PartiallyPaid)
                             <div class="text-[10px] font-medium text-amber-600">{{ $invoice->formatted_balance_due }} due</div>
                         @endif
@@ -62,7 +62,7 @@
                     <td class="text-right">
                         <x-ui.action-menu
                             editAction="window.location.href='{{ route('invoices.edit', $invoice) }}'"
-                            :slotCount="$invoice->status !== 'Paid' ? 3 : 2"
+                            :slotCount="($invoice->isPaid() ? 2 : 3) + ($invoice->amount_paid > 0 ? 1 : 0)"
                         >
                             <x-ui.button wire:click="downloadPdf('{{ $invoice->ulid }}')" wire:loading.attr="disabled" wire:target="downloadPdf('{{ $invoice->ulid }}')" title="Download PDF" size="xs">
                                 <x-icon-photo class="w-3.5 h-3.5" wire:loading.remove wire:target="downloadPdf('{{ $invoice->ulid }}')" />
@@ -74,10 +74,16 @@
                                 <span class="loading loading-spinner loading-xs" wire:loading wire:target="sendInvoice('{{ $invoice->ulid }}')"></span>
                                 Send
                             </x-ui.button>
-                            @if($invoice->status !== 'Paid')
+                            @if(! $invoice->isPaid())
                                 <x-ui.button wire:click="openRecordPayment('{{ $invoice->ulid }}')" title="Record Payment" variant="success" size="xs">
                                     <x-icon-circle-check class="w-3.5 h-3.5" />
                                     Record Payment
+                                </x-ui.button>
+                            @endif
+                            @if($invoice->amount_paid > 0)
+                                <x-ui.button as="a" href="{{ route('receipts.index', ['invoice' => $invoice->ulid]) }}" title="View Receipts" variant="secondary" size="xs">
+                                    <x-icon-file-invoice class="w-3.5 h-3.5" />
+                                    Receipts
                                 </x-ui.button>
                             @endif
                         </x-ui.action-menu>

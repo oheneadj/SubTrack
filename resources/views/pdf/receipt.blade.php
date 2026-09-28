@@ -68,8 +68,10 @@
             <tbody>
                 <tr>
                     <td>
-                        <div class="font-bold">{{ $receipt->subscription->domain_name ?: $receipt->subscription->service_type->label() }}</div>
-                        <div class="text-xs text-slate-500">{{ $receipt->subscription->renewal_type->label() }}</div>
+                        <div class="font-bold">{{ $receipt->source_label }}</div>
+                        @if($receipt->subscription)
+                            <div class="text-xs text-slate-500">{{ $receipt->subscription->renewal_type->label() }}</div>
+                        @endif
                     </td>
                     <td class="text-right font-bold">{{ $receipt->formatted_amount_usd }}</td>
                 </tr>

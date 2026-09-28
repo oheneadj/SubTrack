@@ -3,7 +3,7 @@
 
     <p style="line-height: 1.7; color: #4b5563; margin-bottom: 32px;">
         Thank you for your payment. Please find your receipt attached for
-        <strong style="color: #1e293b;">{{ $receipt->subscription->domain_name ?: $receipt->subscription->service_type->label() }}</strong>.
+        <strong style="color: #1e293b;">{{ $receipt->source_label }}</strong>.
     </p>
 
     <div style="display: block; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;">
