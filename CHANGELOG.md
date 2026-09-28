@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Recording (and editing) a manual payment now lets you set the actual date it was received, instead of always stamping it "now" — useful when entering a payment after the fact (e.g. a bank transfer that cleared a few days ago). The date can't be in the future (`RecordManualPaymentAction`/`EditManualPaymentAction` both reject it, with the same check enforced in both the Livewire validation and the Action itself). The Payments table on the Receipts page now shows the actual received date instead of when the record was entered into the system
+- Tests: `RecordPaymentDateTest`
+
+## [Unreleased]
+
+### Added
 - A "Create Invoice" button on the subscription show page, jumping straight to the Invoice Builder with the client, project (if any), and this subscription pre-filled and already added as a line item — previously the only path was going to Invoices → Create Invoice and finding the subscription manually in the quick-add panel. The Invoice Builder now accepts an optional `subscriptionId` query param (alongside the existing `clientId`/`projectId`) to pre-add a specific subscription on load
 - Tests: extended `InvoiceBuilderSubscriptionLinkTest`
 

@@ -11,6 +11,15 @@
         @enderror
     </div>
 
+    <div class="flex flex-col gap-1 w-full mb-4">
+        <label class="text-sm font-semibold text-slate-700">Date received</label>
+        <input type="date" wire:model="recordPaymentDate" max="{{ now()->format('Y-m-d') }}"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        @error('recordPaymentDate')
+            <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
+        @enderror
+    </div>
+
     <div class="flex justify-end gap-3">
         <x-ui.button type="button" variant="ghost" x-on:click="open = false">Cancel</x-ui.button>
         <x-ui.button type="button" variant="success" wire:click="submitRecordPayment" wire:loading.attr="disabled" wire:target="submitRecordPayment">

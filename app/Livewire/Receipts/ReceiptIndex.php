@@ -8,6 +8,7 @@ use App\Actions\EditManualPaymentAction;
 use App\Actions\GenerateInvoiceReceiptAction;
 use App\Actions\VoidManualPaymentAction;
 use App\Exceptions\InvalidPaymentAmountException;
+use App\Exceptions\InvalidPaymentDateException;
 use App\Exceptions\PaymentNotEditableException;
 use App\Exceptions\PaymentNotVoidableException;
 use App\Exceptions\VoidReasonRequiredException;
@@ -19,6 +20,7 @@ use App\Models\Receipt;
 use App\Models\Setting;
 use App\Services\EmailLogger;
 use App\Services\ReceiptPdfService;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -53,6 +55,9 @@ class ReceiptIndex extends Component
 
     /** Amount entered in the Edit Payment modal, in dollars. */
     public $editPaymentAmount = 0;
+
+    /** Date entered in the Edit Payment modal. */
+    public string $editPaymentDate = '';
 
     /** ULID of the payment currently open in the Void Payment modal. */
     public string $voidPaymentUlid = '';
@@ -121,24 +126,31 @@ class ReceiptIndex extends Component
 
         $this->editPaymentUlid = $paymentUlid;
         $this->editPaymentAmount = round($payment->amount / 100, 2);
+        $this->editPaymentDate = $payment->paid_at?->format('Y-m-d') ?? CarbonImmutable::now()->format('Y-m-d');
 
         $this->dispatch('open-modal', id: 'edit-payment-modal');
     }
 
-    /** Corrects a manually-recorded payment's amount. */
+    /** Corrects a manually-recorded payment's amount and/or received date. */
     public function submitEditPayment(EditManualPaymentAction $action): void
     {
         $this->validate([
             'editPaymentAmount' => 'required|numeric|min:0.01',
+            'editPaymentDate' => 'required|date|before_or_equal:today',
         ]);
 
         $payment = Payment::where('ulid', $this->editPaymentUlid)->firstOrFail();
         $amountCents = (int) round((float) $this->editPaymentAmount * 100);
+        $paidAt = CarbonImmutable::parse($this->editPaymentDate);
 
         try {
-            $action->execute($payment, $amountCents);
+            $action->execute($payment, $amountCents, $paidAt);
         } catch (PaymentNotEditableException|InvalidPaymentAmountException $e) {
             $this->addError('editPaymentAmount', $e->getMessage());
+
+            return;
+        } catch (InvalidPaymentDateException $e) {
+            $this->addError('editPaymentDate', $e->getMessage());
 
             return;
         }

@@ -78,7 +78,7 @@
                             <tbody>
                                 @foreach($this->invoicePayments as $payment)
                                     <tr wire:key="payment-{{ $payment->id }}" class="border-t border-slate-100">
-                                        <td class="py-2 text-slate-600">{{ $payment->created_at->format('M d, Y') }}</td>
+                                        <td class="py-2 text-slate-600">{{ ($payment->paid_at ?? $payment->created_at)->format('M d, Y') }}</td>
                                         <td class="py-2 text-slate-600 capitalize">{{ $payment->gateway }}</td>
                                         <td class="py-2 font-semibold {{ $payment->status->value === 'voided' ? 'text-slate-400 line-through' : 'text-slate-800' }}">{{ $payment->formatted_amount }}</td>
                                         <td class="py-2">
@@ -191,6 +191,15 @@
             <input type="number" step="0.01" min="0.01" wire:model="editPaymentAmount"
                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             @error('editPaymentAmount')
+                <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="flex flex-col gap-1 w-full mb-4">
+            <label class="text-sm font-semibold text-slate-700">Date received</label>
+            <input type="date" wire:model="editPaymentDate" max="{{ now()->format('Y-m-d') }}"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            @error('editPaymentDate')
                 <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
             @enderror
         </div>
