@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- On a Partially Paid invoice, the row's action buttons (Download, Send, Record Payment) collapsed into a "⋮" dropdown menu instead of showing inline like every other status — the "View Receipts" link counted toward the action-menu's 5-action fold threshold, and Partially Paid rows always show one more action (Record Payment) than a fully Paid row. Moved the Receipts link out of the action menu entirely and next to the status badge instead, since it's a navigation link rather than a row action — action buttons now stay inline for every status
+
+### Fixed
 - The invoices table showed the wrong amount for every invoice: `total_amount` is stored in cents, but the table formatted it directly as dollars (`$10000.00` for a $100 invoice instead of `$100.00`) — didn't match the correct dollar amount already shown everywhere else (the Record Payment modal, PDF, etc). Switched to the existing `formatted_total_amount` accessor
 - The "Record Payment" button (and the due-date-overdue red highlight) never actually hid for a fully paid invoice: the visibility check compared `$invoice->status` — a `BackedEnum` instance — against the string `'Paid'` with `!==`, which is always true regardless of status since the types never match, so the check silently did nothing. Switched to `! $invoice->isPaid()`
 

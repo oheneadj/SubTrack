@@ -58,11 +58,14 @@
                     </td>
                         <td>
                             <x-ui.badge-invoice-status :status="$invoice->status" />
+                            @if($invoice->amount_paid > 0)
+                                <a href="{{ route('receipts.index', ['invoice' => $invoice->ulid]) }}" class="block mt-1 text-[10px] font-medium text-blue-600 hover:underline">Receipts</a>
+                            @endif
                         </td>
                     <td class="text-right">
                         <x-ui.action-menu
                             editAction="window.location.href='{{ route('invoices.edit', $invoice) }}'"
-                            :slotCount="($invoice->isPaid() ? 2 : 3) + ($invoice->amount_paid > 0 ? 1 : 0)"
+                            :slotCount="$invoice->isPaid() ? 2 : 3"
                         >
                             <x-ui.button wire:click="downloadPdf('{{ $invoice->ulid }}')" wire:loading.attr="disabled" wire:target="downloadPdf('{{ $invoice->ulid }}')" title="Download PDF" size="xs">
                                 <x-icon-photo class="w-3.5 h-3.5" wire:loading.remove wire:target="downloadPdf('{{ $invoice->ulid }}')" />
@@ -78,12 +81,6 @@
                                 <x-ui.button wire:click="openRecordPayment('{{ $invoice->ulid }}')" title="Record Payment" variant="success" size="xs">
                                     <x-icon-circle-check class="w-3.5 h-3.5" />
                                     Record Payment
-                                </x-ui.button>
-                            @endif
-                            @if($invoice->amount_paid > 0)
-                                <x-ui.button as="a" href="{{ route('receipts.index', ['invoice' => $invoice->ulid]) }}" title="View Receipts" variant="secondary" size="xs">
-                                    <x-icon-file-invoice class="w-3.5 h-3.5" />
-                                    Receipts
                                 </x-ui.button>
                             @endif
                         </x-ui.action-menu>
