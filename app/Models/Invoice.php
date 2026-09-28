@@ -141,6 +141,7 @@ class Invoice extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /** @return HasMany<Receipt, $this> */
     public function receipts(): HasMany
     {
         return $this->hasMany(Receipt::class);

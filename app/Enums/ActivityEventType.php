@@ -18,6 +18,7 @@ enum ActivityEventType: string
     case RenewalConfirmed = 'renewal.confirmed';
     case ClientCreated = 'client.created';
     case ReceiptGenerated = 'receipt.generated';
+    case ReceiptInvalidated = 'receipt.invalidated';
     case PaymentRecorded = 'payment.recorded';
     case PaymentEdited = 'payment.edited';
     case PaymentVoided = 'payment.voided';

@@ -1,0 +1,1 @@
+document.addEventListener(`alpine:init`,()=>{Alpine.data(`invoicePaymentForm`,()=>({submit(e){let t=document.getElementById(`payment-amount`).value;e.target.querySelector(`input[name=amount]`).value=t}}))});

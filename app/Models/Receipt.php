@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $issued_date
  * @property string|null $notes
  * @property string|null $pdf_path
+ * @property CarbonImmutable|null $invalidated_at
+ * @property string|null $invalidated_reason
  * @property string $formatted_amount_usd
  * @property string $source_label
  * @property-read Subscription|null $subscription
@@ -42,6 +44,7 @@ class Receipt extends Model
     protected $fillable = [
         'subscription_id', 'invoice_id', 'client_id', 'receipt_number',
         'amount_usd', 'issued_date', 'notes', 'pdf_path',
+        'invalidated_at', 'invalidated_reason',
     ];
 
     /** @return array<string, string> */
@@ -50,7 +53,14 @@ class Receipt extends Model
         return [
             'issued_date' => 'date',
             'amount_usd' => 'integer',
+            'invalidated_at' => 'immutable_datetime',
         ];
+    }
+
+    /** True once the payment(s) it documents no longer add up to what it states — e.g. a payment behind it was voided. */
+    public function isInvalidated(): bool
+    {
+        return $this->invalidated_at !== null;
     }
 
     /** Amount formatted for display (e.g. "$12.50"). */

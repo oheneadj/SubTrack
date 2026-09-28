@@ -25,9 +25,16 @@
         .grand-total { font-size: 22px; font-weight: bold; color: #16a34a; }
 
         .footer { position: fixed; bottom: 40px; left: 40px; right: 40px; text-align: center; color: #94a3b8; font-size: 10px; }
+        .invalidated-banner { background: #fef2f2; border: 2px solid #dc2626; color: #991b1b; padding: 16px 40px; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 </head>
 <body>
+    @if($receipt->isInvalidated())
+        <div class="invalidated-banner">
+            ⚠ Invalidated — {{ $receipt->invalidated_reason }}
+        </div>
+    @endif
+
     <div class="header">
         <table style="background: transparent; margin-top: 0;">
             <tr>

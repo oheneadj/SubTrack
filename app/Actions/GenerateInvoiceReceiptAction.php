@@ -41,7 +41,7 @@ class GenerateInvoiceReceiptAction
         // Each receipt covers the cumulative amount paid at the time it's
         // issued (not just the latest payment), so generating again before
         // any new payment comes in would produce an exact duplicate.
-        $alreadyReceipted = $invoice->receipts()->where('amount_usd', $invoice->amount_paid)->exists();
+        $alreadyReceipted = $invoice->receipts()->whereNull('invalidated_at')->where('amount_usd', $invoice->amount_paid)->exists();
         if ($alreadyReceipted) {
             throw new \RuntimeException('A receipt already covers everything paid so far on this invoice — record another payment before generating a new one.');
         }

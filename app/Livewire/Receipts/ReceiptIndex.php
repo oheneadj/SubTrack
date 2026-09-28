@@ -77,6 +77,7 @@ class ReceiptIndex extends Component
         }
 
         return $this->scopedInvoice->receipts()
+            ->whereNull('invalidated_at')
             ->where('amount_usd', $this->scopedInvoice->amount_paid)
             ->exists();
     }
@@ -205,6 +206,12 @@ class ReceiptIndex extends Component
     public function sendReceipt(string $receiptUlid, EmailLogger $emailLogger): void
     {
         $receipt = Receipt::with('client')->where('ulid', $receiptUlid)->firstOrFail();
+
+        if ($receipt->isInvalidated()) {
+            session()->flash('error', "Receipt {$receipt->receipt_number} can't be sent — it no longer matches a valid payment.");
+
+            return;
+        }
 
         $mail = new ReceiptMail($receipt);
         $emailLogger->track(

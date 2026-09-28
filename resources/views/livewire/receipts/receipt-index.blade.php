@@ -144,9 +144,16 @@
                         @endif
                     </td>
                     <td class="text-sm text-slate-600">{{ $receipt->issued_date->format('M d, Y') }}</td>
-                    <td class="font-bold">{{ $receipt->formatted_amount_usd }}</td>
+                    <td class="font-bold {{ $receipt->isInvalidated() ? 'text-slate-400 line-through' : '' }}">
+                        {{ $receipt->formatted_amount_usd }}
+                        @if($receipt->isInvalidated())
+                            <div class="text-[10px] font-medium text-red-500 no-underline" title="{{ $receipt->invalidated_reason }}">
+                                <x-icon-alert-circle class="w-3 h-3 inline" /> Invalidated
+                            </div>
+                        @endif
+                    </td>
                     <td class="text-right">
-                        <x-ui.action-menu :slotCount="3">
+                        <x-ui.action-menu :slotCount="$receipt->isInvalidated() ? 2 : 3">
                             <x-ui.button as="a" href="{{ route('receipts.view', $receipt) }}" target="_blank" title="View" size="xs">
                                 <x-icon-photo class="w-3.5 h-3.5" />
                                 View
@@ -156,11 +163,13 @@
                                 <span class="loading loading-spinner loading-xs" wire:loading wire:target="downloadReceipt('{{ $receipt->ulid }}')"></span>
                                 Download
                             </x-ui.button>
-                            <x-ui.button wire:click="sendReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" wire:target="sendReceipt('{{ $receipt->ulid }}')" title="Send to Client" variant="info" size="xs">
-                                <x-icon-mail class="w-3.5 h-3.5" wire:loading.remove wire:target="sendReceipt('{{ $receipt->ulid }}')" />
-                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="sendReceipt('{{ $receipt->ulid }}')"></span>
-                                Send
-                            </x-ui.button>
+                            @if(! $receipt->isInvalidated())
+                                <x-ui.button wire:click="sendReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" wire:target="sendReceipt('{{ $receipt->ulid }}')" title="Send to Client" variant="info" size="xs">
+                                    <x-icon-mail class="w-3.5 h-3.5" wire:loading.remove wire:target="sendReceipt('{{ $receipt->ulid }}')" />
+                                    <span class="loading loading-spinner loading-xs" wire:loading wire:target="sendReceipt('{{ $receipt->ulid }}')"></span>
+                                    Send
+                                </x-ui.button>
+                            @endif
                         </x-ui.action-menu>
                     </td>
                 </tr>

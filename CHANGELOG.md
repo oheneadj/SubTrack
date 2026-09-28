@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- A receipt whose underlying manual payment gets voided is now flagged **invalidated** instead of silently staying accurate-looking: voiding a payment invalidates any receipt on the invoice whose stated amount no longer adds up (with a reason, e.g. "Underlying payment voided: Duplicate charge"), regenerates its PDF with a visible red banner, blocks sending it, and logs a `receipt.invalidated` activity entry. The Receipts page shows the invalidated state inline (struck-through amount, warning badge, Send hidden). Generating a fresh receipt is allowed again once a new payment restores the balance. Tests added to `EditVoidManualPaymentTest`
+
+## [Unreleased]
+
+### Added
 - A mistakenly-recorded manual payment can now be corrected: a "Payments" table on the invoice-scoped Receipts page lists every payment against the invoice, with Edit and Void actions on manual ones. Editing (in place) is only allowed the same day, before any receipt has been generated since — otherwise Void is the only path, which keeps the original record (amount, date, who recorded it) untouched for audit and simply excludes it from the invoice's amount paid, so a fresh correct payment can be recorded afterward. Gateway payments (Stripe, etc.) can never be edited or voided — they represent a real external charge. All three actions (record, edit, void) are logged to the dashboard activity feed. Tests: `EditVoidManualPaymentTest`
 
 ### Fixed
