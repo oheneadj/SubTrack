@@ -7,9 +7,7 @@ namespace App\Actions;
 use App\Enums\PaymentRecordStatus;
 use App\Exceptions\PaymentNotVoidableException;
 use App\Exceptions\VoidReasonRequiredException;
-use App\Models\Invoice;
 use App\Models\Payment;
-use App\Models\Receipt;
 use App\Models\Setting;
 use App\Services\ReceiptPdfService;
 
@@ -61,25 +59,12 @@ class VoidManualPaymentAction
         $invoice = $payment->invoice()->first();
         $invoice->recalculatePaymentStatus();
 
-        $this->invalidateReceiptsExceedingAmountPaid($invoice, $reason);
-
-        return $payment;
-    }
-
-    /**
-     * Any receipt that states more than the invoice's now-lower amount
-     * paid no longer reflects reality — flag it rather than let it keep
-     * looking like a valid proof of payment. Looped (not a bulk update)
-     * so ReceiptObserver still fires and logs each one.
-     */
-    private function invalidateReceiptsExceedingAmountPaid(Invoice $invoice, ?string $reason): void
-    {
-        $affectedReceipts = $invoice->receipts()
-            ->whereNull('invalidated_at')
-            ->where('amount_usd', '>', $invoice->amount_paid)
-            ->get();
-
-        foreach ($affectedReceipts as $receipt) {
+        // Now precise: a receipt is tied to the specific payment it
+        // documents, so invalidating exactly the voided payment's own
+        // receipt (if any) is exact — no more inferring from whether the
+        // invoice's total happens to still add up.
+        $receipt = $payment->receipts()->whereNull('invalidated_at')->first();
+        if ($receipt) {
             $receipt->update([
                 'invalidated_at' => now(),
                 'invalidated_reason' => $reason
@@ -93,5 +78,7 @@ class VoidManualPaymentAction
             // changed until it happened to be regenerated some other way.
             $this->pdfService->generate($receipt);
         }
+
+        return $payment;
     }
 }

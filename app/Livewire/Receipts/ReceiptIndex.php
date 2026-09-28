@@ -47,9 +47,6 @@ class ReceiptIndex extends Component
     #[Url]
     public string $invoice = '';
 
-    /** Notes entered before generating a new receipt for the scoped invoice. */
-    public string $newReceiptNotes = '';
-
     /** ULID of the payment currently open in the Edit Payment modal. */
     public string $editPaymentUlid = '';
 
@@ -73,20 +70,6 @@ class ReceiptIndex extends Component
         }
 
         return Invoice::with('client')->where('ulid', $this->invoice)->first();
-    }
-
-    /** True once a receipt already exists covering exactly what's been paid so far — nothing new to receipt. */
-    #[Computed]
-    public function scopedInvoiceFullyReceipted(): bool
-    {
-        if (! $this->scopedInvoice) {
-            return false;
-        }
-
-        return $this->scopedInvoice->receipts()
-            ->whereNull('invalidated_at')
-            ->where('amount_usd', $this->scopedInvoice->amount_paid)
-            ->exists();
     }
 
     /** Every payment (manual and gateway) recorded against the scoped invoice, most recent first. */
@@ -202,26 +185,28 @@ class ReceiptIndex extends Component
     /** Busts every computed property whose value depends on the scoped invoice's payment state. */
     private function refreshInvoiceComputedState(): void
     {
-        unset($this->scopedInvoice, $this->scopedInvoiceFullyReceipted, $this->invoicePayments, $this->receipts);
+        unset($this->scopedInvoice, $this->invoicePayments, $this->receipts);
     }
 
-    /** Generates a new receipt covering everything paid so far on the scoped invoice. */
-    public function generateReceipt(GenerateInvoiceReceiptAction $action): void
+    /**
+     * Generates a receipt for one specific payment. Each payment gets its
+     * own receipt — two separate payments must never merge into a single
+     * receipt for their combined total, since a receipt is proof of one
+     * specific transaction.
+     */
+    public function generateReceipt(string $paymentUlid, GenerateInvoiceReceiptAction $action): void
     {
-        if (! $this->scopedInvoice) {
-            return;
-        }
+        $payment = Payment::where('ulid', $paymentUlid)->firstOrFail();
 
         try {
-            $action->execute($this->scopedInvoice, $this->newReceiptNotes ?: null);
+            $action->execute($payment);
         } catch (RuntimeException $e) {
             session()->flash('error', $e->getMessage());
 
             return;
         }
 
-        $this->newReceiptNotes = '';
-        unset($this->receipts);
+        $this->refreshInvoiceComputedState();
 
         session()->flash('success', 'Receipt generated. You can download it or send it to the client below.');
     }

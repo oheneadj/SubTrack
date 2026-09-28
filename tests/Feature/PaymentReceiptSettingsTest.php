@@ -37,16 +37,16 @@ test('receipt numbers use the configured prefix', function () {
     Setting::set('receipt_prefix', 'REC');
 
     $invoice = makeSettingsTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 10000);
-    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $payment = (new RecordManualPaymentAction)->execute($invoice, 10000);
+    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($payment);
 
     expect($receipt->receipt_number)->toStartWith('REC-'.now()->year.'-');
 });
 
 test('receipt numbers default to RCT when no prefix is configured', function () {
     $invoice = makeSettingsTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 10000);
-    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $payment = (new RecordManualPaymentAction)->execute($invoice, 10000);
+    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($payment);
 
     expect($receipt->receipt_number)->toStartWith('RCT-'.now()->year.'-');
 });

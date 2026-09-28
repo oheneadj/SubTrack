@@ -39,28 +39,6 @@
                 @endif
             </div>
 
-            @if($this->scopedInvoice->amount_paid > 0)
-                <div class="mt-4 pt-4 border-t border-slate-100">
-                    @if($this->scopedInvoiceFullyReceipted)
-                        <p class="text-sm text-slate-500">
-                            <x-icon-circle-check class="w-4 h-4 inline text-green-500" />
-                            A receipt already covers everything paid so far ({{ $this->scopedInvoice->formatted_amount_paid }}). Record another payment to generate a new one.
-                        </p>
-                    @else
-                        <div class="flex items-end gap-3 flex-wrap">
-                            <div class="flex-1 min-w-[200px]">
-                                <x-ui.form-input label="Notes (optional)" model="newReceiptNotes" placeholder="e.g. Paid via bank transfer" />
-                            </div>
-                            <x-ui.button wire:click="generateReceipt" wire:loading.attr="disabled" wire:target="generateReceipt" variant="success">
-                                <x-icon-circle-check class="w-4 h-4" wire:loading.remove wire:target="generateReceipt" />
-                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="generateReceipt"></span>
-                                Generate Receipt for {{ $this->scopedInvoice->formatted_amount_paid }}
-                            </x-ui.button>
-                        </div>
-                    @endif
-                </div>
-            @endif
-
             @if($this->invoicePayments->isNotEmpty())
                 <div class="mt-4 pt-4 border-t border-slate-100">
                     <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Payments</div>
@@ -89,6 +67,19 @@
                                         </td>
                                         <td class="py-2 text-right">
                                             <div class="flex items-center justify-end gap-2">
+                                                @if($payment->status->value === 'succeeded')
+                                                    @if($payment->hasReceipt())
+                                                        <span class="text-xs font-semibold text-green-600 flex items-center gap-1 shrink-0">
+                                                            <x-icon-check class="w-3.5 h-3.5" /> Receipted
+                                                        </span>
+                                                    @else
+                                                        <x-ui.button wire:click="generateReceipt('{{ $payment->ulid }}')" wire:loading.attr="disabled" wire:target="generateReceipt('{{ $payment->ulid }}')" title="Generate Receipt" variant="success" size="xs">
+                                                            <x-icon-file-invoice class="w-3.5 h-3.5" wire:loading.remove wire:target="generateReceipt('{{ $payment->ulid }}')" />
+                                                            <span class="loading loading-spinner loading-xs" wire:loading wire:target="generateReceipt('{{ $payment->ulid }}')"></span>
+                                                            Receipt
+                                                        </x-ui.button>
+                                                    @endif
+                                                @endif
                                                 @if($payment->isEditable())
                                                     <x-ui.button wire:click="openEditPayment('{{ $payment->ulid }}')" title="Edit" size="xs">
                                                         <x-icon-edit class="w-3.5 h-3.5" />
@@ -119,7 +110,7 @@
         <x-ui.empty-state
             icon="file-invoice"
             title="No receipts yet"
-            :message="$this->scopedInvoice ? 'Generate one above once a payment has been received.' : 'Receipts generated for invoices and subscription renewals will show up here.'"
+            :message="$this->scopedInvoice ? 'Generate one from a payment in the table above once one has been received.' : 'Receipts generated for invoices and subscription renewals will show up here.'"
         />
     @else
         <x-ui.data-table :headers="['receipt_number' => 'Receipt #', 'Client', 'Source', 'issued_date' => 'Issued', 'amount_usd' => 'Amount', 'Actions']">

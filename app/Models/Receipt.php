@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $ulid
  * @property int|null $subscription_id
  * @property int|null $invoice_id
+ * @property int|null $payment_id
  * @property int $client_id
  * @property string $receipt_number
  * @property int $amount_usd
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $source_label
  * @property-read Subscription|null $subscription
  * @property-read Invoice|null $invoice
+ * @property-read Payment|null $payment
  * @property-read Client $client
  */
 class Receipt extends Model
@@ -42,7 +44,7 @@ class Receipt extends Model
 
     /** @var list<string> */
     protected $fillable = [
-        'subscription_id', 'invoice_id', 'client_id', 'receipt_number',
+        'subscription_id', 'invoice_id', 'payment_id', 'client_id', 'receipt_number',
         'amount_usd', 'issued_date', 'notes', 'pdf_path',
         'invalidated_at', 'invalidated_reason',
     ];
@@ -93,6 +95,12 @@ class Receipt extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /** @return BelongsTo<Payment, $this> */
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
     }
 
     /** @return BelongsTo<Client, $this> */

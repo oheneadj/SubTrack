@@ -55,9 +55,7 @@ abstract class AbstractGateway
         $invoice->recalculatePaymentStatus();
         $invoice = $invoice->fresh();
 
-        if ($invoice->isPaid()) {
-            $this->generateReceiptIfNeeded($invoice);
-        }
+        $this->generateReceiptIfNeeded($payment->fresh());
 
         event(new InvoicePaid($invoice, $payment));
     }
@@ -65,14 +63,15 @@ abstract class AbstractGateway
     /**
      * Best-effort — a gateway-confirmed payment means the client paid
      * unattended, so unlike a manual payment (where the admin decides when
-     * to generate one) we generate the receipt automatically here. Silently
-     * skips if one already covers this amount (idempotency on a re-fired
-     * webhook) or the invoice has no client to issue it to.
+     * to generate one) we generate this specific payment's receipt
+     * automatically here. Silently skips if it already has one
+     * (idempotency on a re-fired webhook) or the invoice has no client to
+     * issue it to.
      */
-    private function generateReceiptIfNeeded(Invoice $invoice): void
+    private function generateReceiptIfNeeded(Payment $payment): void
     {
         try {
-            app(GenerateInvoiceReceiptAction::class)->execute($invoice);
+            app(GenerateInvoiceReceiptAction::class)->execute($payment);
         } catch (RuntimeException) {
             //
         }

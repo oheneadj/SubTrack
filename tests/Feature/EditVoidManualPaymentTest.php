@@ -65,10 +65,10 @@ test('editing a payment records a PaymentEdited activity log entry', function ()
     expect(DashboardActivityLog::where('event_type', 'payment.edited')->count())->toBe(1);
 });
 
-test('a payment is no longer editable once a receipt has been generated for the invoice', function () {
+test('a payment is no longer editable once a receipt has been generated for it', function () {
     $invoice = makePaymentTestInvoice(10000);
     $payment = (new RecordManualPaymentAction)->execute($invoice, 4000);
-    app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    app(GenerateInvoiceReceiptAction::class)->execute($payment);
 
     expect($payment->fresh()->isEditable())->toBeFalse();
 
@@ -177,10 +177,10 @@ test('the receipts page lets an admin edit and void a payment', function () {
     expect($payment->fresh()->status)->toBe(PaymentRecordStatus::Voided);
 });
 
-test('voiding a payment invalidates a receipt that no longer adds up, but leaves an unaffected receipt alone', function () {
+test('voiding a payment invalidates its own receipt', function () {
     $invoice = makePaymentTestInvoice(20000);
     $payment1 = (new RecordManualPaymentAction)->execute($invoice, 5000);
-    $receiptForFirstPayment = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $receiptForFirstPayment = app(GenerateInvoiceReceiptAction::class)->execute($payment1);
 
     app(VoidManualPaymentAction::class)->execute($payment1, 'Duplicate charge');
 
@@ -188,16 +188,15 @@ test('voiding a payment invalidates a receipt that no longer adds up, but leaves
         ->and($receiptForFirstPayment->fresh()->invalidated_reason)->toContain('Duplicate charge');
 });
 
-test('voiding a payment does not invalidate a receipt still covered by remaining payments', function () {
+test('voiding a payment does not invalidate a different payment\'s receipt', function () {
     $invoice = makePaymentTestInvoice(20000);
-    (new RecordManualPaymentAction)->execute($invoice, 5000);
+    $payment1 = (new RecordManualPaymentAction)->execute($invoice, 5000);
     $payment2 = (new RecordManualPaymentAction)->execute($invoice->fresh(), 5000);
-    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
-    (new RecordManualPaymentAction)->execute($invoice->fresh(), 5000);
+    $receiptForPaymentOne = app(GenerateInvoiceReceiptAction::class)->execute($payment1);
 
     app(VoidManualPaymentAction::class)->execute($payment2);
 
-    expect($receipt->fresh()->isInvalidated())->toBeFalse();
+    expect($receiptForPaymentOne->fresh()->isInvalidated())->toBeFalse();
 });
 
 test('an invalidated receipt logs a ReceiptInvalidated activity entry and cannot be sent', function () {
@@ -205,7 +204,7 @@ test('an invalidated receipt logs a ReceiptInvalidated activity entry and cannot
 
     $invoice = makePaymentTestInvoice(10000);
     $payment = (new RecordManualPaymentAction)->execute($invoice, 10000);
-    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($payment);
 
     app(VoidManualPaymentAction::class)->execute($payment);
 
@@ -218,15 +217,15 @@ test('an invalidated receipt logs a ReceiptInvalidated activity entry and cannot
     Mail::assertNothingQueued();
 });
 
-test('generating a new receipt is allowed again after the covering one was invalidated', function () {
+test('a fresh payment recorded after a void can get its own receipt, independent of the invalidated one', function () {
     $invoice = makePaymentTestInvoice(10000);
     $payment = (new RecordManualPaymentAction)->execute($invoice, 10000);
-    app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    app(GenerateInvoiceReceiptAction::class)->execute($payment);
 
     app(VoidManualPaymentAction::class)->execute($payment);
-    (new RecordManualPaymentAction)->execute($invoice->fresh(), 10000);
+    $newPayment = (new RecordManualPaymentAction)->execute($invoice->fresh(), 10000);
 
-    $newReceipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $newReceipt = app(GenerateInvoiceReceiptAction::class)->execute($newPayment);
 
     expect($newReceipt->isInvalidated())->toBeFalse()
         ->and($invoice->receipts()->count())->toBe(2);

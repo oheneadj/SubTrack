@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Two separate payments made before either was receipted merged into a single receipt** for their combined total instead of each getting its own — receipts captured the invoice's *cumulative* amount paid at generation time rather than a specific transaction. Fixed by tying each receipt to the specific `Payment` it documents (`receipts.payment_id`): `GenerateInvoiceReceiptAction` now takes a `Payment` instead of an `Invoice` and captures exactly that payment's amount, the Receipts page now shows a per-payment "Receipt" action (or a "Receipted" badge once one exists) in the Payments table instead of one invoice-level "Generate Receipt for $X" button, and a gateway-confirmed payment auto-generates a receipt for itself specifically rather than for the invoice's running total
+- This also made `Payment::isEditable()`'s "no receipt issued since" check exact instead of a heuristic — it was previously inferred from any receipt existing on the invoice on or after the payment's timestamp (a coarse approximation), and voiding a payment now invalidates precisely its own receipt instead of inferring which receipt(s) "no longer add up" from the invoice's new total
+- Tests: `SeparatePaymentsSeparateReceiptsTest` (reproduces the reported scenario end-to-end), extended `InvoiceReceiptTest` and `EditVoidManualPaymentTest` for the new per-payment semantics
+
+## [Unreleased]
+
 ### Added
 - Recording (and editing) a manual payment now lets you set the actual date it was received, instead of always stamping it "now" — useful when entering a payment after the fact (e.g. a bank transfer that cleared a few days ago). The date can't be in the future (`RecordManualPaymentAction`/`EditManualPaymentAction` both reject it, with the same check enforced in both the Livewire validation and the Action itself). The Payments table on the Receipts page now shows the actual received date instead of when the record was entered into the system
 - Tests: `RecordPaymentDateTest`

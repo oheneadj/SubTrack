@@ -10,6 +10,7 @@ use App\Livewire\Receipts\ReceiptIndex;
 use App\Mail\ReceiptMail;
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\ReceiptPdfService;
@@ -32,20 +33,29 @@ function makeReceiptTestInvoice(int $totalAmountCents = 10000): Invoice
     ]);
 }
 
-test('generating a receipt before any payment is rejected', function () {
+test('generating a receipt for a payment that has not succeeded is rejected', function () {
     $invoice = makeReceiptTestInvoice();
+    $payment = Payment::create([
+        'invoice_id' => $invoice->id,
+        'gateway' => 'manual',
+        'method' => 'manual',
+        'amount' => 4000,
+        'currency' => 'usd',
+        'status' => 'pending',
+    ]);
 
-    expect(fn () => app(GenerateInvoiceReceiptAction::class)->execute($invoice))
+    expect(fn () => app(GenerateInvoiceReceiptAction::class)->execute($payment))
         ->toThrow(RuntimeException::class);
 });
 
-test('generating a receipt for a partially paid invoice captures the amount paid so far', function () {
+test('generating a receipt for a payment captures exactly that payment\'s amount, not the invoice total', function () {
     $invoice = makeReceiptTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 4000);
+    $payment = (new RecordManualPaymentAction)->execute($invoice, 4000);
 
-    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh(), 'Partial payment');
+    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($payment, 'Partial payment');
 
     expect($receipt->amount_usd)->toBe(4000)
+        ->and($receipt->payment_id)->toBe($payment->id)
         ->and($receipt->invoice_id)->toBe($invoice->id)
         ->and($receipt->client_id)->toBe($invoice->client_id)
         ->and($receipt->notes)->toBe('Partial payment')
@@ -53,50 +63,52 @@ test('generating a receipt for a partially paid invoice captures the amount paid
         ->and($receipt->source_label)->toBe("Invoice {$invoice->invoice_number}");
 });
 
-test('generating a receipt twice for the same amount paid is rejected', function () {
+test('two separate payments made before either is receipted each get their own receipt, not one merged receipt', function () {
     $invoice = makeReceiptTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 4000);
+    $paymentOne = (new RecordManualPaymentAction)->execute($invoice, 3000);
+    $paymentTwo = (new RecordManualPaymentAction)->execute($invoice->fresh(), 4000);
 
-    app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $receiptOne = app(GenerateInvoiceReceiptAction::class)->execute($paymentOne);
+    $receiptTwo = app(GenerateInvoiceReceiptAction::class)->execute($paymentTwo);
 
-    expect(fn () => app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh()))
+    expect($receiptOne->amount_usd)->toBe(3000)
+        ->and($receiptTwo->amount_usd)->toBe(4000)
+        ->and($invoice->receipts()->count())->toBe(2);
+});
+
+test('generating a receipt twice for the same payment is rejected', function () {
+    $invoice = makeReceiptTestInvoice(10000);
+    $payment = (new RecordManualPaymentAction)->execute($invoice, 4000);
+
+    app(GenerateInvoiceReceiptAction::class)->execute($payment);
+
+    expect(fn () => app(GenerateInvoiceReceiptAction::class)->execute($payment->fresh()))
         ->toThrow(RuntimeException::class);
 
     expect(Invoice::find($invoice->id)->receipts()->count())->toBe(1);
 });
 
-test('a new receipt can be generated after a further payment is recorded', function () {
+test('the receipts page marks a receipted payment and offers Generate Receipt for one that is not', function () {
     $invoice = makeReceiptTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 4000);
-    app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
-
-    (new RecordManualPaymentAction)->execute($invoice->fresh(), 6000);
-    $secondReceipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
-
-    expect($secondReceipt->amount_usd)->toBe(10000);
-    expect($invoice->receipts()->count())->toBe(2);
-});
-
-test('the receipts page hides the generate button once a receipt already covers the amount paid', function () {
-    $invoice = makeReceiptTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 4000);
-    app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $paymentOne = (new RecordManualPaymentAction)->execute($invoice, 3000);
+    (new RecordManualPaymentAction)->execute($invoice->fresh(), 4000);
+    app(GenerateInvoiceReceiptAction::class)->execute($paymentOne);
 
     Livewire::actingAs(User::factory()->create())
         ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
-        ->assertSet('scopedInvoiceFullyReceipted', true)
-        ->assertDontSee('Generate Receipt for');
+        ->assertSee('Receipted')
+        ->assertSeeHtml('generateReceipt(');
 });
 
-test('the receipts page scoped to an invoice shows the customer and lets an admin generate a receipt', function () {
+test('the receipts page scoped to an invoice shows the customer and lets an admin generate a receipt for a payment', function () {
     $invoice = makeReceiptTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 5000);
+    $payment = (new RecordManualPaymentAction)->execute($invoice, 5000);
 
     Livewire::actingAs(User::factory()->create())
         ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
         ->assertSee($invoice->invoice_number)
         ->assertSee($invoice->client->name)
-        ->call('generateReceipt')
+        ->call('generateReceipt', $payment->ulid)
         ->assertHasNoErrors();
 
     expect($invoice->receipts()->count())->toBe(1);
@@ -106,8 +118,8 @@ test('sending a receipt queues the receipt mail to the client', function () {
     Mail::fake();
 
     $invoice = makeReceiptTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 10000);
-    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $payment = (new RecordManualPaymentAction)->execute($invoice, 10000);
+    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($payment);
 
     Livewire::actingAs(User::factory()->create())
         ->test(ReceiptIndex::class)
@@ -128,8 +140,8 @@ test('the Record Payment button and receipts link are hidden once an invoice is 
 
 test('viewing a receipt streams it inline while downloading forces a save-as', function () {
     $invoice = makeReceiptTestInvoice(10000);
-    (new RecordManualPaymentAction)->execute($invoice, 10000);
-    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($invoice->fresh());
+    $payment = (new RecordManualPaymentAction)->execute($invoice, 10000);
+    $receipt = app(GenerateInvoiceReceiptAction::class)->execute($payment);
 
     $user = User::factory()->create();
 

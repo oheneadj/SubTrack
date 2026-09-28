@@ -9,6 +9,7 @@ use App\Traits\HasPublicUlid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Represents a single payment attempt against an invoice via a specific gateway.
@@ -68,6 +69,18 @@ class Payment extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    /** @return HasMany<Receipt, $this> */
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
+    }
+
+    /** True once a still-valid receipt already documents this specific payment. */
+    public function hasReceipt(): bool
+    {
+        return $this->receipts()->whereNull('invalidated_at')->exists();
+    }
+
     /**
      * A manually-recorded payment can be voided any time it's still
      * Succeeded — voiding always preserves the original record (it never
@@ -83,10 +96,10 @@ class Payment extends Model
      * A manual payment's amount can only be edited in place — rather than
      * voided and re-recorded — within a configurable window after it was
      * recorded (Setting `payment_edit_window_hours`, default 24) and only
-     * while no receipt has been issued for the invoice since. Once either
-     * of those is no longer true, a receipt may already document the
-     * original amount, so editing in place would silently invalidate it;
-     * voiding and recording a fresh payment is the safe path instead.
+     * while no receipt has been issued for *this specific payment*. Once
+     * either of those is no longer true, a receipt may already document
+     * the original amount, so editing in place would silently invalidate
+     * it; voiding and recording a fresh payment is the safe path instead.
      */
     public function isEditable(): bool
     {
@@ -99,6 +112,6 @@ class Payment extends Model
             return false;
         }
 
-        return ! $this->invoice->receipts()->where('created_at', '>=', $this->created_at)->exists();
+        return ! $this->hasReceipt();
     }
 }
