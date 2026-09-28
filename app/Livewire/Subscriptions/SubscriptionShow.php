@@ -103,15 +103,13 @@ class SubscriptionShow extends Component
         session()->flash('success', 'Receipt generated and sent to the client.');
     }
 
-    /** Stream a receipt PDF inline for viewing in the browser. */
-    public function viewReceipt(string $receiptUlid, ReceiptPdfService $pdfService): StreamedResponse|BinaryFileResponse
-    {
-        $receipt = $this->findReceiptOrFail($receiptUlid, $pdfService);
-
-        return Storage::response('public/'.$receipt->pdf_path, $receipt->receipt_number.'.pdf');
-    }
-
-    /** Force-download a receipt PDF. */
+    /**
+     * Force-download a receipt PDF. Viewing it inline instead is a plain
+     * link to ReceiptPdfController@view — a real browser navigation, not a
+     * Livewire action — since Livewire's file-download mechanism always
+     * forces a save-as regardless of the response's Content-Disposition
+     * header, making a Livewire-driven "view" indistinguishable from download.
+     */
     public function downloadReceipt(string $receiptUlid, ReceiptPdfService $pdfService): StreamedResponse|BinaryFileResponse
     {
         $receipt = $this->findReceiptOrFail($receiptUlid, $pdfService);

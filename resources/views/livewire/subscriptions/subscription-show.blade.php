@@ -210,7 +210,7 @@
                                         <td class="text-sm font-semibold text-slate-800">{{ $receipt->formatted_amount_usd }}</td>
                                         <td class="text-right">
                                             <x-ui.action-menu :slotCount="2">
-                                                <x-ui.button variant="ghost" size="xs" wire:click="viewReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="View">
+                                                <x-ui.button as="a" href="{{ route('receipts.view', $receipt) }}" target="_blank" variant="ghost" size="xs" title="View">
                                                     <x-icon-eye class="w-3.5 h-3.5" />
                                                     <span>View</span>
                                                 </x-ui.button>

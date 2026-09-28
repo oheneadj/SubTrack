@@ -25,7 +25,8 @@ class GenerateInvoiceReceiptAction
     ) {}
 
     /**
-     * @throws \RuntimeException if the invoice has no client, or nothing has been paid yet
+     * @throws \RuntimeException if the invoice has no client, nothing has been paid
+     *                           yet, or a receipt already covers the amount paid so far
      */
     public function execute(Invoice $invoice, ?string $notes = null): Receipt
     {
@@ -35,6 +36,14 @@ class GenerateInvoiceReceiptAction
 
         if ($invoice->amount_paid <= 0) {
             throw new \RuntimeException('Cannot generate a receipt before any payment has been received.');
+        }
+
+        // Each receipt covers the cumulative amount paid at the time it's
+        // issued (not just the latest payment), so generating again before
+        // any new payment comes in would produce an exact duplicate.
+        $alreadyReceipted = $invoice->receipts()->where('amount_usd', $invoice->amount_paid)->exists();
+        if ($alreadyReceipted) {
+            throw new \RuntimeException('A receipt already covers everything paid so far on this invoice — record another payment before generating a new one.');
         }
 
         return DB::transaction(function () use ($invoice, $notes) {

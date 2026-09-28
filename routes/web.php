@@ -4,6 +4,7 @@ use App\Enums\ServiceType;
 use App\Http\Controllers\BrevoWebhookController;
 use App\Http\Controllers\ClientAuthController;
 use App\Http\Controllers\InvoicePaymentController;
+use App\Http\Controllers\ReceiptPdfController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Middleware\EnsureClientAuthenticated;
 use App\Livewire\ActivityLogs\ActivityLogIndex;
@@ -86,6 +87,7 @@ Route::middleware(['auth', 'verified', 'password_change'])->group(function () {
         Route::get('/{invoice}', InvoiceBuilder::class)->name('edit');
     });
     Route::get('receipts', ReceiptIndex::class)->name('receipts.index');
+    Route::get('receipts/{receipt}/view', [ReceiptPdfController::class, 'view'])->name('receipts.view');
     Route::get('users', UserIndex::class)->name('users.index')->middleware('super_admin');
     Route::get('users/{user}', UserShow::class)->name('users.show')->middleware('super_admin');
     Route::get('activity-logs', ActivityLogIndex::class)->name('activity-logs.index')->middleware('super_admin');

@@ -31,15 +31,24 @@
             </div>
 
             @if($this->scopedInvoice->amount_paid > 0)
-                <div class="mt-4 pt-4 border-t border-slate-100 flex items-end gap-3 flex-wrap">
-                    <div class="flex-1 min-w-[200px]">
-                        <x-ui.form-input label="Notes (optional)" model="newReceiptNotes" placeholder="e.g. Paid via bank transfer" />
-                    </div>
-                    <x-ui.button wire:click="generateReceipt" wire:loading.attr="disabled" wire:target="generateReceipt" variant="success">
-                        <x-icon-circle-check class="w-4 h-4" wire:loading.remove wire:target="generateReceipt" />
-                        <span class="loading loading-spinner loading-xs" wire:loading wire:target="generateReceipt"></span>
-                        Generate Receipt for {{ $this->scopedInvoice->formatted_amount_paid }}
-                    </x-ui.button>
+                <div class="mt-4 pt-4 border-t border-slate-100">
+                    @if($this->scopedInvoiceFullyReceipted)
+                        <p class="text-sm text-slate-500">
+                            <x-icon-circle-check class="w-4 h-4 inline text-green-500" />
+                            A receipt already covers everything paid so far ({{ $this->scopedInvoice->formatted_amount_paid }}). Record another payment to generate a new one.
+                        </p>
+                    @else
+                        <div class="flex items-end gap-3 flex-wrap">
+                            <div class="flex-1 min-w-[200px]">
+                                <x-ui.form-input label="Notes (optional)" model="newReceiptNotes" placeholder="e.g. Paid via bank transfer" />
+                            </div>
+                            <x-ui.button wire:click="generateReceipt" wire:loading.attr="disabled" wire:target="generateReceipt" variant="success">
+                                <x-icon-circle-check class="w-4 h-4" wire:loading.remove wire:target="generateReceipt" />
+                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="generateReceipt"></span>
+                                Generate Receipt for {{ $this->scopedInvoice->formatted_amount_paid }}
+                            </x-ui.button>
+                        </div>
+                    @endif
                 </div>
             @endif
         </x-ui.card>
@@ -79,9 +88,8 @@
                     <td class="font-bold">{{ $receipt->formatted_amount_usd }}</td>
                     <td class="text-right">
                         <x-ui.action-menu :slotCount="3">
-                            <x-ui.button wire:click="viewReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" wire:target="viewReceipt('{{ $receipt->ulid }}')" title="View" size="xs">
-                                <x-icon-photo class="w-3.5 h-3.5" wire:loading.remove wire:target="viewReceipt('{{ $receipt->ulid }}')" />
-                                <span class="loading loading-spinner loading-xs" wire:loading wire:target="viewReceipt('{{ $receipt->ulid }}')"></span>
+                            <x-ui.button as="a" href="{{ route('receipts.view', $receipt) }}" target="_blank" title="View" size="xs">
+                                <x-icon-photo class="w-3.5 h-3.5" />
                                 View
                             </x-ui.button>
                             <x-ui.button wire:click="downloadReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" wire:target="downloadReceipt('{{ $receipt->ulid }}')" title="Download" size="xs">

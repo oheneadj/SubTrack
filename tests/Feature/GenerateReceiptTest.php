@@ -100,7 +100,7 @@ test('a receipt can be viewed and downloaded from the subscription page', functi
     $this->actingAs($user);
     $component = Livewire::test(SubscriptionShow::class, ['subscription' => $subscription]);
 
-    $viewResponse = $component->instance()->viewReceipt($receipt->ulid, app(ReceiptPdfService::class));
+    $viewResponse = $this->actingAs($user)->get(route('receipts.view', $receipt));
     expect($viewResponse->headers->get('Content-Disposition'))->toContain('inline');
 
     $downloadResponse = $component->instance()->downloadReceipt($receipt->ulid, app(ReceiptPdfService::class));

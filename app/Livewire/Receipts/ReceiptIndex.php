@@ -49,6 +49,19 @@ class ReceiptIndex extends Component
         return Invoice::with('client')->where('ulid', $this->invoice)->first();
     }
 
+    /** True once a receipt already exists covering exactly what's been paid so far — nothing new to receipt. */
+    #[Computed]
+    public function scopedInvoiceFullyReceipted(): bool
+    {
+        if (! $this->scopedInvoice) {
+            return false;
+        }
+
+        return $this->scopedInvoice->receipts()
+            ->where('amount_usd', $this->scopedInvoice->amount_paid)
+            ->exists();
+    }
+
     #[Computed]
     public function receipts()
     {
@@ -102,24 +115,14 @@ class ReceiptIndex extends Component
         session()->flash('success', "Receipt {$receipt->receipt_number} sent to {$receipt->client->email}.");
     }
 
-    /** Stream a receipt PDF inline for viewing in the browser. */
-    public function viewReceipt(string $receiptUlid, ReceiptPdfService $pdfService): StreamedResponse|BinaryFileResponse
-    {
-        $receipt = $this->findReceiptOrFail($receiptUlid, $pdfService);
-
-        return Storage::response('public/'.$receipt->pdf_path, $receipt->receipt_number.'.pdf');
-    }
-
-    /** Force-download a receipt PDF. */
+    /**
+     * Force-download a receipt PDF. Viewing it inline instead is a plain
+     * link to ReceiptPdfController@view — a real browser navigation, not a
+     * Livewire action — since Livewire's file-download mechanism always
+     * forces a save-as regardless of the response's Content-Disposition
+     * header, making a Livewire-driven "view" indistinguishable from download.
+     */
     public function downloadReceipt(string $receiptUlid, ReceiptPdfService $pdfService): StreamedResponse|BinaryFileResponse
-    {
-        $receipt = $this->findReceiptOrFail($receiptUlid, $pdfService);
-
-        return Storage::download('public/'.$receipt->pdf_path, $receipt->receipt_number.'.pdf');
-    }
-
-    /** Look up a receipt, regenerating its PDF if it's missing. */
-    private function findReceiptOrFail(string $receiptUlid, ReceiptPdfService $pdfService): Receipt
     {
         $receipt = Receipt::where('ulid', $receiptUlid)->firstOrFail();
 
@@ -127,7 +130,7 @@ class ReceiptIndex extends Component
             $pdfService->generate($receipt);
         }
 
-        return $receipt;
+        return Storage::download('public/'.$receipt->pdf_path, $receipt->receipt_number.'.pdf');
     }
 
     public function render(): View
