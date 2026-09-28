@@ -7,7 +7,7 @@
             </div>
             <h1 class="text-2xl font-bold text-slate-800 mb-2">Payment Received</h1>
             <p class="text-slate-500 mb-1">Invoice <span class="font-semibold text-slate-700">{{ $invoice->invoice_number }}</span></p>
-            <p class="text-slate-500">Thank you, {{ $invoice->client->name }}. Your payment of <span class="font-semibold text-slate-700">{{ $invoice->formatted_total_amount }}</span> has been recorded.</p>
+            <p class="text-slate-500">Thank you, {{ $invoice->client->name }}. Your payment of <span class="font-semibold text-slate-700">{{ $invoice->formatted_amount_paid }}</span> has been recorded.</p>
         </div>
 
     @elseif($invoice->status->value === 'Draft')
@@ -89,11 +89,30 @@
         {{-- Payment method selection --}}
         @if(!empty($gateways))
             <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                <h2 class="text-base font-bold text-slate-800 mb-4">Choose a payment method</h2>
+                @if($invoice->isPartiallyPaid())
+                    <div class="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-700">
+                        <span class="font-semibold">{{ $invoice->formatted_amount_paid }}</span> already received.
+                        Remaining balance: <span class="font-semibold">{{ $invoice->formatted_balance_due }}</span>.
+                    </div>
+                @endif
+
+                <h2 class="text-base font-bold text-slate-800 mb-2">Choose a payment method</h2>
+
+                <div class="mb-4">
+                    <label for="payment-amount" class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount to pay</label>
+                    <div class="relative mt-1">
+                        <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">$</span>
+                        <input type="number" id="payment-amount" step="0.01" min="0.01" max="{{ number_format($invoice->balance_due / 100, 2, '.', '') }}" value="{{ number_format($invoice->balance_due / 100, 2, '.', '') }}" class="w-full pl-7 pr-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Leave as-is to pay the full remaining balance, or lower it to make a partial payment.</p>
+                </div>
+
                 <div class="space-y-3">
                     @foreach($gateways as $slug => $label)
-                        <form method="POST" action="{{ route('invoice.checkout', ['invoice' => $invoice->ulid, 'gateway' => $slug]) }}">
+                        <form method="POST" action="{{ route('invoice.checkout', ['invoice' => $invoice->ulid, 'gateway' => $slug]) }}"
+                              x-data="invoicePaymentForm()" x-on:submit="submit">
                             @csrf
+                            <input type="hidden" name="amount" value="" />
                             <button type="submit" class="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left group">
                                 <span class="font-semibold text-slate-700 group-hover:text-blue-700">{{ $label }}</span>
                                 <x-icon-arrow-right class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" />

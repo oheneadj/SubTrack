@@ -6,6 +6,7 @@ $statusLabel = $status instanceof \BackedEnum ? $status->value : $status;
 $config = match($statusLabel) {
     'Draft'   => ['class' => 'bg-slate-100 text-slate-600', 'icon' => 'edit'],
     'Sent'    => ['class' => 'bg-sky-100 text-sky-700', 'icon' => 'mail'],
+    'Partially Paid' => ['class' => 'bg-amber-100 text-amber-700', 'icon' => 'circle-check'],
     'Paid'    => ['class' => 'bg-green-100 text-green-700', 'icon' => 'check'],
     'Overdue' => ['class' => 'bg-red-100 text-red-700', 'icon' => 'alert-circle'],
     default   => ['class' => 'bg-slate-50 text-slate-500 border border-slate-200', 'icon' => 'file-invoice'],

@@ -29,8 +29,11 @@ interface PaymentGateway
     /**
      * Create a checkout session with the provider and return the redirect URL.
      * The client will be redirected to this URL to complete payment.
+     *
+     * @param  int  $amountCents  The amount to charge, in cents — may be less than
+     *                            the invoice's full total_amount for a partial payment.
      */
-    public function createCheckout(Invoice $invoice, string $returnUrl): string;
+    public function createCheckout(Invoice $invoice, string $returnUrl, int $amountCents): string;
 
     /**
      * Verify the incoming webhook request signature.

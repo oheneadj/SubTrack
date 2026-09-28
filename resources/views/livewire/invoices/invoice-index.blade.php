@@ -12,6 +12,7 @@
             <option value="">All Statuses</option>
             <option value="Draft">Draft</option>
             <option value="Sent">Sent</option>
+            <option value="Partially Paid">Partially Paid</option>
             <option value="Paid">Paid</option>
             <option value="Overdue">Overdue</option>
         </select>
@@ -49,7 +50,12 @@
                             Due: {{ $invoice->due_date->format('M d, Y') }}
                         </div>
                     </td>
-                    <td class="font-bold">${{ number_format($invoice->total_amount, 2) }}</td>
+                    <td class="font-bold">
+                        ${{ number_format($invoice->total_amount, 2) }}
+                        @if($invoice->status === App\Enums\InvoiceStatus::PartiallyPaid)
+                            <div class="text-[10px] font-medium text-amber-600">{{ $invoice->formatted_balance_due }} due</div>
+                        @endif
+                    </td>
                         <td>
                             <x-ui.badge-invoice-status :status="$invoice->status" />
                         </td>
@@ -69,10 +75,9 @@
                                 Send
                             </x-ui.button>
                             @if($invoice->status !== 'Paid')
-                                <x-ui.button wire:click="markAsPaid('{{ $invoice->ulid }}')" wire:loading.attr="disabled" wire:target="markAsPaid('{{ $invoice->ulid }}')" title="Mark as Paid" variant="success" size="xs">
-                                    <x-icon-circle-check class="w-3.5 h-3.5" wire:loading.remove wire:target="markAsPaid('{{ $invoice->ulid }}')" />
-                                    <span class="loading loading-spinner loading-xs" wire:loading wire:target="markAsPaid('{{ $invoice->ulid }}')"></span>
-                                    Paid
+                                <x-ui.button wire:click="openRecordPayment('{{ $invoice->ulid }}')" title="Record Payment" variant="success" size="xs">
+                                    <x-icon-circle-check class="w-3.5 h-3.5" />
+                                    Record Payment
                                 </x-ui.button>
                             @endif
                         </x-ui.action-menu>
@@ -85,4 +90,25 @@
             {{ $this->invoices->links() }}
         </div>
     @endif
+
+    <x-ui.modal id="record-payment-modal" maxWidth="sm">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Record Payment</h3>
+
+        <div class="flex flex-col gap-1 w-full mb-4">
+            <label class="text-sm font-semibold text-slate-700">Amount received ($)</label>
+            <input type="number" step="0.01" min="0.01" wire:model="recordPaymentAmount"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            @error('recordPaymentAmount')
+                <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <x-ui.button type="button" variant="ghost" x-on:click="open = false">Cancel</x-ui.button>
+            <x-ui.button type="button" variant="success" wire:click="submitRecordPayment" wire:loading.attr="disabled" wire:target="submitRecordPayment">
+                <span class="loading loading-spinner loading-xs" wire:loading wire:target="submitRecordPayment"></span>
+                Record Payment
+            </x-ui.button>
+        </div>
+    </x-ui.modal>
 </div>

@@ -44,23 +44,39 @@ class StripeGateway extends AbstractGateway implements PaymentGateway
 
     /**
      * Create a Stripe Checkout Session and return its hosted URL.
-     * The invoice's line items are mapped to Stripe's price_data format.
+     * The invoice's line items are mapped to Stripe's price_data format
+     * when the full balance is being charged; a partial amount is charged
+     * as a single custom line item instead, since the itemized breakdown
+     * no longer sums to what's actually being collected.
      */
-    public function createCheckout(Invoice $invoice, string $returnUrl): string
+    public function createCheckout(Invoice $invoice, string $returnUrl, int $amountCents): string
     {
         $invoice->loadMissing('items', 'client');
 
-        $lineItems = $invoice->items->map(fn ($item) => [
-            'price_data' => [
-                'currency' => 'usd',
-                'unit_amount' => $item->unit_price, // already in cents
-                'product_data' => [
-                    'name' => $item->description,
-                    'description' => $item->period ?? null,
+        if ($amountCents === $invoice->balance_due && $invoice->balance_due === $invoice->total_amount) {
+            $lineItems = $invoice->items->map(fn ($item) => [
+                'price_data' => [
+                    'currency' => 'usd',
+                    'unit_amount' => $item->unit_price, // already in cents
+                    'product_data' => [
+                        'name' => $item->description,
+                        'description' => $item->period ?? null,
+                    ],
                 ],
-            ],
-            'quantity' => max(1, (int) $item->quantity),
-        ])->values()->all();
+                'quantity' => max(1, (int) $item->quantity),
+            ])->values()->all();
+        } else {
+            $lineItems = [[
+                'price_data' => [
+                    'currency' => 'usd',
+                    'unit_amount' => $amountCents,
+                    'product_data' => [
+                        'name' => "Payment for Invoice {$invoice->invoice_number}",
+                    ],
+                ],
+                'quantity' => 1,
+            ]];
+        }
 
         $session = $this->stripe->checkout->sessions->create([
             'payment_method_types' => ['card'],

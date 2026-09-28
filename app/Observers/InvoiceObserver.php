@@ -22,6 +22,14 @@ class InvoiceObserver
                     ['invoice_id' => $invoice->id, 'total' => $invoice->total_amount]
                 );
             }
+            if ($invoice->status === InvoiceStatus::PartiallyPaid) {
+                DashboardActivityLog::record(
+                    ActivityEventType::InvoicePaid,
+                    "Invoice {$invoice->invoice_number} partially paid — {$invoice->formatted_amount_paid} of {$invoice->formatted_total_amount} received",
+                    $invoice->client_id,
+                    ['invoice_id' => $invoice->id, 'amount_paid' => $invoice->amount_paid]
+                );
+            }
             if ($invoice->status === InvoiceStatus::Overdue) {
                 DashboardActivityLog::record(
                     ActivityEventType::InvoiceOverdue,

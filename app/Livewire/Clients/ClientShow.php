@@ -66,7 +66,7 @@ class ClientShow extends Component
     public function stats()
     {
         return [
-            'total_billed' => $this->client->invoices()->where('status', 'Paid')->sum('total_amount') / 100,
+            'total_billed' => $this->client->invoices()->whereIn('status', ['Paid', 'Partially Paid'])->sum('amount_paid') / 100,
             'pending_amount' => $this->client->invoices()->whereIn('status', ['Sent', 'Overdue'])->sum('total_amount') / 100,
             'active_subscriptions' => $this->client->directSubscriptions()->where('status', 'Active')->count()
                 + $this->client->projectSubscriptions()->where('status', 'Active')->count(),

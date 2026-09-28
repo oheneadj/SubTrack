@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Payment;
 
-use App\Enums\InvoiceStatus;
 use App\Enums\PaymentRecordStatus;
 use App\Enums\PaymentStatus;
 use App\Events\InvoicePaid;
@@ -28,8 +27,9 @@ abstract class AbstractGateway
     }
 
     /**
-     * Mark the payment as succeeded, mark the invoice as paid,
-     * update any linked renewal, and fire the InvoicePaid event.
+     * Mark the payment as succeeded, recalculate the invoice's paid/partial
+     * status from all succeeded payments, update any linked renewal once
+     * the invoice is fully paid, and fire the InvoicePaid event.
      *
      * @param  array<string, mixed>|null  $gatewayResponse  Full raw provider response stored for audit.
      */
@@ -48,15 +48,18 @@ abstract class AbstractGateway
             'gateway_response' => $gatewayResponse,
         ]);
 
-        $invoice->update(['status' => InvoiceStatus::Paid]);
+        $invoice->recalculatePaymentStatus();
 
-        // Update the renewal linked to this invoice, if any.
-        $renewal = $invoice->renewals()->first();
-        if ($renewal) {
-            $renewal->update([
-                'payment_status' => PaymentStatus::Paid,
-                'payment_received_date' => $now->toDateString(),
-            ]);
+        // Only settle the linked renewal once the invoice is fully paid —
+        // a partial payment doesn't yet cover the full renewal cost.
+        if ($invoice->fresh()->isPaid()) {
+            $renewal = $invoice->renewals()->first();
+            if ($renewal) {
+                $renewal->update([
+                    'payment_status' => PaymentStatus::Paid,
+                    'payment_received_date' => $now->toDateString(),
+                ]);
+            }
         }
 
         event(new InvoicePaid($invoice, $payment));

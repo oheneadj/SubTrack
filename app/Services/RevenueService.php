@@ -28,7 +28,7 @@ class RevenueService
      */
     public function totalRevenue(): float
     {
-        return $this->invoiceRevenueQuery()->sum('total_amount') / 100
+        return $this->invoiceRevenueQuery()->sum('amount_paid') / 100
             + $this->directRenewalRevenueQuery()->sum('client_cost_usd') / 100;
     }
 
@@ -107,7 +107,7 @@ class RevenueService
         $invoiceTotal = (float) $this->invoiceRevenueQuery()
             ->whereYear('issued_date', $year)
             ->whereMonth('issued_date', $month)
-            ->sum('total_amount');
+            ->sum('amount_paid');
 
         $renewalTotal = (float) $this->directRenewalRevenueQuery()
             ->whereYear($this->renewalAttributionDate(), $year)
@@ -117,10 +117,16 @@ class RevenueService
         return ($invoiceTotal + $renewalTotal) / 100;
     }
 
-    /** @return Builder<Invoice> */
+    /**
+     * Invoices with money actually received — fully Paid or Partially Paid.
+     * Summing amount_paid (rather than total_amount) means a partial
+     * payment only contributes what was actually collected.
+     *
+     * @return Builder<Invoice>
+     */
     private function invoiceRevenueQuery(): Builder
     {
-        return Invoice::where('status', InvoiceStatus::Paid);
+        return Invoice::whereIn('status', [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid]);
     }
 
     /**
