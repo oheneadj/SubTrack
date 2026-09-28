@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Livewire\Renewals;
 
-use App\Enums\PaymentStatus;
+use App\Actions\PrepareRenewalAction;
 use App\Enums\SubscriptionStatus;
-use App\Models\Renewal;
 use App\Models\Subscription;
 use App\Traits\WithSorting;
 use Carbon\Carbon;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
+use RuntimeException;
 
 class RenewalTracker extends Component
 {
@@ -81,7 +81,13 @@ class RenewalTracker extends Component
         $this->showRenewalModal = true;
     }
 
-    public function processRenewal(): void
+    /**
+     * Starts the renewal (records what's owed and raises an invoice for
+     * it) via the same PrepareRenewalAction used on the subscription's own
+     * page — this only prepares it; taking payment and processing it (to
+     * actually roll the expiry) happens from there, not here.
+     */
+    public function processRenewal(PrepareRenewalAction $action): void
     {
         $this->validate([
             'renewalMode' => 'required|in:years,date',
@@ -94,38 +100,28 @@ class RenewalTracker extends Component
         }
 
         $subscription = Subscription::findOrFail($this->renewingSubscriptionId);
-
         $oldExpiry = $subscription->expiry_date;
 
         if ($this->renewalMode === 'years') {
             $newExpiry = $oldExpiry->copy()->addYears($this->renewalYears);
-            $clientCost = ($subscription->renewal_cost_usd ?? 0) * $this->renewalYears;
-            $note = "Automated renewal. Expiry rolled from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} (+{$this->renewalYears} years).";
+            $note = "Renewal prepared from the Renewal Tracker. Expiry will roll from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} (+{$this->renewalYears} years) once paid.";
         } else {
             $newExpiry = Carbon::parse($this->customExpiryDate);
-            $clientCost = $subscription->renewal_cost_usd ?? 0;
-            $note = "Manual date renewal. Expiry set from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')}.";
+            $note = "Renewal prepared from the Renewal Tracker. Expiry will be set from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} once paid.";
         }
 
-        Renewal::create([
-            'subscription_id' => $subscription->id,
-            'due_date' => $oldExpiry,
-            'provider_cost_usd' => $subscription->purchase_cost_usd ?? 0,
-            'client_cost_usd' => $clientCost,
-            'payment_status' => PaymentStatus::Renewed,
-            'renewal_confirmed_date' => now(),
-            'notes' => $note,
-        ]);
+        try {
+            $action->execute($subscription, $subscription->renewal_cost_usd ?? 0, $newExpiry, $note);
+        } catch (RuntimeException $e) {
+            session()->flash('error', $e->getMessage());
 
-        $subscription->update([
-            'expiry_date' => $newExpiry,
-            'status' => SubscriptionStatus::Active,
-        ]);
+            return;
+        }
 
         $this->showRenewalModal = false;
         $this->renewingSubscriptionId = null;
 
-        session()->flash('success', "Renewal confirmed for {$subscription->domain_name}. Next expiry: {$newExpiry->format('M d, Y')}");
+        session()->flash('success', "Renewal prepared for {$subscription->domain_name} — an invoice has been raised. Take payment and process it from the subscription's page.");
     }
 
     public function render()

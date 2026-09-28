@@ -145,6 +145,7 @@
                                     <th class="bg-slate-50/50 text-xs">Status</th>
                                     <th class="bg-slate-50/50 text-xs">Invoice</th>
                                     <th class="bg-slate-50/50 text-xs">Confirmed</th>
+                                    <th class="bg-slate-50/50 text-xs text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -175,50 +176,32 @@
                                         <td class="text-xs text-slate-500">
                                             {{ $renewal->renewal_confirmed_date?->format('M d, Y') ?? '—' }}
                                         </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            </x-ui.card>
-
-            {{-- Receipts --}}
-            <x-ui.card title="Receipts" :padding="false">
-                @if($this->receipts->isEmpty())
-                    <x-ui.empty-state
-                        icon="file-invoice"
-                        title="No receipts yet"
-                        message="Generate a receipt once the client has paid."
-                    />
-                @else
-                    <div class="overflow-x-auto">
-                        <table class="table w-full">
-                            <thead>
-                                <tr>
-                                    <th class="bg-slate-50/50 text-xs">Receipt #</th>
-                                    <th class="bg-slate-50/50 text-xs">Issued</th>
-                                    <th class="bg-slate-50/50 text-xs">Amount</th>
-                                    <th class="bg-slate-50/50 text-xs"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($this->receipts as $receipt)
-                                    <tr wire:key="receipt-{{ $receipt->id }}" class="hover:bg-slate-50/50">
-                                        <td class="text-sm font-mono font-medium text-slate-700">{{ $receipt->receipt_number }}</td>
-                                        <td class="text-sm text-slate-600">{{ $receipt->issued_date->format('M d, Y') }}</td>
-                                        <td class="text-sm font-semibold text-slate-800">{{ $receipt->formatted_amount_usd }}</td>
                                         <td class="text-right">
-                                            <x-ui.action-menu :slotCount="2">
-                                                <x-ui.button as="a" href="{{ route('receipts.view', $receipt) }}" target="_blank" variant="ghost" size="xs" title="View">
-                                                    <x-icon-eye class="w-3.5 h-3.5" />
-                                                    <span>View</span>
-                                                </x-ui.button>
-                                                <x-ui.button variant="ghost" size="xs" wire:click="downloadReceipt('{{ $receipt->ulid }}')" wire:loading.attr="disabled" title="Download">
-                                                    <x-icon-arrow-down class="w-3.5 h-3.5" />
-                                                    <span>Download</span>
-                                                </x-ui.button>
-                                            </x-ui.action-menu>
+                                            <div class="flex items-center justify-end gap-2">
+                                                @if($renewal->isAwaitingPayment() && $renewal->invoice)
+                                                    <x-ui.button wire:click="openRecordPayment('{{ $renewal->invoice->ulid }}')" title="Record Payment" variant="success" size="xs">
+                                                        <x-icon-circle-check class="w-3.5 h-3.5" />
+                                                        Record Payment
+                                                    </x-ui.button>
+                                                    <x-ui.button wire:click="sendPaymentLink('{{ $renewal->ulid }}')" wire:loading.attr="disabled" wire:target="sendPaymentLink('{{ $renewal->ulid }}')" title="Email Payment Link" variant="info" size="xs">
+                                                        <x-icon-mail class="w-3.5 h-3.5" wire:loading.remove wire:target="sendPaymentLink('{{ $renewal->ulid }}')" />
+                                                        <span class="loading loading-spinner loading-xs" wire:loading wire:target="sendPaymentLink('{{ $renewal->ulid }}')"></span>
+                                                        Payment Link
+                                                    </x-ui.button>
+                                                @elseif($renewal->isAwaitingProcessing())
+                                                    <x-ui.button wire:click="processRenewal('{{ $renewal->ulid }}')" wire:loading.attr="disabled" wire:target="processRenewal('{{ $renewal->ulid }}')" title="Process Renewal" variant="primary" size="xs">
+                                                        <x-icon-refresh class="w-3.5 h-3.5" wire:loading.remove wire:target="processRenewal('{{ $renewal->ulid }}')" />
+                                                        <span class="loading loading-spinner loading-xs" wire:loading wire:target="processRenewal('{{ $renewal->ulid }}')"></span>
+                                                        Process Renewal
+                                                    </x-ui.button>
+                                                @endif
+                                                @if($renewal->invoice && $renewal->invoice->amount_paid > 0)
+                                                    <x-ui.button as="a" href="{{ route('receipts.index', ['invoice' => $renewal->invoice->ulid]) }}" title="View Receipts" size="xs">
+                                                        <x-icon-file-invoice class="w-3.5 h-3.5" />
+                                                        Receipts
+                                                    </x-ui.button>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -246,13 +229,7 @@
                     @if($subscription->renewal_type->isRecurring())
                         <x-ui.button variant="primary" full wire:click="openRenewalModal">
                             <x-icon-refresh class="w-4 h-4" />
-                            Process Renewal
-                        </x-ui.button>
-                    @endif
-                    @if($this->client)
-                        <x-ui.button variant="success" soft full wire:click="openReceiptModal">
-                            <x-icon-file-invoice class="w-4 h-4" />
-                            Generate Receipt
+                            Start Renewal
                         </x-ui.button>
                     @endif
                     <x-ui.button as="a" variant="ghost" full href="{{ route('subscriptions.edit', $subscription) }}" wire:navigate>
@@ -299,7 +276,7 @@
             <div class="flex min-h-full items-center justify-center p-4">
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-slate-800">Process Renewal</h3>
+                        <h3 class="text-lg font-bold text-slate-800">Start Renewal</h3>
                         <x-ui.button variant="ghost" circle wire:click="$set('showRenewalModal', false)">
                             <x-icon-x class="w-4 h-4" />
                         </x-ui.button>
@@ -308,6 +285,7 @@
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
                             <p class="text-sm font-bold text-slate-800">{{ $subscription->domain_name ?: $subscription->service_type->label() }}</p>
                             <p class="text-xs text-slate-500 mt-1">Current Expiry: <span class="font-semibold text-slate-700">{{ $subscription->expiry_date->format('M d, Y') }}</span></p>
+                            <p class="text-xs text-slate-500 mt-2">This raises an invoice for the renewal — the expiry date only rolls once it's paid and processed.</p>
                         </div>
                         <div class="space-y-4">
                             <div class="form-control w-full">
@@ -362,10 +340,10 @@
                     </div>
                     <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
                         <x-ui.button variant="ghost" wire:click="$set('showRenewalModal', false)">Cancel</x-ui.button>
-                        <x-ui.button variant="primary" wire:click="processRenewal" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="processRenewal">Confirm Renewal</span>
-                            <span wire:loading wire:target="processRenewal">
-                                <span class="loading loading-spinner loading-xs"></span> Processing...
+                        <x-ui.button variant="primary" wire:click="prepareRenewal" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="prepareRenewal">Raise Invoice</span>
+                            <span wire:loading wire:target="prepareRenewal">
+                                <span class="loading loading-spinner loading-xs"></span> Preparing...
                             </span>
                         </x-ui.button>
                     </div>
@@ -375,49 +353,5 @@
     </div>
     @endif
 
-    {{-- Receipt Modal --}}
-    @if($showReceiptModal)
-    <div class="fixed inset-0 z-50" x-data @keydown.escape.window="$wire.set('showReceiptModal', false)">
-        <div class="fixed inset-0 z-0 bg-slate-900/50 backdrop-blur-sm" @click="$wire.set('showReceiptModal', false)"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4">
-                <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-slate-800">Generate Receipt</h3>
-                        <x-ui.button variant="ghost" circle wire:click="$set('showReceiptModal', false)">
-                            <x-icon-x class="w-4 h-4" />
-                        </x-ui.button>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <p class="text-xs text-slate-500">
-                            Sent to <span class="font-semibold text-slate-700">{{ $this->client?->email }}</span> once generated.
-                        </p>
-                        <x-ui.form-input
-                            label="Amount (USD)"
-                            model="receiptAmount"
-                            type="number"
-                            step="0.01"
-                            prefix="$"
-                        />
-                        <x-ui.form-textarea
-                            label="Notes (optional)"
-                            model="receiptNotes"
-                            placeholder="e.g. Payment for renewal via bank transfer"
-                            :rows="3"
-                        />
-                    </div>
-                    <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
-                        <x-ui.button variant="ghost" wire:click="$set('showReceiptModal', false)">Cancel</x-ui.button>
-                        <x-ui.button variant="success" wire:click="generateReceipt" wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="generateReceipt">Generate & Send</span>
-                            <span wire:loading wire:target="generateReceipt">
-                                <span class="loading loading-spinner loading-xs"></span> Generating...
-                            </span>
-                        </x-ui.button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+    <x-invoices.record-payment-modal />
 </div>

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentRecordStatus;
+use App\Enums\PaymentStatus;
 use App\Traits\HasPublicUlid;
 use App\Traits\LogsActivity;
 use Carbon\CarbonImmutable;
@@ -187,5 +188,30 @@ class Invoice extends Model
             'amount_paid' => $amountPaid,
             'status' => $status,
         ]);
+
+        if ($status === InvoiceStatus::Paid) {
+            $this->settleLinkedRenewal();
+        }
+    }
+
+    /**
+     * Once this invoice is fully paid, the renewal it was raised for (if
+     * any) is considered settled too — used both by a manual payment and a
+     * gateway webhook, so either path keeps the renewal in sync the same
+     * way. A renewal already marked Paid/Renewed is left alone (keeps its
+     * original payment_received_date rather than overwriting it).
+     */
+    private function settleLinkedRenewal(): void
+    {
+        $renewal = $this->renewals()
+            ->whereNotIn('payment_status', [PaymentStatus::Paid, PaymentStatus::Renewed])
+            ->first();
+
+        if ($renewal) {
+            $renewal->update([
+                'payment_status' => PaymentStatus::Paid,
+                'payment_received_date' => now()->toDateString(),
+            ]);
+        }
     }
 }

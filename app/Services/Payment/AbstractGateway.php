@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Payment;
 
+use App\Actions\GenerateInvoiceReceiptAction;
 use App\Enums\PaymentRecordStatus;
-use App\Enums\PaymentStatus;
 use App\Events\InvoicePaid;
 use App\Models\Invoice;
 use App\Models\Payment;
 use Carbon\CarbonImmutable;
+use RuntimeException;
 
 /**
  * Shared logic that all payment gateway implementations inherit.
@@ -28,8 +29,11 @@ abstract class AbstractGateway
 
     /**
      * Mark the payment as succeeded, recalculate the invoice's paid/partial
-     * status from all succeeded payments, update any linked renewal once
-     * the invoice is fully paid, and fire the InvoicePaid event.
+     * status from all succeeded payments (which also settles any linked
+     * renewal once the invoice is fully paid — see
+     * Invoice::recalculatePaymentStatus()), auto-generate a receipt for the
+     * client since a gateway confirmation means no admin is present to do
+     * it manually, and fire the InvoicePaid event.
      *
      * @param  array<string, mixed>|null  $gatewayResponse  Full raw provider response stored for audit.
      */
@@ -49,19 +53,28 @@ abstract class AbstractGateway
         ]);
 
         $invoice->recalculatePaymentStatus();
+        $invoice = $invoice->fresh();
 
-        // Only settle the linked renewal once the invoice is fully paid —
-        // a partial payment doesn't yet cover the full renewal cost.
-        if ($invoice->fresh()->isPaid()) {
-            $renewal = $invoice->renewals()->first();
-            if ($renewal) {
-                $renewal->update([
-                    'payment_status' => PaymentStatus::Paid,
-                    'payment_received_date' => $now->toDateString(),
-                ]);
-            }
+        if ($invoice->isPaid()) {
+            $this->generateReceiptIfNeeded($invoice);
         }
 
         event(new InvoicePaid($invoice, $payment));
+    }
+
+    /**
+     * Best-effort — a gateway-confirmed payment means the client paid
+     * unattended, so unlike a manual payment (where the admin decides when
+     * to generate one) we generate the receipt automatically here. Silently
+     * skips if one already covers this amount (idempotency on a re-fired
+     * webhook) or the invoice has no client to issue it to.
+     */
+    private function generateReceiptIfNeeded(Invoice $invoice): void
+    {
+        try {
+            app(GenerateInvoiceReceiptAction::class)->execute($invoice);
+        } catch (RuntimeException) {
+            //
+        }
     }
 }

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Rebuilt the subscription renewal workflow** to match the invoice/payment/receipt system built this session — the subscription page's "Generate Receipt" predated all of it: it created a `Receipt` with an admin-typed arbitrary amount, no `Payment` record, no gateway/payment-link support, and no connection to `recalculatePaymentStatus`, void, or invalidation. "Process Renewal" separately rolled the expiry date immediately with no payment check at all. The new lifecycle, on both the subscription page and the Renewal Tracker:
+  1. **Start Renewal** (`PrepareRenewalAction`) — records what's owed as a `Renewal` (payment_status `Pending`) and raises a real invoice for it, reusing an already-open draft/sent invoice for the subscription's current cycle if one exists (e.g. from an automated expiry reminder) instead of billing twice. Never touches the expiry date.
+  2. **Take payment** — manually (the same Record Payment modal used on Invoices/Receipts, via the shared `RecordsManualPayments` trait) or by emailing the client a payment link (the invoice's existing public checkout page, via `NotificationService::sendInvoice()`).
+  3. **Receipt** — generated manually from the Receipts page for a manual payment, or now **automatically** when a gateway/payment-link payment is confirmed (`AbstractGateway::markInvoicePaid()`).
+  4. **Process Renewal** (`ProcessRenewalAction`) — only reachable once the renewal is paid; rolls the subscription's expiry to the date chosen when the renewal was started, and marks it processed.
+  - Centralized the invoice-paid → renewal-settled logic (previously only in the Stripe webhook path) into `Invoice::recalculatePaymentStatus()`, so a **manual** payment now correctly settles a linked renewal too — previously it silently didn't.
+  - `Renewal` gained a public `ulid` (previously the only model in the app still exposing its raw integer ID) and a `new_expiry_date` column (the target expiry, applied once paid).
+  - Tests: `SubscriptionRenewalWorkflowTest`. Trimmed the now-inapplicable subscription-page-specific cases out of `GenerateReceiptTest` (the underlying `GenerateReceiptAction` capability itself is untouched and still tested)
+
+## [Unreleased]
+
 ### Added
 - Three new admin settings under Settings → Invoicing/Overdue Payment Policy, all defaulting to today's existing behavior so nothing changes until an admin opts in:
   - **Receipt Prefix** — receipt numbers were always hardcoded `RCT-{year}-{seq}`; now configurable the same way invoice numbers already were.

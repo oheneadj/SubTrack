@@ -4,26 +4,35 @@ declare(strict_types=1);
 
 namespace App\Livewire\Subscriptions;
 
-use App\Actions\GenerateReceiptAction;
-use App\Enums\PaymentStatus;
-use App\Enums\SubscriptionStatus;
-use App\Models\Receipt;
-use App\Models\Renewal;
+use App\Actions\PrepareRenewalAction;
+use App\Actions\ProcessRenewalAction;
+use App\Exceptions\RenewalAlreadyProcessedException;
+use App\Exceptions\RenewalNotPaidException;
+use App\Livewire\Concerns\RecordsManualPayments;
+use App\Models\Invoice;
 use App\Models\Subscription;
-use App\Services\ReceiptPdfService;
+use App\Services\NotificationService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use RuntimeException;
 
 /**
  * Shows full details for a single subscription, including renewal history.
+ *
+ * The renewal lifecycle is: PrepareRenewalAction (records what's owed and
+ * raises an invoice for it, without touching the expiry date) -> payment is
+ * taken against that invoice, manually (RecordsManualPayments trait) or via
+ * a payment link (an emailed invoice with a Stripe checkout URL) -> once
+ * paid, a receipt is generated (manually for a manual payment, automatically
+ * for a gateway one — see AbstractGateway::markInvoicePaid()) -> only then
+ * can ProcessRenewalAction roll the subscription's expiry date.
  */
 class SubscriptionShow extends Component
 {
+    use RecordsManualPayments;
+
     public Subscription $subscription;
 
     public bool $showRenewalModal = false;
@@ -39,12 +48,6 @@ class SubscriptionShow extends Component
     public float $renewalProviderCost = 0;
 
     public string $notes = '';
-
-    public bool $showReceiptModal = false;
-
-    public float $receiptAmount = 0;
-
-    public string $receiptNotes = '';
 
     public function mount(Subscription $subscription): void
     {
@@ -66,67 +69,6 @@ class SubscriptionShow extends Component
     public function client()
     {
         return $this->subscription->effective_client;
-    }
-
-    /** Receipts already generated for this subscription, most recent first. */
-    #[Computed]
-    public function receipts()
-    {
-        return $this->subscription->receipts()->latest('issued_date')->get();
-    }
-
-    /** Open the receipt modal, defaulting the amount to the subscription's renewal cost. */
-    public function openReceiptModal(): void
-    {
-        $this->receiptAmount = round($this->subscription->renewal_cost_usd / 100, 2);
-        $this->receiptNotes = '';
-        $this->showReceiptModal = true;
-    }
-
-    /** Generate a receipt for the entered amount and email it to the client. */
-    public function generateReceipt(GenerateReceiptAction $action): void
-    {
-        $this->validate([
-            'receiptAmount' => 'required|numeric|min:0.01',
-            'receiptNotes' => 'nullable|string',
-        ]);
-
-        $action->execute(
-            $this->subscription,
-            (int) round($this->receiptAmount * 100),
-            $this->receiptNotes ?: null,
-        );
-
-        $this->showReceiptModal = false;
-        unset($this->receipts);
-
-        session()->flash('success', 'Receipt generated and sent to the client.');
-    }
-
-    /**
-     * Force-download a receipt PDF. Viewing it inline instead is a plain
-     * link to ReceiptPdfController@view — a real browser navigation, not a
-     * Livewire action — since Livewire's file-download mechanism always
-     * forces a save-as regardless of the response's Content-Disposition
-     * header, making a Livewire-driven "view" indistinguishable from download.
-     */
-    public function downloadReceipt(string $receiptUlid, ReceiptPdfService $pdfService): StreamedResponse|BinaryFileResponse
-    {
-        $receipt = $this->findReceiptOrFail($receiptUlid, $pdfService);
-
-        return Storage::download('public/'.$receipt->pdf_path, $receipt->receipt_number.'.pdf');
-    }
-
-    /** Look up a receipt on this subscription, regenerating its PDF if it's missing. */
-    private function findReceiptOrFail(string $receiptUlid, ReceiptPdfService $pdfService): Receipt
-    {
-        $receipt = $this->subscription->receipts()->where('ulid', $receiptUlid)->firstOrFail();
-
-        if (! $receipt->pdf_path || ! Storage::exists('public/'.$receipt->pdf_path)) {
-            $pdfService->generate($receipt);
-        }
-
-        return $receipt;
     }
 
     #[Computed]
@@ -165,7 +107,12 @@ class SubscriptionShow extends Component
         $this->showRenewalModal = true;
     }
 
-    public function processRenewal(): void
+    /**
+     * Starts the renewal: records what's owed and raises an invoice for it.
+     * Does not touch the subscription's expiry date — that only happens
+     * once it's paid and processRenewal() is run on it, further down.
+     */
+    public function prepareRenewal(PrepareRenewalAction $action): void
     {
         $this->validate([
             'renewalMode' => 'required|in:years,months,date',
@@ -177,52 +124,79 @@ class SubscriptionShow extends Component
 
         $oldExpiry = $this->subscription->expiry_date;
 
-        $providerCostCents = (int) round($this->renewalProviderCost * 100);
-        $markup = (float) ($this->subscription->markup_percentage ?? 0);
-        $markedUpCost = (int) round($providerCostCents * (1 + $markup / 100));
-
         if ($this->renewalMode === 'years') {
             $newExpiry = $oldExpiry->copy()->addYears($this->renewalYears);
-            $clientCost = $markedUpCost * $this->renewalYears;
-            $note = "Automated renewal. Expiry rolled from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} (+{$this->renewalYears} years).";
+            $note = "Renewal prepared. Expiry will roll from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} (+{$this->renewalYears} years) once paid.";
         } elseif ($this->renewalMode === 'months') {
             $newExpiry = $oldExpiry->copy()->addMonths($this->renewalMonths);
-            $clientCost = $markedUpCost;
-            $note = "Automated renewal. Expiry rolled from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} (+{$this->renewalMonths} months).";
+            $note = "Renewal prepared. Expiry will roll from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} (+{$this->renewalMonths} months) once paid.";
         } else {
             $newExpiry = Carbon::parse($this->customExpiryDate);
-            $clientCost = $markedUpCost;
-            $note = "Manual date renewal. Expiry set from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')}.";
+            $note = "Renewal prepared. Expiry will be set from {$oldExpiry->format('Y-m-d')} to {$newExpiry->format('Y-m-d')} once paid.";
         }
 
-        Renewal::create([
-            'subscription_id' => $this->subscription->id,
-            'due_date' => $oldExpiry,
-            'provider_cost_usd' => $providerCostCents,
-            'client_cost_usd' => $clientCost,
-            'payment_status' => PaymentStatus::Renewed,
-            'renewal_confirmed_date' => now(),
-            'notes' => $note,
-        ]);
+        try {
+            $action->execute(
+                $this->subscription,
+                (int) round($this->renewalProviderCost * 100),
+                $newExpiry,
+                $note,
+            );
+        } catch (RuntimeException $e) {
+            session()->flash('error', $e->getMessage());
 
-        $updateData = [
-            'expiry_date' => $newExpiry,
-            'status' => SubscriptionStatus::Active,
-        ];
-
-        // If the provider changed their price, keep the subscription in sync
-        if ($providerCostCents !== $this->subscription->renewal_cost_usd) {
-            $updateData['renewal_cost_usd'] = $providerCostCents;
+            return;
         }
 
-        $this->subscription->update($updateData);
-
-        // Refresh so the new expiry and renewal row appear immediately
         $this->subscription->refresh()->load(['client', 'project.client', 'provider', 'renewals.invoice']);
+        unset($this->renewals, $this->stats);
 
         $this->showRenewalModal = false;
 
-        session()->flash('success', "Renewal confirmed. Next expiry: {$newExpiry->format('M d, Y')}");
+        session()->flash('success', 'Renewal prepared — an invoice has been raised. Take payment, then process the renewal once it\'s paid.');
+    }
+
+    /** Emails the renewal's invoice to the client, with a link to pay it online. */
+    public function sendPaymentLink(string $renewalUlid, NotificationService $notificationService): void
+    {
+        $renewal = $this->subscription->renewals()->where('ulid', $renewalUlid)->firstOrFail();
+
+        if (! $renewal->invoice) {
+            return;
+        }
+
+        $notificationService->sendInvoice($renewal->invoice);
+
+        session()->flash('success', 'Payment link emailed to the client.');
+    }
+
+    /**
+     * Applies an already-paid renewal to the subscription — rolls the
+     * expiry date and marks it processed. Only reachable once payment has
+     * been confirmed (Renewal::isAwaitingProcessing()).
+     */
+    public function processRenewal(string $renewalUlid, ProcessRenewalAction $action): void
+    {
+        $renewal = $this->subscription->renewals()->where('ulid', $renewalUlid)->firstOrFail();
+
+        try {
+            $renewal = $action->execute($renewal);
+        } catch (RenewalNotPaidException|RenewalAlreadyProcessedException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        }
+
+        $this->subscription->refresh()->load(['client', 'project.client', 'provider', 'renewals.invoice']);
+        unset($this->renewals, $this->stats);
+
+        session()->flash('success', "Renewal processed. Next expiry: {$renewal->subscription->expiry_date->format('M d, Y')}");
+    }
+
+    /** Refreshes computed state after a manual payment is recorded against a renewal's invoice. */
+    protected function afterPaymentRecorded(Invoice $invoice): void
+    {
+        unset($this->renewals, $this->stats);
     }
 
     #[Layout('components.layouts.app')]

@@ -101,7 +101,7 @@
             <div class="flex min-h-full items-center justify-center p-4">
                 <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-slate-800">Process Renewal</h3>
+                        <h3 class="text-lg font-bold text-slate-800">Start Renewal</h3>
                         <x-ui.button variant="ghost" circle wire:click="$set('showRenewalModal', false)"><x-icon-x class="w-4 h-4" /></x-ui.button>
                     </div>
                     <div class="p-6 space-y-6">
@@ -109,6 +109,7 @@
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
                                 <p class="text-sm font-bold text-slate-800">{{ $this->subscriptionToRenew->domain_name ?: $this->subscriptionToRenew->service_type->label() }}</p>
                                 <p class="text-xs text-slate-500 mt-1">Current Expiry: <span class="font-semibold text-slate-700">{{ $this->subscriptionToRenew->expiry_date->format('M d, Y') }}</span></p>
+                                <p class="text-xs text-slate-500 mt-2">This raises an invoice for the renewal — the expiry date only rolls once it's paid and processed from the subscription's page.</p>
                             </div>
                         @endif
 
@@ -139,9 +140,9 @@
                     <div class="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3">
                         <x-ui.button variant="ghost" wire:click="$set('showRenewalModal', false)">Cancel</x-ui.button>
                         <x-ui.button variant="primary" wire:click="processRenewal" wire:loading.attr="disabled">
-                            <span wire:loading.remove>Confirm Renewal</span>
+                            <span wire:loading.remove>Raise Invoice</span>
                             <span wire:loading>
-                                <span class="loading loading-spinner loading-xs"></span> Processing...
+                                <span class="loading loading-spinner loading-xs"></span> Preparing...
                             </span>
                         </x-ui.button>
                     </div>

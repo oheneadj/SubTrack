@@ -158,6 +158,7 @@ class Subscription extends Model
             ?? ($this->project_id ? Project::whereKey($this->project_id)->value('client_id') : null);
     }
 
+    /** @return HasMany<Renewal, $this> */
     public function renewals(): HasMany
     {
         return $this->hasMany(Renewal::class);

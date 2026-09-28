@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use App\Traits\HasPublicUlid;
 use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,22 +13,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Renewal extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, HasPublicUlid, LogsActivity;
 
     protected $fillable = [
-        'subscription_id', 'invoice_id', 'due_date',
+        'subscription_id', 'invoice_id', 'due_date', 'new_expiry_date',
         'provider_cost_usd', 'client_cost_usd', 'payment_status',
         'payment_received_date', 'renewal_confirmed_date', 'notes',
     ];
 
     protected $casts = [
         'due_date' => 'date',
+        'new_expiry_date' => 'date',
         'payment_received_date' => 'date',
         'renewal_confirmed_date' => 'date',
         'payment_status' => PaymentStatus::class,
         'provider_cost_usd' => 'integer',
         'client_cost_usd' => 'integer',
     ];
+
+    /** True once payment has been confirmed but the expiry roll (ProcessRenewalAction) hasn't happened yet. */
+    public function isAwaitingProcessing(): bool
+    {
+        return in_array($this->payment_status, [PaymentStatus::Paid, PaymentStatus::Renewed], true)
+            && ! $this->renewal_confirmed_date;
+    }
+
+    /** True while payment hasn't been collected yet — Record Payment / Send Payment Link should be offered. */
+    public function isAwaitingPayment(): bool
+    {
+        return ! in_array($this->payment_status, [PaymentStatus::Paid, PaymentStatus::Renewed], true);
+    }
 
     public function getFormattedProviderCostUsdAttribute(): string
     {
@@ -39,11 +54,13 @@ class Renewal extends Model
         return '$'.number_format($this->client_cost_usd / 100, 2);
     }
 
+    /** @return BelongsTo<Subscription, $this> */
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(Subscription::class);
     }
 
+    /** @return BelongsTo<Invoice, $this> */
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
