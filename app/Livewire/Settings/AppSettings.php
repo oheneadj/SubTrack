@@ -43,6 +43,9 @@ class AppSettings extends Component
 
     public $invoiceDueDays;
 
+    // Receipts
+    public $receiptPrefix;
+
     public $invoiceFooter;
 
     public $senderName;
@@ -56,6 +59,11 @@ class AppSettings extends Component
     public $penaltyPercentage;
 
     public $gracePeriodDays;
+
+    // Manual payment corrections
+    public $paymentEditWindowHours;
+
+    public $requireVoidReason;
 
     protected $rules = [
         'appName' => 'required|string|max:50',
@@ -72,9 +80,11 @@ class AppSettings extends Component
         'invoiceFooter' => 'nullable|string|max:500',
         'senderName' => 'nullable|string|max:100',
         'senderTitle' => 'nullable|string|max:100',
+        'receiptPrefix' => 'required|string|max:10',
         'reminderDays' => 'nullable|string|max:50',
         'penaltyPercentage' => 'nullable|numeric|min:0|max:100',
         'gracePeriodDays' => 'nullable|integer|min:0|max:365',
+        'paymentEditWindowHours' => 'required|integer|min:1|max:168',
         'logo' => 'nullable|image|max:1024',
     ];
 
@@ -97,9 +107,12 @@ class AppSettings extends Component
         $this->invoiceFooter = $s['invoice_footer'] ?? '';
         $this->senderName = $s['sender_name'] ?? '';
         $this->senderTitle = $s['sender_title'] ?? '';
+        $this->receiptPrefix = $s['receipt_prefix'] ?? 'RCT';
         $this->reminderDays = $s['reminder_days'] ?? '30,14,7';
         $this->penaltyPercentage = $s['penalty_percentage'] ?? '5';
         $this->gracePeriodDays = $s['grace_period_days'] ?? 14;
+        $this->paymentEditWindowHours = $s['payment_edit_window_hours'] ?? 24;
+        $this->requireVoidReason = filter_var($s['require_void_reason'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
     public function save()
@@ -132,9 +145,12 @@ class AppSettings extends Component
         Setting::set('invoice_footer', $this->invoiceFooter);
         Setting::set('sender_name', $this->senderName);
         Setting::set('sender_title', $this->senderTitle);
+        Setting::set('receipt_prefix', $this->receiptPrefix);
         Setting::set('reminder_days', $this->reminderDays);
         Setting::set('penalty_percentage', $this->penaltyPercentage);
         Setting::set('grace_period_days', $this->gracePeriodDays);
+        Setting::set('payment_edit_window_hours', $this->paymentEditWindowHours);
+        Setting::set('require_void_reason', $this->requireVoidReason ? '1' : '0');
 
         session()->flash('success', 'Settings updated successfully.');
     }

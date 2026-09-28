@@ -10,11 +10,13 @@ use App\Actions\VoidManualPaymentAction;
 use App\Exceptions\InvalidPaymentAmountException;
 use App\Exceptions\PaymentNotEditableException;
 use App\Exceptions\PaymentNotVoidableException;
+use App\Exceptions\VoidReasonRequiredException;
 use App\Livewire\Concerns\RecordsManualPayments;
 use App\Mail\ReceiptMail;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Receipt;
+use App\Models\Setting;
 use App\Services\EmailLogger;
 use App\Services\ReceiptPdfService;
 use Illuminate\Support\Facades\Mail;
@@ -147,6 +149,12 @@ class ReceiptIndex extends Component
         session()->flash('success', 'Payment corrected.');
     }
 
+    #[Computed]
+    public function voidReasonRequired(): bool
+    {
+        return filter_var(Setting::get('require_void_reason', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
     /** Opens the Void Payment modal. */
     public function openVoidPayment(string $paymentUlid): void
     {
@@ -163,6 +171,10 @@ class ReceiptIndex extends Component
 
         try {
             $action->execute($payment, $this->voidReason ?: null);
+        } catch (VoidReasonRequiredException $e) {
+            $this->addError('voidReason', $e->getMessage());
+
+            return;
         } catch (PaymentNotVoidableException $e) {
             session()->flash('error', $e->getMessage());
 

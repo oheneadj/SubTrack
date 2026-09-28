@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Three new admin settings under Settings → Invoicing/Overdue Payment Policy, all defaulting to today's existing behavior so nothing changes until an admin opts in:
+  - **Receipt Prefix** — receipt numbers were always hardcoded `RCT-{year}-{seq}`; now configurable the same way invoice numbers already were.
+  - **Edit Window (Hours)** — how long after recording a manual payment it can still be corrected in place (`Payment::isEditable()`), previously hardcoded to "same calendar day." Default 24h.
+  - **Require a reason to void a payment** — off by default; when enabled, `VoidManualPaymentAction` rejects voiding without one (`VoidReasonRequiredException`), and the void modal marks the field required instead of "(optional)."
+
+### Fixed
+- `invoice_prefix` was a setting an admin could set and save, but `InvoiceNumberService` never actually read it — invoice numbers were always hardcoded `INV-{year}-{seq}` regardless. Wired it up while adding the equivalent `receipt_prefix` setting, so both now actually take effect
+
+## [Unreleased]
+
 ### Fixed
 - Finance dashboard's "Recent Payments" only ever queried fully `Paid` invoices — a client's partial payment on an invoice never showed up there even though real money came in, and if it had matched it would've overstated the amount using `total_amount` instead of `amount_paid`. Now includes `Partially Paid` invoices and shows the amount actually received. Tests: `FinanceDashboardRecentPaymentsTest`
 - The dashboard activity feed had no icon/color mapping for the new `ReceiptInvalidated` event — it still showed (data was never wrong), just fell back to the generic gray icon instead of a red warning one like `PaymentVoided`

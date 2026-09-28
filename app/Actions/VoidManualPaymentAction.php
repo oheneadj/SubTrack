@@ -6,9 +6,11 @@ namespace App\Actions;
 
 use App\Enums\PaymentRecordStatus;
 use App\Exceptions\PaymentNotVoidableException;
+use App\Exceptions\VoidReasonRequiredException;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Receipt;
+use App\Models\Setting;
 use App\Services\ReceiptPdfService;
 
 /**
@@ -28,11 +30,17 @@ class VoidManualPaymentAction
 
     /**
      * @throws PaymentNotVoidableException if the payment isn't a successful manual payment
+     * @throws VoidReasonRequiredException if no reason was given while Setting `require_void_reason` is on
      */
     public function execute(Payment $payment, ?string $reason = null): Payment
     {
         if (! $payment->isVoidable()) {
             throw new PaymentNotVoidableException;
+        }
+
+        $reasonRequired = filter_var(Setting::get('require_void_reason', false), FILTER_VALIDATE_BOOLEAN);
+        if ($reasonRequired && ! trim((string) $reason)) {
+            throw new VoidReasonRequiredException;
         }
 
         $payment->update([

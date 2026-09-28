@@ -133,6 +133,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <x-ui.form-input label="Invoice Prefix" model="invoicePrefix" placeholder="INV" :error="$errors->first('invoicePrefix')" />
                 <x-ui.form-input label="Default Due Days" model="invoiceDueDays" type="number" suffix="Days" :error="$errors->first('invoiceDueDays')" />
+                <x-ui.form-input label="Receipt Prefix" model="receiptPrefix" placeholder="RCT" :error="$errors->first('receiptPrefix')" />
                 <x-ui.form-input label="Sender Name" model="senderName" placeholder="e.g. John Smith" :error="$errors->first('senderName')" />
                 <x-ui.form-input label="Sender Title" model="senderTitle" placeholder="e.g. Account Manager" :error="$errors->first('senderTitle')" />
 
@@ -174,6 +175,28 @@
                 <div>
                     <x-ui.form-input label="Grace Period (Days)" model="gracePeriodDays" type="number" placeholder="14" :error="$errors->first('gracePeriodDays')" />
                     <p class="text-xs text-secondary mt-2">Days after expiry before the subscription is automatically cancelled. Stated in the reminder email as the payment deadline.</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h4 class="text-sm font-bold text-primary flex items-center gap-2 mb-2">
+                <x-icon-edit class="w-4 h-4 text-amber-500" />
+                Manual Payment Corrections
+            </h4>
+            <p class="text-sm text-secondary mb-6">Controls for fixing a mistakenly-recorded manual payment (cash, bank transfer, etc.) from the Receipts page.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-ui.form-input label="Edit Window (Hours)" model="paymentEditWindowHours" type="number" placeholder="24" :error="$errors->first('paymentEditWindowHours')" />
+                    <p class="text-xs text-secondary mt-2">How long after recording a manual payment its amount can still be corrected in place. Past this window (or once a receipt has been issued for it), it can only be voided and re-recorded.</p>
+                </div>
+                <div>
+                    <label class="flex items-center gap-3 cursor-pointer mt-1">
+                        <input type="checkbox" wire:model="requireVoidReason" class="checkbox checkbox-primary" />
+                        <span class="text-sm font-semibold text-primary">Require a reason to void a payment</span>
+                    </label>
+                    <p class="text-xs text-secondary mt-2">When on, an admin must explain why before a manual payment can be voided — useful for audit-compliance-minded teams.</p>
                 </div>
             </div>
         </x-ui.card>

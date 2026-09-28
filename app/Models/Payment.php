@@ -81,15 +81,21 @@ class Payment extends Model
 
     /**
      * A manual payment's amount can only be edited in place — rather than
-     * voided and re-recorded — while it's still same-day and no receipt
-     * has been issued for the invoice since it was recorded. Once either
+     * voided and re-recorded — within a configurable window after it was
+     * recorded (Setting `payment_edit_window_hours`, default 24) and only
+     * while no receipt has been issued for the invoice since. Once either
      * of those is no longer true, a receipt may already document the
      * original amount, so editing in place would silently invalidate it;
      * voiding and recording a fresh payment is the safe path instead.
      */
     public function isEditable(): bool
     {
-        if (! $this->isVoidable() || ! $this->created_at->isToday()) {
+        if (! $this->isVoidable()) {
+            return false;
+        }
+
+        $windowHours = (int) Setting::get('payment_edit_window_hours', 24);
+        if ($this->created_at->diffInHours(CarbonImmutable::now()) >= $windowHours) {
             return false;
         }
 

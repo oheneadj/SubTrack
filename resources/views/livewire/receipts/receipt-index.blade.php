@@ -209,9 +209,12 @@
         <p class="text-sm text-slate-500 mb-4">The original record is kept for audit — this only excludes it from the invoice's amount paid.</p>
 
         <div class="flex flex-col gap-1 w-full mb-4">
-            <label class="text-sm font-semibold text-slate-700">Reason (optional)</label>
+            <label class="text-sm font-semibold text-slate-700">Reason {{ $this->voidReasonRequired ? '' : '(optional)' }}</label>
             <input type="text" wire:model="voidReason" placeholder="e.g. Entered wrong amount"
                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            @error('voidReason')
+                <p class="text-xs text-red-600 font-medium">{{ $message }}</p>
+            @enderror
         </div>
 
         <div class="flex justify-end gap-3">
