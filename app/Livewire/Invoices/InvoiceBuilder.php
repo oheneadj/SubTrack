@@ -9,9 +9,9 @@ use App\Models\Client;
 use App\Models\DashboardActivityLog;
 use App\Models\Invoice;
 use App\Models\Project;
+use App\Models\Subscription;
 use App\Services\InvoiceNumberService;
 use App\Services\InvoicePdfService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -95,7 +95,35 @@ class InvoiceBuilder extends Component
             'quantity' => 1,
             'unit_price' => 0,
             'total' => 0,
+            'subscription_id' => null,
         ];
+    }
+
+    /**
+     * Add a line item pre-filled from one of the selected project's actual
+     * subscriptions — description, and the client's renewal cost (including
+     * markup) as the unit price — instead of the admin re-typing it from
+     * scratch and losing the link back to the subscription entirely.
+     */
+    public function addSubscriptionItem(int $subscriptionId): void
+    {
+        $subscription = Subscription::find($subscriptionId);
+        if (! $subscription) {
+            return;
+        }
+
+        $serviceName = $subscription->domain_name ?: $subscription->service_type->label();
+        $unitPrice = $subscription->client_renewal_cost_usd / 100;
+
+        $this->items[] = [
+            'description' => "Renewal: {$serviceName}",
+            'quantity' => 1,
+            'unit_price' => $unitPrice,
+            'total' => $unitPrice,
+            'subscription_id' => $subscription->id,
+        ];
+
+        $this->recalculate();
     }
 
     public function removeItem(int $index): void
@@ -128,7 +156,14 @@ class InvoiceBuilder extends Component
         $this->total_amount = $this->subtotal + $this->tax_amount;
     }
 
-    public function save(InvoicePdfService $pdfService): RedirectResponse
+    /**
+     * No return type declared: Livewire's redirect() helper returns its own
+     * Redirector wrapper (not Illuminate\Http\RedirectResponse), and PHP
+     * enforces declared return types strictly on every invocation — a
+     * RedirectResponse type hint here throws a TypeError the moment this
+     * method actually returns, which nothing had ever exercised until now.
+     */
+    public function save(InvoicePdfService $pdfService)
     {
         $this->validate([
             'client_id' => 'required|exists:clients,id',
@@ -205,6 +240,25 @@ class InvoiceBuilder extends Component
         }
 
         return Project::where('client_id', $this->client_id)->orderBy('project_name')->get();
+    }
+
+    /** The selected project's own subscriptions, offered as one-click line items. */
+    public function getProjectSubscriptionsProperty(): Collection
+    {
+        if (! $this->project_id) {
+            return collect();
+        }
+
+        return Subscription::where('project_id', $this->project_id)
+            ->with('provider')
+            ->orderBy('domain_name')
+            ->get();
+    }
+
+    /** Subscription ids already added as line items, so the picker can show them as added. */
+    public function getAddedSubscriptionIdsProperty(): array
+    {
+        return collect($this->items)->pluck('subscription_id')->filter()->all();
     }
 
     public function render(): View

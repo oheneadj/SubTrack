@@ -28,7 +28,7 @@
                             @endforeach
                         </x-ui.form-select>
 
-                        <x-ui.form-select model="project_id" label="Project" required>
+                        <x-ui.form-select model="project_id" label="Project" required :live="true">
                             <option value="">Select a Project</option>
                             @foreach($this->projects as $project)
                                 <option value="{{ $project->id }}">{{ $project->project_name }}</option>
@@ -36,6 +36,32 @@
                         </x-ui.form-select>
                     </div>
                 </div>
+
+                @if($project_id && $this->projectSubscriptions->isNotEmpty())
+                    <div class="px-6 pb-6">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">This project's subscriptions</p>
+                        <div class="space-y-2">
+                            @foreach($this->projectSubscriptions as $subscription)
+                                @php $added = in_array($subscription->id, $this->addedSubscriptionIds, true); @endphp
+                                <div class="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50/60">
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-bold text-slate-700 truncate">{{ $subscription->domain_name ?: $subscription->service_type->label() }}</div>
+                                        <div class="text-xs text-slate-400">{{ $subscription->provider?->name }} &middot; {{ $subscription->formatted_client_renewal_cost_usd }}</div>
+                                    </div>
+                                    @if($added)
+                                        <span class="text-xs font-semibold text-green-600 flex items-center gap-1 shrink-0">
+                                            <x-icon-check class="w-3.5 h-3.5" /> Added
+                                        </span>
+                                    @else
+                                        <x-ui.button type="button" wire:click="addSubscriptionItem({{ $subscription->id }})" variant="outline" size="xs" class="shrink-0">
+                                            <x-icon-plus class="w-3.5 h-3.5" /> Add
+                                        </x-ui.button>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </x-ui.card>
 
             {{-- Invoice Items --}}

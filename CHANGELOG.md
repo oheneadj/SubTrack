@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Production-breaking**: `InvoiceBuilder::save()` declared a `RedirectResponse` return type, but Livewire's `redirect()` helper returns its own `Redirector` wrapper — PHP enforces declared return types strictly on every call, so this threw a `TypeError` the moment the method actually returned, for every single invoice save (create or edit). No test had ever exercised this method before, which is why it went unnoticed. Removed the type hint
+
+### Added
+- Invoice Builder was completely detached from Projects/Subscriptions: building an invoice meant manually typing every line item from scratch, with zero awareness of the selected project's actual subscriptions — despite `invoice_items.subscription_id` already existing and being used by the automated reminder-invoice flow. Selecting a project now shows that project's subscriptions with a one-click "Add" that pre-fills the description and the client's marked-up renewal cost as a line item, tagging it with `subscription_id` so the link is preserved (already-added ones show "Added" instead of a duplicate Add button)
+- Tests: `InvoiceBuilderSubscriptionLinkTest`
+
 ### Changed
 - User show page's "Account History" is now paginated (10 per page) instead of silently capped at the 10 most recent entries with no way to see anything older. Tests: `UserShowActivityHistoryPaginationTest`
 
