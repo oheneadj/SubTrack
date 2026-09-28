@@ -242,6 +242,14 @@
                             Start Renewal
                         </x-ui.button>
                     @endif
+                    @if($this->client)
+                        <x-ui.button as="a" variant="soft" full
+                           href="{{ route('invoices.create', ['clientId' => $this->client->ulid, 'projectId' => $subscription->project?->ulid, 'subscriptionId' => $subscription->ulid]) }}"
+                           wire:navigate>
+                            <x-icon-file-invoice class="w-4 h-4" />
+                            Create Invoice
+                        </x-ui.button>
+                    @endif
                     <x-ui.button as="a" variant="ghost" full href="{{ route('subscriptions.edit', $subscription) }}" wire:navigate>
                         <x-icon-edit class="w-4 h-4" />
                         Edit Subscription

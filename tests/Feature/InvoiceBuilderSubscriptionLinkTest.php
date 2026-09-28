@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Livewire\Invoices\InvoiceBuilder;
+use App\Livewire\Subscriptions\SubscriptionShow;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -137,4 +138,43 @@ test('the client and project selects each render only one blank option, not a du
 
     preg_match_all('/id="project_id".*?<\/select>/s', $html, $projectSelect);
     expect(substr_count($projectSelect[0][0], '<option value="">'))->toBe(1);
+});
+
+test('arriving via the query string with a client, project, and subscription pre-adds that subscription as a line item', function () {
+    $client = Client::create(['name' => 'Acme Co', 'email' => 'acme@test.test']);
+    $project = Project::create(['client_id' => $client->id, 'project_name' => 'Acme Project']);
+    $provider = Provider::create(['name' => 'Test Provider']);
+    $subscription = makeInvoiceBuilderSubscription($project, $provider, ['domain_name' => 'preadded.com']);
+
+    $component = Livewire::actingAs(User::factory()->create())
+        ->withQueryParams([
+            'clientId' => $client->ulid,
+            'projectId' => $project->ulid,
+            'subscriptionId' => $subscription->ulid,
+        ])
+        ->test(InvoiceBuilder::class);
+
+    expect($component->get('client_id'))->toBe($client->id)
+        ->and($component->get('project_id'))->toBe($project->id);
+
+    $items = $component->get('items');
+    expect($items)->toHaveCount(1);
+    expect($items[0]['subscription_id'])->toBe($subscription->id);
+    expect($items[0]['description'])->toBe('Renewal: preadded.com');
+});
+
+test('the subscription show page offers a Create Invoice link scoped to its client and itself', function () {
+    $client = Client::create(['name' => 'Acme Co', 'email' => 'acme@test.test']);
+    $project = Project::create(['client_id' => $client->id, 'project_name' => 'Acme Project']);
+    $provider = Provider::create(['name' => 'Test Provider']);
+    $subscription = makeInvoiceBuilderSubscription($project, $provider);
+
+    Livewire::actingAs(User::factory()->create())
+        ->test(SubscriptionShow::class, ['subscription' => $subscription])
+        ->assertSee('Create Invoice')
+        ->assertSee(route('invoices.create', [
+            'clientId' => $client->ulid,
+            'projectId' => $project->ulid,
+            'subscriptionId' => $subscription->ulid,
+        ]));
 });

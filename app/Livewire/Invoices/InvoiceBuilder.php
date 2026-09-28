@@ -87,6 +87,17 @@ class InvoiceBuilder extends Component
                 $project = Project::where('ulid', $projectIdFromQuery)->first();
                 $this->project_id = $project?->id;
             }
+
+            // Pre-add a specific subscription as a line item, e.g. when
+            // arriving via "Create Invoice" from the subscription's own page.
+            $subscriptionIdFromQuery = request()->query('subscriptionId');
+            if ($subscriptionIdFromQuery && $this->client_id) {
+                $subscription = Subscription::where('ulid', $subscriptionIdFromQuery)->first();
+                if ($subscription) {
+                    $this->items = [];
+                    $this->addSubscriptionItem($subscription->id);
+                }
+            }
         }
         $this->recalculate();
     }

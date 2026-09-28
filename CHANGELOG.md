@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- A "Create Invoice" button on the subscription show page, jumping straight to the Invoice Builder with the client, project (if any), and this subscription pre-filled and already added as a line item — previously the only path was going to Invoices → Create Invoice and finding the subscription manually in the quick-add panel. The Invoice Builder now accepts an optional `subscriptionId` query param (alongside the existing `clientId`/`projectId`) to pre-add a specific subscription on load
+- Tests: extended `InvoiceBuilderSubscriptionLinkTest`
+
+## [Unreleased]
+
 ### Fixed
 - The Invoice Builder's Client and Project dropdowns each rendered a **duplicate blank option** — `x-ui.form-select` already renders its own default `<option value="">Select...</option>` placeholder, and both selects additionally passed a custom-labeled blank option in their slot on top of it, so each had two `<option value="">` entries. Two identical-value options confuse the browser/Livewire's DOM diffing into resetting the dropdown back to blank on the next re-render, making a project effectively unselectable in practice (my previous fix that made Project optional introduced this — the custom "No Project" option was added without suppressing the component's own default one). Fixed by passing `placeholder=""` to suppress the built-in option on both selects
 
