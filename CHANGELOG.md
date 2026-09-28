@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `php artisan receipts:cleanup-legacy` — a one-off maintenance command to remove receipts generated before receipts were tied to a specific payment (i.e. from before the "two payments merge into one receipt" fix), since they can no longer be trusted to reflect the current payment history correctly. Dry-run by default (lists what it would delete); `--force` deletes the DB rows and their PDF files after an interactive confirmation. Only ever touches an invoice-linked receipt with no `payment_id` — subscription receipts and anything already linked to a payment are left alone. Safe to run more than once
+- Tests: `CleanupLegacyReceiptsCommandTest`
+
+## [Unreleased]
+
 ### Changed
 - Payment validation messages (Record Payment and Edit Payment, on both the Invoices list and the Receipts page) now read like plain English instead of Laravel's default technical wording — e.g. "That date hasn't happened yet — pick today or an earlier date." instead of "The record payment date field must be a date before or equal to today.", and "Enter an amount greater than $0 that doesn't exceed the balance due." instead of "Payment amount must be greater than zero and cannot exceed the balance due." Also aligned the fallback `InvalidPaymentDateException`/`InvalidPaymentAmountException` messages to match, in case either Action is ever reached with a value the Livewire validation didn't catch
 - Tests: extended `RecordPaymentDateTest`
