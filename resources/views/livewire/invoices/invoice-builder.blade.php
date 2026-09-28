@@ -53,14 +53,14 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-ui.form-select model="client_id" label="Client" required :live="true">
+                        <x-ui.form-select model="client_id" label="Client" required placeholder="" :live="true">
                             <option value="">Select a Client</option>
                             @foreach($this->clients as $client)
                                 <option value="{{ $client->id }}">{{ $client->name }} ({{ $client->company_name }})</option>
                             @endforeach
                         </x-ui.form-select>
 
-                        <x-ui.form-select model="project_id" label="Project (optional)" :live="true">
+                        <x-ui.form-select model="project_id" label="Project (optional)" placeholder="" :live="true">
                             <option value="">No Project — Bill Client Directly</option>
                             @foreach($this->projects as $project)
                                 <option value="{{ $project->id }}">{{ $project->project_name }}</option>

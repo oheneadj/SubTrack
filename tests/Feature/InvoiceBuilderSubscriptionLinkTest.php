@@ -118,3 +118,23 @@ test('saving an invoice persists the subscription_id on the line item', function
 
     expect($item->subscription_id)->toBe($subscription->id);
 });
+
+test('the client and project selects each render only one blank option, not a duplicate', function () {
+    $client = Client::create(['name' => 'Acme Co', 'email' => 'acme@test.test']);
+    Project::create(['client_id' => $client->id, 'project_name' => 'Acme Project']);
+
+    $html = Livewire::actingAs(User::factory()->create())
+        ->test(InvoiceBuilder::class)
+        ->set('client_id', $client->id)
+        ->html();
+
+    // A duplicated <option value=""> (once from the component's default
+    // placeholder, once from a custom one passed in the slot) confuses the
+    // browser into resetting the select back to blank on every Livewire
+    // re-render — effectively making the dropdown "unselectable" in practice.
+    preg_match_all('/id="client_id".*?<\/select>/s', $html, $clientSelect);
+    expect(substr_count($clientSelect[0][0], '<option value="">'))->toBe(1);
+
+    preg_match_all('/id="project_id".*?<\/select>/s', $html, $projectSelect);
+    expect(substr_count($projectSelect[0][0], '<option value="">'))->toBe(1);
+});

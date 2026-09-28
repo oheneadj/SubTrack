@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- The Invoice Builder's Client and Project dropdowns each rendered a **duplicate blank option** — `x-ui.form-select` already renders its own default `<option value="">Select...</option>` placeholder, and both selects additionally passed a custom-labeled blank option in their slot on top of it, so each had two `<option value="">` entries. Two identical-value options confuse the browser/Livewire's DOM diffing into resetting the dropdown back to blank on the next re-render, making a project effectively unselectable in practice (my previous fix that made Project optional introduced this — the custom "No Project" option was added without suppressing the component's own default one). Fixed by passing `placeholder=""` to suppress the built-in option on both selects
+
+## [Unreleased]
+
+### Fixed
 - Couldn't create an invoice for a subscription billed directly to a client with no project — the Invoice Builder required a Project to be selected (`project_id` was `required`) even though `Invoice.project_id` is nullable in the schema and subscriptions can legitimately have no project. Project is now optional ("No Project — Bill Client Directly"), and the subscription quick-add list now shows once a **client** is selected (both subscriptions billed directly to them and ones linked through any of their projects), instead of only appearing once a project was chosen
 - Invoice and receipt PDFs, and the public payment page, showed the app's own name (`config('app.name')`, i.e. "SubTrack") in the header instead of the business's configured company name and logo — meaning every invoice/receipt sent to a client was branded with this app's name rather than the business actually issuing it. All three (plus the invoice/receipt email header) now show the configured company name and logo (falling back to the app name only if nothing's configured), and the invoice/receipt PDF footers now correctly read the `contact_email`/`business_email` settings (they referenced a `company_email` key that was never actually set anywhere)
 - Tests: `PdfBrandingTest`, extended `InvoiceBuilderSubscriptionLinkTest`
