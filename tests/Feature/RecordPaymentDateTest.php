@@ -125,3 +125,19 @@ test('the edit payment modal rejects a future paid date', function () {
         ->call('submitEditPayment')
         ->assertHasErrors('editPaymentDate');
 });
+
+test('a future payment date shows a plain-language message, not a technical validation rule name', function () {
+    $invoice = makePaymentDateTestInvoice();
+
+    $component = Livewire::actingAs(User::factory()->create())
+        ->test(InvoiceIndex::class)
+        ->call('openRecordPayment', $invoice->ulid)
+        ->set('recordPaymentDate', now()->addDay()->format('Y-m-d'))
+        ->call('submitRecordPayment');
+
+    $message = $component->errors()->first('recordPaymentDate');
+
+    expect($message)->toBe("That date hasn't happened yet — pick today or an earlier date.")
+        ->and($message)->not->toContain('before_or_equal')
+        ->and($message)->not->toContain('recordPaymentDate');
+});

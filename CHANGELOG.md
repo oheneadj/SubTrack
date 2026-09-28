@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Payment validation messages (Record Payment and Edit Payment, on both the Invoices list and the Receipts page) now read like plain English instead of Laravel's default technical wording — e.g. "That date hasn't happened yet — pick today or an earlier date." instead of "The record payment date field must be a date before or equal to today.", and "Enter an amount greater than $0 that doesn't exceed the balance due." instead of "Payment amount must be greater than zero and cannot exceed the balance due." Also aligned the fallback `InvalidPaymentDateException`/`InvalidPaymentAmountException` messages to match, in case either Action is ever reached with a value the Livewire validation didn't catch
+- Tests: extended `RecordPaymentDateTest`
+
+## [Unreleased]
+
 ### Added
 - Receipts (now tied to a specific payment — see previous entry) show the actual **Payment Date** alongside the issue date, wherever a receipt appears: the PDF, the emailed receipt, and the Receipts page table. Previously only "Issued" (when the receipt was generated) was shown, which can be a different date than when the money was actually received — especially now that a payment's date can be backdated
 - Tests: `ReceiptShowsPaymentDateTest`

@@ -46,6 +46,11 @@ trait RecordsManualPayments
         $this->validate([
             'recordPaymentAmount' => 'required|numeric|min:0.01',
             'recordPaymentDate' => 'required|date|before_or_equal:today',
+        ], [
+            'recordPaymentAmount.required' => 'Enter how much was received.',
+            'recordPaymentAmount.min' => 'Enter an amount greater than $0.',
+            'recordPaymentDate.required' => 'Enter the date the payment was received.',
+            'recordPaymentDate.before_or_equal' => "That date hasn't happened yet — pick today or an earlier date.",
         ]);
 
         $invoice = Invoice::where('ulid', $this->recordPaymentInvoiceUlid)->firstOrFail();

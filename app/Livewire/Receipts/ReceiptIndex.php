@@ -120,6 +120,11 @@ class ReceiptIndex extends Component
         $this->validate([
             'editPaymentAmount' => 'required|numeric|min:0.01',
             'editPaymentDate' => 'required|date|before_or_equal:today',
+        ], [
+            'editPaymentAmount.required' => 'Enter the corrected amount.',
+            'editPaymentAmount.min' => 'Enter an amount greater than $0.',
+            'editPaymentDate.required' => 'Enter the date the payment was received.',
+            'editPaymentDate.before_or_equal' => "That date hasn't happened yet — pick today or an earlier date.",
         ]);
 
         $payment = Payment::where('ulid', $this->editPaymentUlid)->firstOrFail();

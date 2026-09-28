@@ -11,6 +11,6 @@ class InvalidPaymentDateException extends Exception
 {
     public function __construct()
     {
-        parent::__construct('Payment date cannot be in the future.');
+        parent::__construct("That date hasn't happened yet — pick today or an earlier date.");
     }
 }
