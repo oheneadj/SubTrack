@@ -10,7 +10,7 @@
         <div class="lg:col-span-2 space-y-6">
 
             {{-- Client & Project --}}
-            <x-ui.card :padding="false">
+            <x-ui.card :padding="false" class="pb-2">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
