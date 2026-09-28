@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Finance dashboard's "Recent Payments" only ever queried fully `Paid` invoices — a client's partial payment on an invoice never showed up there even though real money came in, and if it had matched it would've overstated the amount using `total_amount` instead of `amount_paid`. Now includes `Partially Paid` invoices and shows the amount actually received. Tests: `FinanceDashboardRecentPaymentsTest`
+- The dashboard activity feed had no icon/color mapping for the new `ReceiptInvalidated` event — it still showed (data was never wrong), just fell back to the generic gray icon instead of a red warning one like `PaymentVoided`
+
 ### Added
 - A receipt whose underlying manual payment gets voided is now flagged **invalidated** instead of silently staying accurate-looking: voiding a payment invalidates any receipt on the invoice whose stated amount no longer adds up (with a reason, e.g. "Underlying payment voided: Duplicate charge"), regenerates its PDF with a visible red banner, blocks sending it, and logs a `receipt.invalidated` activity entry. The Receipts page shows the invalidated state inline (struck-through amount, warning badge, Send hidden). Generating a fresh receipt is allowed again once a new payment restores the balance. Tests added to `EditVoidManualPaymentTest`
 

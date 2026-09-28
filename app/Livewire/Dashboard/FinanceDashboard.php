@@ -69,14 +69,16 @@ class FinanceDashboard extends Component
     private function recentPayments(): Collection
     {
         $invoicePayments = Invoice::with('client')
-            ->where('status', InvoiceStatus::Paid)
+            ->whereIn('status', [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid])
             ->latest('updated_at')
             ->take(5)
             ->get()
             ->map(fn (Invoice $invoice) => (object) [
                 'type' => 'invoice',
                 'client_name' => $invoice->client?->name ?? 'Unknown Client',
-                'amount' => $invoice->total_amount / 100,
+                // amount_paid, not total_amount — a Partially Paid invoice
+                // hasn't had its full total received yet, only this much.
+                'amount' => $invoice->amount_paid / 100,
                 'date' => $invoice->updated_at,
                 'reference' => $invoice->invoice_number,
                 'route' => route('invoices.edit', $invoice),

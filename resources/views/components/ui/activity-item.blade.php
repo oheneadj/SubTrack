@@ -15,6 +15,7 @@ $config = match($type) {
     \App\Enums\ActivityEventType::PaymentRecorded      => ['bg-green-50',  'text-green-600',  'circle-check'],
     \App\Enums\ActivityEventType::PaymentEdited        => ['bg-amber-50',  'text-amber-600',  'edit'],
     \App\Enums\ActivityEventType::PaymentVoided        => ['bg-red-50',    'text-red-600',    'x'],
+    \App\Enums\ActivityEventType::ReceiptInvalidated   => ['bg-red-50',    'text-red-600',    'alert-circle'],
     default                                        => ['bg-slate-50',  'text-slate-500',  'list-details'],
 };
 @endphp
