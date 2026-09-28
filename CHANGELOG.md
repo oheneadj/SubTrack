@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- The invoice draft persistence (below) didn't actually work for most fields: `invoice_number`, `issued_date`, `due_date`, `notes`, and `status` all passed a redundant, deferred `wire:model="X"` attribute alongside the shared form component's own `model="X"` prop — meaning typing into any of them (e.g. adding a note) never synced to the server at all until some unrelated `.live`-bound field also changed, so the draft-save hook never fired for that edit. Removed the redundant duplicate attributes and switched these fields to sync via `:live="true"` (also extended `x-ui.form-textarea` with the same `live` prop `form-input`/`form-select` already had, since it had no way to opt in before)
+
 ### Added
 - Invoice Builder now survives an actual page reload/crash while creating a new invoice: every change is saved to the browser's localStorage, and reopening "Create Invoice" silently restores it (with a dismissible "We restored your unsaved draft" banner offering "Discard & start fresh"). The draft clears itself automatically once the invoice is actually saved. Only applies to *new* invoices — editing an existing one already persists via its own database row, so no browser-side draft is needed there. Tests: `InvoiceBuilderDraftPersistenceTest`
 

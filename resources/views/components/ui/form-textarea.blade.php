@@ -3,7 +3,8 @@
     'model' => null,
     'placeholder' => '',
     'error' => null,
-    'rows' => 3
+    'rows' => 3,
+    'live' => false
 ])
 
 @php
@@ -16,7 +17,7 @@
     @endif
 
     <textarea
-        wire:model="{{ $modelName }}"
+        @if($live) wire:model.live="{{ $modelName }}" @else wire:model="{{ $modelName }}" @endif
         id="{{ $modelName }}"
         rows="{{ $rows }}"
         placeholder="{{ $placeholder }}"

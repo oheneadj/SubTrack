@@ -199,7 +199,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <x-ui.form-textarea model="notes" wire:model="notes" placeholder="Add internal notes or terms that will appear on the invoice PDF..." />
+                    <x-ui.form-textarea model="notes" :live="true" placeholder="Add internal notes or terms that will appear on the invoice PDF..." />
                 </div>
             </x-ui.card>
         </div>
@@ -218,14 +218,14 @@
                     </div>
                 </div>
                 <div class="p-6 space-y-4">
-                    <x-ui.form-input model="invoice_number" wire:model="invoice_number" label="Invoice #" required />
+                    <x-ui.form-input model="invoice_number" :live="true" label="Invoice #" required />
 
                     <div class="grid grid-cols-1 gap-4">
-                        <x-ui.form-input model="issued_date" type="date" wire:model="issued_date" label="Invoice Date" required />
-                        <x-ui.form-input model="due_date" type="date" wire:model="due_date" label="Due Date" required />
+                        <x-ui.form-input model="issued_date" type="date" :live="true" label="Invoice Date" required />
+                        <x-ui.form-input model="due_date" type="date" :live="true" label="Due Date" required />
                     </div>
 
-                    <x-ui.form-select model="status" wire:model="status" label="Status">
+                    <x-ui.form-select model="status" :live="true" label="Status">
                         <option value="Draft">Draft</option>
                         <option value="Sent">Sent</option>
                         <option value="Paid">Paid</option>
