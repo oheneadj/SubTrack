@@ -151,3 +151,42 @@ test('a Sent invoice with no payment shows Record Payment but not the Receipts l
         ->assertSee('Record Payment')
         ->assertDontSee('Receipts');
 });
+
+test('the receipts page scoped to an unpaid invoice lets an admin record a payment without leaving the page', function () {
+    $invoice = makeReceiptTestInvoice(10000);
+
+    Livewire::actingAs(User::factory()->create())
+        ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
+        ->call('openRecordPayment')
+        ->assertSet('recordPaymentAmount', 100.0)
+        ->set('recordPaymentAmount', 40)
+        ->call('submitRecordPayment')
+        ->assertHasNoErrors()
+        ->assertSet('showRecordPayment', false);
+
+    $invoice->refresh();
+    expect($invoice->status)->toBe(InvoiceStatus::PartiallyPaid)
+        ->and($invoice->amount_paid)->toBe(4000);
+});
+
+test('the receipts page rejects a recorded payment over the balance due', function () {
+    $invoice = makeReceiptTestInvoice(10000);
+
+    Livewire::actingAs(User::factory()->create())
+        ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
+        ->call('openRecordPayment')
+        ->set('recordPaymentAmount', 500)
+        ->call('submitRecordPayment')
+        ->assertHasErrors('recordPaymentAmount');
+
+    expect($invoice->fresh()->status)->toBe(InvoiceStatus::Sent);
+});
+
+test('the receipts page hides the Record Payment button once the invoice is fully paid', function () {
+    $invoice = makeReceiptTestInvoice(10000);
+    (new RecordManualPaymentAction)->execute($invoice, 10000);
+
+    Livewire::actingAs(User::factory()->create())
+        ->test(ReceiptIndex::class, ['invoice' => $invoice->ulid])
+        ->assertDontSee('wire:click="openRecordPayment"', false);
+});
