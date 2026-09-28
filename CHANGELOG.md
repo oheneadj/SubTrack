@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Invoice Builder now survives an actual page reload/crash while creating a new invoice: every change is saved to the browser's localStorage, and reopening "Create Invoice" silently restores it (with a dismissible "We restored your unsaved draft" banner offering "Discard & start fresh"). The draft clears itself automatically once the invoice is actually saved. Only applies to *new* invoices — editing an existing one already persists via its own database row, so no browser-side draft is needed there. Tests: `InvoiceBuilderDraftPersistenceTest`
+
 ### Fixed
 - **Production-breaking**: `InvoiceBuilder::save()` declared a `RedirectResponse` return type, but Livewire's `redirect()` helper returns its own `Redirector` wrapper — PHP enforces declared return types strictly on every call, so this threw a `TypeError` the moment the method actually returned, for every single invoice save (create or edit). No test had ever exercised this method before, which is why it went unnoticed. Removed the type hint
 

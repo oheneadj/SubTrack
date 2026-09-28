@@ -50,6 +50,9 @@ class InvoiceBuilder extends Component
 
     public $total_amount = 0;
 
+    /** Whether the form on this page load was repopulated from a browser-saved draft. */
+    public bool $draftRestored = false;
+
     public function mount(InvoiceNumberService $numberService, ?Invoice $invoice = null): void
     {
         // Handle pre-filling from query string
@@ -157,6 +160,87 @@ class InvoiceBuilder extends Component
     }
 
     /**
+     * Broadcasts the current form state after any change, so JS can save it
+     * to the browser's localStorage — a Livewire full-page component's
+     * state is entirely lost on an actual page reload/crash, and this is
+     * the only way to survive that without writing a half-finished invoice
+     * to the database. Skipped while editing an existing invoice, since
+     * that already persists via its own row.
+     */
+    public function updated(): void
+    {
+        if ($this->isEdit) {
+            return;
+        }
+
+        $this->dispatch('invoice-draft-changed', draft: $this->draftSnapshot());
+    }
+
+    /** @return array<string, mixed> */
+    private function draftSnapshot(): array
+    {
+        return [
+            'client_id' => $this->client_id,
+            'project_id' => $this->project_id,
+            'invoice_number' => $this->invoice_number,
+            'issued_date' => $this->issued_date,
+            'due_date' => $this->due_date,
+            'status' => $this->status,
+            'notes' => $this->notes,
+            'tax_rate' => $this->tax_rate,
+            'items' => $this->items,
+        ];
+    }
+
+    /**
+     * Called from JS on first load if a saved draft was found in
+     * localStorage — repopulates the form exactly as the admin left it.
+     *
+     * @param  array<string, mixed>  $draft
+     */
+    public function restoreDraft(array $draft): void
+    {
+        if ($this->isEdit) {
+            return;
+        }
+
+        $this->client_id = $draft['client_id'] ?? $this->client_id;
+        $this->project_id = $draft['project_id'] ?? $this->project_id;
+        $this->invoice_number = $draft['invoice_number'] ?? $this->invoice_number;
+        $this->issued_date = $draft['issued_date'] ?? $this->issued_date;
+        $this->due_date = $draft['due_date'] ?? $this->due_date;
+        $this->status = $draft['status'] ?? $this->status;
+        $this->notes = $draft['notes'] ?? $this->notes;
+        $this->tax_rate = $draft['tax_rate'] ?? $this->tax_rate;
+
+        if (! empty($draft['items'])) {
+            $this->items = $draft['items'];
+        }
+
+        $this->draftRestored = true;
+        $this->recalculate();
+    }
+
+    /** Discards the saved draft and starts over with a blank form. */
+    public function discardDraft(InvoiceNumberService $numberService): void
+    {
+        $this->client_id = null;
+        $this->project_id = '';
+        $this->invoice_number = $numberService->generate();
+        $this->issued_date = now()->format('Y-m-d');
+        $this->due_date = now()->addDays(14)->format('Y-m-d');
+        $this->status = 'Draft';
+        $this->notes = '';
+        $this->tax_rate = 0;
+        $this->items = [];
+        $this->addItem();
+        $this->recalculate();
+
+        $this->draftRestored = false;
+        $this->dispatch('invoice-draft-cleared');
+    }
+
+    /**
      * No return type declared: Livewire's redirect() helper returns its own
      * Redirector wrapper (not Illuminate\Http\RedirectResponse), and PHP
      * enforces declared return types strictly on every invocation — a
@@ -224,6 +308,8 @@ class InvoiceBuilder extends Component
         $pdfService->generate($this->invoice);
 
         session()->flash('success', $this->isEdit ? 'Invoice updated successfully.' : 'Invoice created successfully.');
+
+        $this->dispatch('invoice-draft-cleared');
 
         return redirect()->route('invoices.index');
     }

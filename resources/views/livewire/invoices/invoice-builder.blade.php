@@ -1,9 +1,41 @@
-<div>
+<div
+    @if(! $isEdit)
+        x-data="{
+            draftKey: 'subtrack-invoice-draft',
+            init() {
+                try {
+                    const saved = localStorage.getItem(this.draftKey);
+                    if (saved) {
+                        $wire.restoreDraft(JSON.parse(saved));
+                    }
+                } catch (e) { /* corrupt or inaccessible storage — ignore, start blank */ }
+            },
+        }"
+        x-on:invoice-draft-changed.window="
+            try { localStorage.setItem(draftKey, JSON.stringify($event.detail.draft)); } catch (e) {}
+        "
+        x-on:invoice-draft-cleared.window="
+            try { localStorage.removeItem(draftKey); } catch (e) {}
+        "
+    @endif
+>
     <x-ui.page-header :title="$isEdit ? 'Edit Invoice' : 'Create Invoice'" subtitle="Build a project invoice and generate PDF">
         <x-ui.button as="a" variant="ghost" href="{{ route('invoices.index') }}">
             <x-icon-arrow-left class="w-4 h-4" /> Back to Invoices
         </x-ui.button>
     </x-ui.page-header>
+
+    @if($draftRestored)
+        <div class="mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-amber-800 text-sm">
+                <x-icon-alert-triangle class="w-4 h-4 shrink-0" />
+                <span>We restored your unsaved draft from last time.</span>
+            </div>
+            <x-ui.button type="button" wire:click="discardDraft" variant="ghost" size="xs" class="text-amber-700 hover:bg-amber-100 shrink-0">
+                Discard &amp; start fresh
+            </x-ui.button>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {{-- ═══════════════════════ LEFT: Main Content ═══════════════════════ --}}
