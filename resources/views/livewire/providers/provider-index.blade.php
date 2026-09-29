@@ -26,7 +26,7 @@
                 @endif
             </x-ui.empty-state>
         @else
-            <x-ui.data-table :headers="['Provider Name', 'Active Subscriptions', 'Contact', '']">
+            <x-ui.data-table :headers="['name' => 'Provider Name', 'subscriptions_count' => 'Active Subscriptions', 'total_cost_cents' => 'Total Cost', 'Contact', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
                 @foreach($providers as $provider)
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td>
@@ -36,6 +36,9 @@
                         </td>
                         <td>
                             <div class="badge badge-neutral badge-sm">{{ $provider->subscriptions_count }} Subscriptions</div>
+                        </td>
+                        <td>
+                            <span class="font-bold text-slate-700">${{ number_format($provider->total_cost_cents / 100, 2) }}</span>
                         </td>
                         <td>
                             <div class="text-sm font-medium text-slate-700 flex flex-col gap-1">
@@ -55,7 +58,7 @@
                             </div>
                         </td>
                         <td class="text-right">
-                            <x-ui.action-menu 
+                            <x-ui.action-menu
                                 viewAction="{{ route('providers.show', $provider) }}"
                                 editAction="$wire.edit('{{ $provider->ulid }}')"
                                 deleteAction="$wire.openDeleteModal('{{ $provider->ulid }}')"

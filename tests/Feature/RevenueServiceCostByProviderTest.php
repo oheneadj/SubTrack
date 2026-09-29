@@ -91,3 +91,24 @@ test('Finance dashboard renders the provider cost breakdown', function () {
         ->assertSee('DigitalOcean', escape: false)
         ->assertSee('$45.00');
 });
+
+test('costByProvider respects the limit parameter, defaulting to 5', function () {
+    foreach (range(1, 7) as $i) {
+        makeProviderRenewal("Provider {$i}", 1000 * $i);
+    }
+
+    expect(app(RevenueService::class)->costByProvider())->toHaveCount(5)
+        ->and(app(RevenueService::class)->costByProvider(3))->toHaveCount(3);
+});
+
+test('Finance dashboard caps the provider cost breakdown at 5 and links to the full list', function () {
+    foreach (range(1, 7) as $i) {
+        makeProviderRenewal("Cap Provider {$i}", 1000 * $i);
+    }
+
+    $response = Livewire::actingAs(User::factory()->create())
+        ->test(FinanceDashboard::class);
+
+    expect($response->viewData('costByProvider'))->toHaveCount(5);
+    $response->assertSee('View All Providers');
+});

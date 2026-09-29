@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Provider cost is now shown on the Providers index, and sortable** — the Finance dashboard's "Provider Costs Breakdown" card is capped at the top 5 (was previously unbounded, making the card grow with every provider ever paid), and now links through to the Providers index for the full list. The Providers index gained a "Total Cost" column (same Paid/Renewed-only definition as `RevenueService::totalProviderCosts()`), sortable like the other columns. "Top Clients by Revenue" was already capped at 5 by default — added a "View All Clients" link there too and a regression test proving the cap actually holds with more than 5 clients
+- Tests: `ProviderIndexCostColumnTest`, extended `RevenueServiceCostByProviderTest` and `RevenueServiceTopClientsTest`
+
+## [Unreleased]
+
 ### Changed
 - Relabeled "Monthly Revenue" to "Monthly Rev." on the Finance dashboard
 

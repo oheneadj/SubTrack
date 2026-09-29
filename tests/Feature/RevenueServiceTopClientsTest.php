@@ -112,5 +112,26 @@ test('Finance dashboard renders the top clients breakdown', function () {
 
     $response->assertSee('Top Clients by Revenue')
         ->assertSee($client->name, escape: false)
-        ->assertSee('$200.00');
+        ->assertSee('$200.00')
+        ->assertSee('View All Clients');
+});
+
+test('Finance dashboard caps the top clients breakdown at 5', function () {
+    foreach (range(1, 7) as $i) {
+        $client = Client::create(['name' => "Cap Client {$i}", 'email' => "cap{$i}-".uniqid().'@test.test']);
+        Invoice::create([
+            'client_id' => $client->id,
+            'invoice_number' => 'INV-CAP-'.uniqid(),
+            'issued_date' => now(),
+            'due_date' => now()->addDays(14),
+            'total_amount' => 1000 * $i,
+            'amount_paid' => 1000 * $i,
+            'status' => InvoiceStatus::Paid,
+        ]);
+    }
+
+    $response = Livewire::actingAs(User::factory()->create())
+        ->test(FinanceDashboard::class);
+
+    expect($response->viewData('topClients'))->toHaveCount(5);
 });

@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace App\Livewire\Providers;
 
+use App\Enums\PaymentStatus;
 use App\Livewire\Concerns\Notifies;
 use App\Models\Provider;
+use App\Models\Renewal;
+use App\Traits\WithSorting;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ProviderIndex extends Component
 {
-    use Notifies, WithPagination;
+    use Notifies, WithPagination, WithSorting;
 
     public string $search = '';
+
+    public string $sortColumn = 'name';
+
+    public string $sortDirection = 'asc';
 
     public bool $showModal = false;
 
@@ -101,10 +108,23 @@ class ProviderIndex extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        $providers = Provider::withCount('subscriptions')
-            ->where('name', 'like', "%{$this->search}%")
-            ->orderBy('name')
-            ->paginate(15);
+        // Total actually paid to this provider (Paid/Renewed renewals only,
+        // same definition as RevenueService::totalProviderCosts()) —
+        // a correlated subquery selected as a plain column so it can be
+        // sorted like any other, and the dashboard's "Provider Costs
+        // Breakdown" card (capped at the top 5) can link here for the
+        // full, sortable list.
+        $costSubquery = Renewal::query()
+            ->selectRaw('coalesce(sum(renewals.provider_cost_usd), 0)')
+            ->join('subscriptions', 'subscriptions.id', '=', 'renewals.subscription_id')
+            ->whereColumn('subscriptions.provider_id', 'providers.id')
+            ->whereIn('renewals.payment_status', [PaymentStatus::Paid, PaymentStatus::Renewed]);
+
+        $query = Provider::withCount('subscriptions')
+            ->addSelect(['total_cost_cents' => $costSubquery])
+            ->where('name', 'like', "%{$this->search}%");
+
+        $providers = $this->applySorting($query)->paginate(15);
 
         return view('livewire.providers.provider-index', [
             'providers' => $providers,

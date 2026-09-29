@@ -205,6 +205,9 @@
                     </div>
                 @endif
             </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                <a href="{{ route('providers.index') }}" class="text-sm font-medium text-blue-600 hover:underline" wire:navigate>View All Providers &rarr;</a>
+            </div>
         </x-ui.card>
 
         {{-- Top Clients by Revenue — no dashboard previously showed which
@@ -235,6 +238,9 @@
                         @endforeach
                     </div>
                 @endif
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                <a href="{{ route('clients.index') }}" class="text-sm font-medium text-blue-600 hover:underline" wire:navigate>View All Clients &rarr;</a>
             </div>
         </x-ui.card>
     </div>

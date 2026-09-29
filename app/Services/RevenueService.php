@@ -257,11 +257,12 @@ class RevenueService
      * totalProviderCosts()) broken down by which provider it went to —
      * "Annual Provider Costs" was previously a single lump figure with no
      * visibility into which provider is actually eating the budget.
-     * Sorted highest-spend first.
+     * Sorted highest-spend first, capped at $limit for dashboard display —
+     * the full per-provider breakdown lives on the Providers index instead.
      *
      * @return array<int, array{name: string, amount: float}>
      */
-    public function costByProvider(): array
+    public function costByProvider(int $limit = 5): array
     {
         return Renewal::whereIn('payment_status', [PaymentStatus::Paid, PaymentStatus::Renewed])
             ->with('subscription.provider')
@@ -272,6 +273,7 @@ class RevenueService
                 'amount' => (float) $renewals->sum('provider_cost_usd') / 100,
             ])
             ->sortByDesc('amount')
+            ->take($limit)
             ->values()
             ->all();
     }
