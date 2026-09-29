@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 use App\Actions\RecordManualPaymentAction;
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentStatus;
+use App\Enums\ServiceType;
+use App\Enums\SubscriptionRenewalType;
+use App\Enums\SubscriptionStatus;
 use App\Livewire\Dashboard\FinanceDashboard;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Project;
+use App\Models\Renewal;
+use App\Models\Subscription;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -33,4 +39,32 @@ test('recent payments includes a partially paid invoice, showing only the amount
 
     expect($entry)->not->toBeNull()
         ->and((float) $entry->amount)->toBe(40.0);
+});
+
+test('Finance dashboard displays realized profit, previously computed but never shown', function () {
+    $client = Client::factory()->create();
+    $subscription = Subscription::create([
+        'client_id' => $client->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'profit-view-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addDays(5),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 1000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+    Renewal::create([
+        'subscription_id' => $subscription->id,
+        'due_date' => now(),
+        'provider_cost_usd' => 4000,
+        'client_cost_usd' => 10000,
+        'payment_status' => PaymentStatus::Renewed,
+        'renewal_confirmed_date' => now(),
+    ]);
+
+    $response = Livewire::actingAs(User::factory()->create())
+        ->test(FinanceDashboard::class);
+
+    $response->assertSee('Profit (Realized)')->assertSee('$60.00');
 });

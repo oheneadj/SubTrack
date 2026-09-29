@@ -153,6 +153,21 @@ class RevenueService
     }
 
     /**
+     * Realized profit — actually-collected client revenue from paid
+     * renewals minus totalProviderCosts(). Uses the same Paid/Renewed
+     * filter as totalProviderCosts() so both sides of the subtraction
+     * only ever reflect money that's actually moved, not renewals still
+     * Pending payment.
+     */
+    public function totalProfit(): float
+    {
+        $paidClientRevenue = Renewal::whereIn('payment_status', [PaymentStatus::Paid, PaymentStatus::Renewed])
+            ->sum('client_cost_usd') / 100;
+
+        return $paidClientRevenue - $this->totalProviderCosts();
+    }
+
+    /**
      * Estimated monthly provider cost, from active subscriptions'
      * provider-facing renewal_cost_usd (no markup — this is what *we*
      * pay, not what the client pays) annualized then divided by 12. An

@@ -1,7 +1,7 @@
 <div>
     <x-ui.page-header title="Finance Dashboard" subtitle="High-level overview of revenue, costs, and cash flow" />
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
         <x-ui.stat-card
             label="Total Revenue (Paid)"
             value="${{ number_format($totalRevenue, 2) }}"
@@ -31,6 +31,14 @@
             value="${{ number_format($totalCosts, 2) }}"
             icon="credit-card"
             variant="critical"
+        />
+        {{-- Realized profit from paid renewals only — was already computed
+             every page load and silently thrown away before this card existed. --}}
+        <x-ui.stat-card
+            label="Profit (Realized)"
+            value="${{ number_format($profit, 2) }}"
+            icon="trending-up"
+            :variant="$profit >= 0 ? 'healthy' : 'critical'"
         />
     </div>
 

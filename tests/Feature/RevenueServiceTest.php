@@ -200,6 +200,50 @@ test('outstandingRevenue excludes a fully Draft invoice not yet sent to the clie
     expect(app(RevenueService::class)->outstandingRevenue())->toBe(0.0);
 });
 
+test('totalProfit is paid client revenue minus paid provider costs, excluding pending renewals', function () {
+    $client = Client::factory()->create();
+    $project = Project::create(['client_id' => $client->id, 'project_name' => 'Profit Test']);
+
+    $paidSubscription = Subscription::create([
+        'client_id' => $client->id,
+        'project_id' => $project->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'profit-paid-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addDays(5),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 1000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+    Renewal::create([
+        'subscription_id' => $paidSubscription->id,
+        'due_date' => now(),
+        'provider_cost_usd' => 4000,
+        'client_cost_usd' => 10000,
+        'payment_status' => PaymentStatus::Renewed,
+        'renewal_confirmed_date' => now(),
+    ]);
+
+    // Still Pending — must not affect profit at all.
+    $pendingSubscription = Subscription::create([
+        'client_id' => $client->id,
+        'project_id' => $project->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'profit-pending-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addDays(5),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 1000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+    app(PrepareRenewalAction::class)->execute($pendingSubscription, 9999999, now()->addYear());
+
+    // $100.00 client revenue - $40.00 provider cost = $60.00 profit.
+    expect(app(RevenueService::class)->totalProfit())->toBe(60.0);
+});
+
 test('draftInvoiceTotal sums invoices not yet sent, separately from outstanding revenue', function () {
     $client = Client::factory()->create();
     Invoice::create([

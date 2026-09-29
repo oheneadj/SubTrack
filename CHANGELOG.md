@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Profit was computed on every Finance dashboard page load and silently thrown away** — the controller calculated realized profit (paid client revenue minus paid provider costs) but never passed it to a visible card. Moved the calculation into `RevenueService::totalProfit()` as the single source of truth and added a "Profit (Realized)" card
+- Tests: extended `RevenueServiceTest` and `FinanceDashboardRecentPaymentsTest`
+
+## [Unreleased]
+
+### Added
 - **"Draft / Unbilled" figure on the Finance dashboard** — money already committed once a renewal is started (its invoice raised as Draft via `PrepareRenewalAction`) but not yet sent to the client, so it deliberately doesn't count as "Outstanding" (nothing's been billed yet). Previously this money just vanished from view in the gap between "renewal started" and "invoice sent" — now it has its own figure alongside Outstanding Revenue instead of disappearing
 - Tests: extended `RevenueServiceTest`
 
