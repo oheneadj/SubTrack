@@ -15,7 +15,7 @@
             variant="warning"
         />
         <x-ui.stat-card
-            label="Draft / Unbilled"
+            label="Unbilled"
             :value="\App\Support\Money::compact($draftInvoiceTotal)"
             icon="file-invoice"
             variant="neutral"
