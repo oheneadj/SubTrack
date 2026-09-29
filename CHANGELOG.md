@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Provider cost breakdown on the Finance dashboard** — "Annual Provider Costs" was a single lump figure with no visibility into which provider was actually responsible for the spend. Added a "Provider Costs Breakdown" card grouping paid renewal costs by provider, sorted highest-spend first
+- Tests: `RevenueServiceCostByProviderTest`
+
+## [Unreleased]
+
 ### Fixed
 - **Monthly-cycle subscriptions had their cost/revenue silently divided by 12 twice**: `estimatedMonthlyRecurringRevenue()` and `estimatedMonthlyProviderCosts()` summed *every* active subscription's cost together — mixing already-monthly figures (`RecurringMonthly`) with annual ones (`RecurringAnnually`) — then divided the whole total by 12. That's correct for annual subscriptions but wrong for monthly ones: a $10/mo subscription's cost is already a monthly figure, so dividing it by 12 again reported it as $0.83/mo, a 12x undercount. Both methods now split by billing cycle first (monthly summed as-is, annual divided by 12) before adding them together. Also relabeled "Est. MRR"/"Est. Monthly MRR" to "Avg. Monthly Revenue" — it's an annualized-then-divided estimate assuming everything renews on schedule, not a true billing-cycle-aware MRR figure
 - Tests: extended `RevenueServiceTest` with a mixed monthly/annual case

@@ -30,5 +30,7 @@ parameters:
           path: app/Mail/SubscriptionReminderMail.php
         - message: '#Using nullsafe property access.*on left side of \?\? is unnecessary#'
           path: app/Console/Commands/CleanupLegacyReceipts.php
+        - message: '#Using nullsafe property access.*on left side of \?\? is unnecessary#'
+          path: app/Services/RevenueService.php
         # Fortify scaffolded MustVerifyEmail instanceof check — safe to suppress.
         - '#Instanceof between Illuminate\\Contracts\\Auth\\MustVerifyEmail#'

@@ -177,6 +177,30 @@ class RevenueService
     }
 
     /**
+     * Total provider costs (Paid/Renewed renewals only, same as
+     * totalProviderCosts()) broken down by which provider it went to —
+     * "Annual Provider Costs" was previously a single lump figure with no
+     * visibility into which provider is actually eating the budget.
+     * Sorted highest-spend first.
+     *
+     * @return array<int, array{name: string, amount: float}>
+     */
+    public function costByProvider(): array
+    {
+        return Renewal::whereIn('payment_status', [PaymentStatus::Paid, PaymentStatus::Renewed])
+            ->with('subscription.provider')
+            ->get()
+            ->groupBy(fn (Renewal $renewal) => $renewal->subscription?->provider?->name ?? 'Unknown')
+            ->map(fn ($renewals, $name) => [
+                'name' => $name,
+                'amount' => (float) $renewals->sum('provider_cost_usd') / 100,
+            ])
+            ->sortByDesc('amount')
+            ->values()
+            ->all();
+    }
+
+    /**
      * Average expected monthly provider cost, from active subscriptions'
      * provider-facing renewal_cost_usd (no markup — this is what *we* pay,
      * not what the client pays). Same cycle-aware split as

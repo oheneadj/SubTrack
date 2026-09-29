@@ -161,6 +161,38 @@
             </div>
         </x-ui.card>
     </div>
+
+    {{-- Cost by Provider — "Annual Provider Costs" above is a single lump
+         figure; this breaks it down by which provider is actually
+         responsible for the spend. --}}
+    <x-ui.card :padding="false" class="mt-8">
+        <div class="p-5 border-b border-slate-100 bg-slate-50">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <x-icon-credit-card class="w-5 h-5 text-slate-500" />
+                Provider Costs Breakdown
+            </h3>
+        </div>
+        <div class="p-0">
+            @if(empty($costByProvider))
+                <div class="p-8 text-center text-slate-500 text-sm">No provider costs recorded yet.</div>
+            @else
+                @php $maxAmount = collect($costByProvider)->max('amount') ?: 1; @endphp
+                <div class="divide-y divide-slate-100">
+                    @foreach($costByProvider as $entry)
+                        <div class="p-4" wire:key="provider-cost-{{ $entry['name'] }}">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="font-bold text-slate-800 text-sm">{{ $entry['name'] }}</span>
+                                <span class="font-bold text-slate-700 text-sm">${{ number_format($entry['amount'], 2) }}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-slate-500 h-2 rounded-full" style="width: {{ max(4, (int) round($entry['amount'] / $maxAmount * 100)) }}%"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </x-ui.card>
 </div>
 
 @push('scripts')

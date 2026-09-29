@@ -30,6 +30,7 @@ class FinanceDashboard extends Component
         $mrr = $revenue->estimatedMonthlyRecurringRevenue();
         $totalCosts = $revenue->totalProviderCosts();
         $profit = $revenue->totalProfit();
+        $costByProvider = $revenue->costByProvider();
 
         $recentPayments = $this->recentPayments();
 
@@ -50,6 +51,7 @@ class FinanceDashboard extends Component
             'mrr' => $mrr,
             'totalCosts' => $totalCosts,
             'profit' => $profit,
+            'costByProvider' => $costByProvider,
             'recentPayments' => $recentPayments,
             'upcomingRenewals' => $upcomingRenewals,
             'comparisonData' => $comparisonData,
