@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Finance dashboard's "Upcoming Renewals" card only showed half the forecast** — the provider cost we'll owe, but never what we'll actually bill the client for the same renewal. Renamed from "Upcoming Expenses (Renewals)" and now shows both figures per row: the client bill (with markup) as the primary figure, provider cost as a secondary line
+- Tests: extended `FinanceDashboardUpcomingRenewalsTest`
+
+## [Unreleased]
+
 ### Fixed
 - **Stated late-payment penalty amounts were computed but never shown anywhere except one reminder email**: `Subscription::stated_penalty_amount` (a real $ figure once a recurring subscription has missed payments and a `penalty_percentage` is configured) was invisible on the subscription's own page and on the renewal tracker — only the missed-payment *count* was shown, never the dollar amount tied to it. Added a "Late Penalty Owed" stat card to Subscription Show (only when a penalty has actually accrued) and the penalty amount next to the missed-payments note on the Renewal Tracker
 - Tests: extended `OverduePaymentPenaltyTest` with 3 new UI-rendering cases

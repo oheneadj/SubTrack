@@ -98,12 +98,13 @@
             </div>
         </x-ui.card>
 
-        {{-- Upcoming Costs --}}
+        {{-- Upcoming Renewals: cost and billed revenue side by side, so the
+             forecast shows both halves of the same upcoming renewal --}}
         <x-ui.card :padding="false">
             <div class="p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="font-bold text-slate-800 flex items-center gap-2">
                     <x-icon-calendar-due class="w-5 h-5 text-orange-500" />
-                    Upcoming Expenses (Renewals)
+                    Upcoming Renewals
                 </h3>
             </div>
             <div class="p-0">
@@ -120,16 +121,21 @@
                                     <div>
                                         <div class="font-bold text-slate-800">{{ $sub->domain_name ?: $sub->service_type->label() }}</div>
                                         <div class="text-xs text-slate-500">
-                                            {{ $sub->provider?->name ?? 'Unknown' }} &middot; 
+                                            {{ $sub->provider?->name ?? 'Unknown' }} &middot;
                                             <span class="{{ $sub->days_until_expiry <= 30 ? 'text-orange-500 font-bold' : '' }}">
                                                 Expires {{ $sub->expiry_date->format('M d, Y') }}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="font-bold text-slate-700 text-right">
-                                    {{ $sub->formatted_renewal_cost_usd }}
-                                    <div class="text-[10px] font-normal text-slate-400 uppercase">Cost</div>
+                                <div class="text-right">
+                                    <div class="font-bold text-slate-700">
+                                        {{ $sub->formatted_client_renewal_cost_usd }}
+                                        <div class="text-[10px] font-normal text-slate-400 uppercase">Bill</div>
+                                    </div>
+                                    <div class="text-xs text-slate-400 mt-1">
+                                        {{ $sub->formatted_renewal_cost_usd }} cost
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
