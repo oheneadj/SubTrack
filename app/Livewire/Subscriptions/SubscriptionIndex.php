@@ -42,6 +42,10 @@ class SubscriptionIndex extends Component
 
     public bool $selectAll = false;
 
+    // Trash view — a simple toggle rather than a separate page, since
+    // restoring a deleted subscription is expected to be rare.
+    public bool $showTrash = false;
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filterService' => ['except' => null],
@@ -49,6 +53,7 @@ class SubscriptionIndex extends Component
         'filterRenewalType' => ['except' => null],
         'filterRenewalFrom' => ['except' => ''],
         'filterRenewalTo' => ['except' => ''],
+        'showTrash' => ['except' => false],
     ];
 
     public function updatingSearch(): void
@@ -65,6 +70,7 @@ class SubscriptionIndex extends Component
     private function filteredQuery(): Builder
     {
         return Subscription::query()
+            ->when($this->showTrash, fn ($q) => $q->onlyTrashed())
             ->with(['client', 'project.client', 'provider'])
             ->when($this->search, fn ($q) => $q->where(fn ($sq) => $sq->where('domain_name', 'like', "%{$this->search}%")
                 ->orWhereHas('provider', fn ($p) => $p->where('name', 'like', "%{$this->search}%"))
@@ -124,6 +130,22 @@ class SubscriptionIndex extends Component
             $this->selectedSubscriptionId = null;
             $this->notifySuccess('Subscription deleted successfully.');
         }
+    }
+
+    public function toggleTrash(): void
+    {
+        $this->showTrash = ! $this->showTrash;
+        $this->selectedSubscriptions = [];
+        $this->selectAll = false;
+        $this->resetPage();
+    }
+
+    public function restore(string $ulid): void
+    {
+        $subscription = Subscription::onlyTrashed()->where('ulid', $ulid)->firstOrFail();
+        $subscription->restore();
+        $name = $subscription->domain_name ?: $subscription->service_type->label();
+        $this->notifySuccess("{$name} has been restored.");
     }
 
     public function updatedSelectAll($value): void

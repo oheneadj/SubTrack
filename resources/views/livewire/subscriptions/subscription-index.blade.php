@@ -1,9 +1,22 @@
 <div>
-    <x-ui.page-header title="Subscriptions" subtitle="Manage domains, hosting, and service expiries">
-        <x-ui.button as="a" href="{{ route('subscriptions.create') }}" wire:navigate>
-            <x-icon-plus class="w-4 h-4" />
-            <span>Add Subscription</span>
-        </x-ui.button>
+    <x-ui.page-header title="Subscriptions" subtitle="{{ $showTrash ? 'Deleted subscriptions — restore one to bring it back' : 'Manage domains, hosting, and service expiries' }}">
+        <div class="flex items-center gap-2">
+            <x-ui.button variant="ghost" wire:click="toggleTrash" class="whitespace-nowrap">
+                @if($showTrash)
+                    <x-icon-arrow-left class="w-4 h-4" />
+                    <span>Back to Subscriptions</span>
+                @else
+                    <x-icon-trash class="w-4 h-4" />
+                    <span>Trash</span>
+                @endif
+            </x-ui.button>
+            @unless($showTrash)
+                <x-ui.button as="a" href="{{ route('subscriptions.create') }}" wire:navigate>
+                    <x-icon-plus class="w-4 h-4" />
+                    <span>Add Subscription</span>
+                </x-ui.button>
+            @endunless
+        </div>
     </x-ui.page-header>
 
     <x-ui.toolbar searchModel="search" searchPlaceholder="Search domain, provider, client, or project...">
@@ -37,7 +50,7 @@
         </x-ui.button>
     </x-ui.toolbar>
 
-    @if(count($selectedSubscriptions) > 0)
+    @if(!$showTrash && count($selectedSubscriptions) > 0)
         <div class="flex items-center justify-between bg-primary/10 border border-primary/20 p-4 rounded-xl mb-6 animate-in fade-in slide-in-from-top-4">
             <div class="flex items-center gap-4">
                 <span class="text-sm font-bold text-primary">{{ count($selectedSubscriptions) }} selected</span>
@@ -61,18 +74,20 @@
     @endif
 
     @if($this->subscriptions->isEmpty())
-        <x-ui.empty-state 
-            title="No subscriptions found" 
-            message="Start tracking your domains and hosting services today."
-            icon="icon-calendar-off"
+        <x-ui.empty-state
+            title="{{ $showTrash ? 'Trash is empty' : 'No subscriptions found' }}"
+            message="{{ $showTrash ? 'Deleted subscriptions will show up here.' : 'Start tracking your domains and hosting services today.' }}"
+            icon="{{ $showTrash ? 'trash' : 'icon-calendar-off' }}"
         />
     @else
-        <x-ui.data-table :headers="['client_name' => 'Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection" :selectable="true">
+        <x-ui.data-table :headers="['client_name' => 'Project / Client', 'domain_name' => 'Service / Domain', 'service_type' => 'Type', 'expiry_date' => 'Expiry', 'status' => 'Status', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection" :selectable="!$showTrash">
             @foreach($this->subscriptions as $sub)
                 <tr wire:key="sub-{{ $sub->ulid }}" class="{{ in_array($sub->ulid, $selectedSubscriptions) ? 'bg-primary/5' : '' }}">
-                    <td class="w-10 px-4">
-                        <input type="checkbox" wire:model.live="selectedSubscriptions" value="{{ $sub->ulid }}" class="checkbox checkbox-sm checkbox-primary" />
-                    </td>
+                    @unless($showTrash)
+                        <td class="w-10 px-4">
+                            <input type="checkbox" wire:model.live="selectedSubscriptions" value="{{ $sub->ulid }}" class="checkbox checkbox-sm checkbox-primary" />
+                        </td>
+                    @endunless
                     <td>
                         <div class="flex flex-col">
                             @if($sub->project)
@@ -90,41 +105,59 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ route('subscriptions.show', $sub) }}" class="flex flex-col group" wire:navigate>
-                            <span class="font-medium text-slate-900 group-hover:text-primary group-hover:underline transition-colors">{{ $sub->domain_name ?? 'N/A' }}</span>
-                            <span class="text-xs text-slate-500">{{ $sub->provider?->name }}</span>
-                        </a>
+                        @if($showTrash)
+                            <div class="flex flex-col">
+                                <span class="font-medium text-slate-500">{{ $sub->domain_name ?? 'N/A' }}</span>
+                                <span class="text-xs text-slate-500">{{ $sub->provider?->name }}</span>
+                            </div>
+                        @else
+                            <a href="{{ route('subscriptions.show', $sub) }}" class="flex flex-col group" wire:navigate>
+                                <span class="font-medium text-slate-900 group-hover:text-primary group-hover:underline transition-colors">{{ $sub->domain_name ?? 'N/A' }}</span>
+                                <span class="text-xs text-slate-500">{{ $sub->provider?->name }}</span>
+                            </a>
+                        @endif
                     </td>
                     <td>
                         <span class="text-sm">{{ $sub->service_type->label() }}</span>
                     </td>
                     <td>
-                        <div class="flex flex-col">
-                            <span class="text-sm {{ $sub->traffic_light === 'critical' ? 'text-error font-bold' : ($sub->traffic_light === 'warning' ? 'text-warning font-medium' : 'text-slate-600') }}">
-                                {{ $sub->expiry_date?->format('M d, Y') ?? 'No Date' }}
-                            </span>
-                            <span class="text-[10px] uppercase font-bold tracking-tight {{ $sub->traffic_light === 'critical' ? 'text-error' : ($sub->traffic_light === 'warning' ? 'text-warning' : 'text-slate-400') }}">
-                                @if($sub->days_until_expiry < 0)
-                                    @if($sub->missed_payments_count)
-                                        {{ $sub->missed_payments_count }} PAYMENT{{ $sub->missed_payments_count > 1 ? 'S' : '' }} MISSED
+                        @if($showTrash)
+                            <span class="text-sm text-slate-500">Deleted {{ $sub->deleted_at->format('M d, Y') }}</span>
+                        @else
+                            <div class="flex flex-col">
+                                <span class="text-sm {{ $sub->traffic_light === 'critical' ? 'text-error font-bold' : ($sub->traffic_light === 'warning' ? 'text-warning font-medium' : 'text-slate-600') }}">
+                                    {{ $sub->expiry_date?->format('M d, Y') ?? 'No Date' }}
+                                </span>
+                                <span class="text-[10px] uppercase font-bold tracking-tight {{ $sub->traffic_light === 'critical' ? 'text-error' : ($sub->traffic_light === 'warning' ? 'text-warning' : 'text-slate-400') }}">
+                                    @if($sub->days_until_expiry < 0)
+                                        @if($sub->missed_payments_count)
+                                            {{ $sub->missed_payments_count }} PAYMENT{{ $sub->missed_payments_count > 1 ? 'S' : '' }} MISSED
+                                        @else
+                                            EXPIRED {{ abs($sub->days_until_expiry) }} DAYS AGO
+                                        @endif
                                     @else
-                                        EXPIRED {{ abs($sub->days_until_expiry) }} DAYS AGO
+                                        {{ $sub->days_until_expiry }} DAYS LEFT
                                     @endif
-                                @else
-                                    {{ $sub->days_until_expiry }} DAYS LEFT
-                                @endif
-                            </span>
-                        </div>
+                                </span>
+                            </div>
+                        @endif
                     </td>
                     <td>
                         <x-ui.badge-status :status="$sub->status" />
                     </td>
                     <td class="text-right">
-                        <x-ui.action-menu
-                            viewAction="{{ route('subscriptions.show', $sub) }}"
-                            editAction="window.location.href='{{ route('subscriptions.edit', $sub) }}'"
-                            deleteAction="confirmDelete('{{ $sub->ulid }}')"
-                        />
+                        @if($showTrash)
+                            <x-ui.button wire:click="restore('{{ $sub->ulid }}')" variant="soft" size="xs">
+                                <x-icon-refresh class="w-3.5 h-3.5" />
+                                <span>Restore</span>
+                            </x-ui.button>
+                        @else
+                            <x-ui.action-menu
+                                viewAction="{{ route('subscriptions.show', $sub) }}"
+                                editAction="window.location.href='{{ route('subscriptions.edit', $sub) }}'"
+                                deleteAction="confirmDelete('{{ $sub->ulid }}')"
+                            />
+                        @endif
                     </td>
                 </tr>
             @endforeach
@@ -138,7 +171,7 @@
     <x-ui.confirm-modal 
         id="confirm-delete-subscription"
         title="Delete Subscription"
-        message="Are you sure you want to delete this subscription? This action cannot be undone."
+        message="Are you sure you want to delete this subscription? You can restore it later from the Trash if needed."
         confirmAction="delete"
     />
 </div>

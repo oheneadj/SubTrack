@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Restore for deleted subscriptions** — same "Trash" toggle pattern as Clients/Projects, added to the Subscriptions index. Bulk-select and "Add Subscription" are hidden while viewing the trash, since neither applies there. Also corrected the delete confirmation copy, which previously said "This action cannot be undone" for what's actually a soft delete. Providers were deliberately left without this (a Provider is just a name/website/email — trivial to recreate, not worth the added UI for how rarely it'd be needed)
+- Tests: `SubscriptionTrashUiTest`
+
+## [Unreleased]
+
+### Added
 - **Restore for deleted clients and projects** — a "Trash" toggle on the Clients and Projects index pages switches the list to show only deleted records, each with a "Restore" action. Restoring cascades symmetrically to how delete cascades: restoring a client brings back its projects (and, through them, their subscriptions) and any subscription attached directly to it; restoring a project brings back its subscriptions. A project cascade-deleted along with its client still shows correctly in the Projects trash even though its client is also trashed (its own list normally hides projects whose client isn't active — the trash view drops that filter and eager-loads the client `withTrashed()` so its name still renders)
 - Tests: `ClientProjectTrashUiTest`, extended `ClientProjectCascadeDeleteTest` with restore cases
 
