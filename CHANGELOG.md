@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Finance dashboard's top row only showed 3 cards per row until very wide screens** (the `xl:grid-cols-6` step from the previous fix): now that labels wrap instead of truncating and are shortened, 6 cards fit safely from the standard desktop breakpoint again — restored `lg:grid-cols-6`
+
+### Fixed
 - **Stat card labels were getting truncated mid-word**: the previous fix for icon-squeezing added `truncate` to the label text too, which cut off real labels like "Outstanding Revenue" → "Outstanding …" once cards got narrow. Labels now wrap onto two lines instead of truncating (they're short enough that wrapping never looks bad), and shortened a few of the longer Finance dashboard labels ("Total Revenue (Paid)" → "Total Revenue", "Annual Provider Costs" → "Provider Costs", "Avg. Monthly Revenue" → "Monthly Revenue", "Profit (Realized)" → "Profit") so they fit comfortably without wrapping at all
 
 ### Changed
