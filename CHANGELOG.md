@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Real bug, found while chasing a "Generate Receipt does nothing after cleanup" report**: `ReceiptNumberService`/`InvoiceNumberService` picked the next number from a plain row count (`count() + 1`). That's only safe if numbers are never deleted out of order — but `receipts:cleanup-legacy` deletes whatever legacy rows it finds, not strictly lowest-numbered first, and `Invoice` uses soft-deletes, which a plain `count()` already excludes by default. Either way, the count can end up lower than the highest number still in use, so the "next" number generated is actually already taken — a database unique-constraint error on save that crashes with no visible feedback (exactly what looked like the receipt "not generating"). Both services now compute the next number from the actual highest sequence number in use (scanning existing `{prefix}-{year}-*` numbers), which can never collide regardless of what's been deleted
+- Tests: `NumberingSurvivesDeletionsTest`
+
+## [Unreleased]
+
+### Fixed
 - **App-wide: most actions showed no success/error message at all** — including "Generate Receipt", which is what surfaced this. `session()->flash()` only renders on the *next full page load*, but a Livewire action (like clicking "Generate Receipt") only re-renders the component's own DOM, never the surrounding layout where the flash-message toast lives — so the flashed message was silently lost every time, unless the action happened to be followed by a real page redirect. This was a known, already-diagnosed issue (the toast component literally has a comment explaining it, and a working fix — dispatching a `notify` browser event instead — existed), but the fix had only ever been applied to 2 of 25 Livewire components. Converted the remaining 23 (~50 call sites): Providers, Mail Templates, Clients, Users, Email Logs, Projects, the Dashboard, Invoices, Renewals, Receipts, Subscriptions, Settings, and force-password-change. Added a small `Notifies` trait (`notifySuccess()`/`notifyError()`/`notifyWarning()`) so every component now dispatches the same way, and added the same live-toast listener to the auth layout, which had none. Left the small number of calls that genuinely are followed by a redirect (client/project creation, invoice builder save, subscription form, password change success) as `session()->flash()`, since that's the one case where it does work correctly
 - Tests: `ToastNotificationsTest`
 
