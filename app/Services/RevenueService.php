@@ -96,13 +96,17 @@ class RevenueService
     }
 
     /**
-     * Money actually owed by clients right now — invoices raised but not
-     * yet (fully) paid.
+     * Money actually owed by clients right now — the remaining balance on
+     * every invoice that's been sent but isn't fully paid. Sums balance_due
+     * (total_amount - amount_paid), not total_amount: a Partially Paid
+     * invoice still owes something, just not the full total, and that
+     * remainder was previously left out of this figure entirely.
      */
     public function outstandingRevenue(): float
     {
-        return Invoice::whereIn('status', [InvoiceStatus::Sent, InvoiceStatus::Overdue])
-            ->sum('total_amount') / 100;
+        return Invoice::whereIn('status', [InvoiceStatus::Sent, InvoiceStatus::Overdue, InvoiceStatus::PartiallyPaid])
+            ->get(['total_amount', 'amount_paid'])
+            ->sum(fn (Invoice $invoice) => $invoice->balance_due) / 100;
     }
 
     /**

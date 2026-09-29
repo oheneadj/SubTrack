@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **"Outstanding Revenue" silently excluded partially paid invoices**: `RevenueService::outstandingRevenue()` only counted `Sent`/`Overdue` invoices, and summed their full `total_amount` rather than the remaining `balance_due`. A `Partially Paid` invoice's remaining balance — real money still owed — wasn't in that `whereIn` at all, so it never appeared in "Outstanding Revenue" anywhere in the app. Now sums `balance_due` across `Sent`, `Overdue`, and `PartiallyPaid` invoices. `Draft` invoices remain excluded on purpose — money not yet billed to the client isn't "outstanding"
+- Tests: extended `RevenueServiceTest` with a partial-payment and a draft-invoice case
+
+## [Unreleased]
+
+### Fixed
 - **Finance dashboard's "Upcoming Expenses (Renewals)" card — same bug class, worse this time**: it rendered `number_format($sub->renewal_cost_usd, 2)` directly, with no `/100` conversion at all, so a $69.00 renewal cost showed as $6,900.00. Swapped in the existing `formatted_renewal_cost_usd` accessor, which already does this correctly everywhere else in the app. Also excluded one-time subscriptions from the card — a one-off purchase never renews, so it doesn't belong on a list of upcoming renewal expenses even if its expiry date happens to fall soon
 - Tests: `FinanceDashboardUpcomingRenewalsTest`
 

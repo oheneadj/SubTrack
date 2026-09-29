@@ -159,6 +159,47 @@ test('totalProviderCosts excludes a renewal still Pending payment', function () 
     expect(app(RevenueService::class)->totalProviderCosts())->toBe(0.0);
 });
 
+test('outstandingRevenue includes the remaining balance of a partially paid invoice', function () {
+    $client = Client::factory()->create();
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-OUT-PARTIAL-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 50000,
+        'amount_paid' => 20000,
+        'status' => InvoiceStatus::PartiallyPaid,
+    ]);
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-OUT-SENT-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 10000,
+        'status' => InvoiceStatus::Sent,
+    ]);
+
+    // Previously: only fully-unpaid Sent/Overdue invoices counted, and by
+    // their full total_amount — a Partially Paid invoice's remaining $300
+    // balance was invisible everywhere. Expected: $300 (remaining on the
+    // partial) + $100 (the untouched Sent invoice) = $400.
+    expect(app(RevenueService::class)->outstandingRevenue())->toBe(400.0);
+});
+
+test('outstandingRevenue excludes a fully Draft invoice not yet sent to the client', function () {
+    $client = Client::factory()->create();
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-OUT-DRAFT-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 99999,
+        'status' => InvoiceStatus::Draft,
+    ]);
+
+    expect(app(RevenueService::class)->outstandingRevenue())->toBe(0.0);
+});
+
 test('comparisonData expenses are in dollars, not 100x too large in cents', function () {
     $client = Client::factory()->create();
     Subscription::create([
