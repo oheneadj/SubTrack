@@ -66,7 +66,7 @@ test('Finance dashboard displays realized profit, previously computed but never 
     $response = Livewire::actingAs(User::factory()->create())
         ->test(FinanceDashboard::class);
 
-    $response->assertSee('Profit (Realized)')->assertSee('$60.00');
+    $response->assertSee('Profit')->assertSee('$60.00');
 });
 
 test('Finance dashboard stat cards show compact K formatting for large amounts', function () {

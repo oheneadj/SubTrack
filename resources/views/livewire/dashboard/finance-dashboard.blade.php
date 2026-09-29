@@ -3,13 +3,13 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
         <x-ui.stat-card
-            label="Total Revenue (Paid)"
+            label="Total Revenue"
             :value="\App\Support\Money::compact($totalRevenue)"
             icon="currency-dollar"
             variant="healthy"
         />
         <x-ui.stat-card
-            label="Outstanding Revenue"
+            label="Outstanding"
             :value="\App\Support\Money::compact($outstandingRevenue)"
             icon="file-invoice"
             variant="warning"
@@ -21,13 +21,13 @@
             variant="neutral"
         />
         <x-ui.stat-card
-            label="Avg. Monthly Revenue"
+            label="Monthly Revenue"
             :value="\App\Support\Money::compact($mrr)"
             icon="calculator"
             variant="info"
         />
         <x-ui.stat-card
-            label="Annual Provider Costs"
+            label="Provider Costs"
             :value="\App\Support\Money::compact($totalCosts)"
             icon="credit-card"
             variant="critical"
@@ -35,7 +35,7 @@
         {{-- Realized profit from paid renewals only — was already computed
              every page load and silently thrown away before this card existed. --}}
         <x-ui.stat-card
-            label="Profit (Realized)"
+            label="Profit"
             :value="\App\Support\Money::compact($profit)"
             icon="trending-up"
             :variant="$profit >= 0 ? 'healthy' : 'critical'"
@@ -175,7 +175,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        {{-- Cost by Provider — "Annual Provider Costs" above is a single
+        {{-- Cost by Provider — "Provider Costs" above is a single
              lump figure; this breaks it down by which provider is actually
              responsible for the spend. --}}
         <x-ui.card :padding="false">

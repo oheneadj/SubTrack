@@ -25,7 +25,7 @@ $baseClasses = "block rounded-2xl border p-5 relative group transition-all durat
     <div class="relative z-10 flex items-center justify-between gap-3">
         <div class="min-w-0">
             <p class="text-2xl font-bold font-mono leading-tight tracking-tight truncate">{{ $value }}</p>
-            <p class="text-xs mt-2 font-medium uppercase tracking-wider text-white/80 truncate">{{ $label }}</p>
+            <p class="text-xs mt-2 font-medium uppercase tracking-wider text-white/80 leading-snug">{{ $label }}</p>
         </div>
 
         <div class="p-2.5 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 text-white shrink-0">

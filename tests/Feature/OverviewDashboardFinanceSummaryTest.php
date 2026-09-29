@@ -22,8 +22,8 @@ test('Home dashboard shows only minimal finance context, not the full duplicated
     // breakdown (chart, MRR, provider costs) — the exact source of the
     // "two dashboards silently drift apart" bug class fixed this session.
     $response->assertDontSee('Revenue vs. Expenses')
-        ->assertDontSee('Avg. Monthly Revenue')
-        ->assertDontSee('Annual Costs');
+        ->assertDontSee('Monthly Revenue')
+        ->assertDontSee('Provider Costs');
 });
 
 test('Home dashboard finance tiles show compact K formatting for large amounts', function () {

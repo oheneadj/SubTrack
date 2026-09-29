@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Stat card labels were getting truncated mid-word**: the previous fix for icon-squeezing added `truncate` to the label text too, which cut off real labels like "Outstanding Revenue" → "Outstanding …" once cards got narrow. Labels now wrap onto two lines instead of truncating (they're short enough that wrapping never looks bad), and shortened a few of the longer Finance dashboard labels ("Total Revenue (Paid)" → "Total Revenue", "Annual Provider Costs" → "Provider Costs", "Avg. Monthly Revenue" → "Monthly Revenue", "Profit (Realized)" → "Profit") so they fit comfortably without wrapping at all
+
 ### Changed
 - **Smaller stat card icons, compact K/M money formatting** — icons shrunk further (`w-6 h-6` → `w-4 h-4`) for more breathing room, and dashboard summary cards (Finance's 6 top cards, Home's 2 finance tiles) now format large dollar amounts compactly: $1,124.08 → "$1.1K", $2,300,000 → "$2.3M". Added `App\Support\Money::compact()` as the single place this formatting logic lives. Itemized lists (Recent Payments, Upcoming Renewals, provider/client breakdowns) are untouched — compacting is only for the space-constrained summary cards, where precision to the cent doesn't matter as much as the number actually fitting
 - Tests: `MoneyCompactTest`, extended `FinanceDashboardRecentPaymentsTest` and `OverviewDashboardFinanceSummaryTest`
