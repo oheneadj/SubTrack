@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Users;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\ActivityLog;
 use App\Models\User;
 use App\Services\ActivityLogService;
@@ -17,7 +18,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class UserShow extends Component
 {
-    use WithPagination;
+    use Notifies, WithPagination;
 
     public User $user;
 
@@ -33,7 +34,7 @@ class UserShow extends Component
     public function toggleActive(ActivityLogService $activityLog): void
     {
         if ($this->user->id === auth()->id()) {
-            session()->flash('error', 'You cannot disable your own account.');
+            $this->notifyError('You cannot disable your own account.');
 
             return;
         }
@@ -43,7 +44,7 @@ class UserShow extends Component
 
         $activityLog->log("user.{$action}", "Account {$action} for {$this->user->name}", $this->user);
 
-        session()->flash('success', "User account has been {$action}.");
+        $this->notifySuccess("User account has been {$action}.");
     }
 
     public function initiatePasswordReset(): void
@@ -64,7 +65,7 @@ class UserShow extends Component
         $activityLog->log('user.password_reset', "Password reset for {$this->user->name}", $this->user);
 
         $this->passwordResetDone = true;
-        session()->flash('success', 'Password has been reset successfully.');
+        $this->notifySuccess('Password has been reset successfully.');
     }
 
     /**

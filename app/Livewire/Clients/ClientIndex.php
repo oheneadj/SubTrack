@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Clients;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\Client;
 use App\Traits\WithSorting;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +15,7 @@ use Livewire\WithPagination;
 
 class ClientIndex extends Component
 {
-    use WithPagination, WithSorting;
+    use Notifies, WithPagination, WithSorting;
 
     public string $sortColumn = 'name';
 
@@ -38,7 +39,7 @@ class ClientIndex extends Component
     #[On('client-saved')]
     public function clientSaved(string $message): void
     {
-        session()->flash('success', $message);
+        $this->notifySuccess($message);
     }
 
     public function updatingSearch(): void
@@ -67,7 +68,7 @@ class ClientIndex extends Component
         if ($this->deletingId) {
             $name = Client::findOrFail($this->deletingId)->name;
             Client::findOrFail($this->deletingId)->delete();
-            session()->flash('success', "{$name} has been deleted.");
+            $this->notifySuccess("{$name} has been deleted.");
         }
 
         $this->showDeleteModal = false;

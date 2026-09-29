@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Clients;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\Client;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -12,6 +13,8 @@ use Livewire\Component;
 
 class ClientShow extends Component
 {
+    use Notifies;
+
     public Client $client;
 
     public function mount(Client $client)
@@ -24,7 +27,7 @@ class ClientShow extends Component
     #[On('project-saved')]
     public function projectSaved(string $message): void
     {
-        session()->flash('success', $message);
+        $this->notifySuccess($message);
     }
 
     /** Refresh the client after an edit made via the shared modal. */
@@ -32,7 +35,7 @@ class ClientShow extends Component
     public function clientSaved(string $message): void
     {
         $this->client->refresh();
-        session()->flash('success', $message);
+        $this->notifySuccess($message);
     }
 
     #[Computed]

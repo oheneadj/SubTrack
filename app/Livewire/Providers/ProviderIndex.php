@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Providers;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\Provider;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 
 class ProviderIndex extends Component
 {
-    use WithPagination;
+    use Notifies, WithPagination;
 
     public string $search = '';
 
@@ -72,10 +73,10 @@ class ProviderIndex extends Component
 
         if ($this->editingId) {
             Provider::findOrFail($this->editingId)->update($data);
-            session()->flash('success', 'Provider updated successfully.');
+            $this->notifySuccess('Provider updated successfully.');
         } else {
             Provider::create($data);
-            session()->flash('success', 'Provider added successfully.');
+            $this->notifySuccess('Provider added successfully.');
         }
 
         $this->showModal = false;
@@ -91,7 +92,7 @@ class ProviderIndex extends Component
     {
         if ($this->deletingId) {
             Provider::findOrFail($this->deletingId)->delete();
-            session()->flash('success', 'Provider deleted.');
+            $this->notifySuccess('Provider deleted.');
         }
         $this->showDeleteModal = false;
         $this->deletingId = null;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Settings;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -11,7 +12,7 @@ use Livewire\WithFileUploads;
 
 class AppSettings extends Component
 {
-    use WithFileUploads;
+    use Notifies, WithFileUploads;
 
     // App Identity
     public $appName;
@@ -152,7 +153,7 @@ class AppSettings extends Component
         Setting::set('payment_edit_window_hours', $this->paymentEditWindowHours);
         Setting::set('require_void_reason', $this->requireVoidReason ? '1' : '0');
 
-        session()->flash('success', 'Settings updated successfully.');
+        $this->notifySuccess('Settings updated successfully.');
     }
 
     public function render()

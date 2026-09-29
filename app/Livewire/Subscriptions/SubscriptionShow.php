@@ -62,7 +62,7 @@ class SubscriptionShow extends Component
 
         $this->subscription->update(['notes' => $this->notes]);
 
-        session()->flash('success', 'Notes updated.');
+        $this->notifySuccess('Notes updated.');
     }
 
     #[Computed]
@@ -143,7 +143,7 @@ class SubscriptionShow extends Component
                 $note,
             );
         } catch (RuntimeException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->notifyError($e->getMessage());
 
             return;
         }
@@ -153,7 +153,7 @@ class SubscriptionShow extends Component
 
         $this->showRenewalModal = false;
 
-        session()->flash('success', 'Renewal prepared — an invoice has been raised. Take payment, then process the renewal once it\'s paid.');
+        $this->notifySuccess('Renewal prepared — an invoice has been raised. Take payment, then process the renewal once it\'s paid.');
     }
 
     /** Emails the renewal's invoice to the client, with a link to pay it online. */
@@ -167,7 +167,7 @@ class SubscriptionShow extends Component
 
         $notificationService->sendInvoice($renewal->invoice);
 
-        session()->flash('success', 'Payment link emailed to the client.');
+        $this->notifySuccess('Payment link emailed to the client.');
     }
 
     /**
@@ -182,7 +182,7 @@ class SubscriptionShow extends Component
         try {
             $renewal = $action->execute($renewal);
         } catch (RenewalNotPaidException|RenewalAlreadyProcessedException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->notifyError($e->getMessage());
 
             return;
         }
@@ -190,7 +190,7 @@ class SubscriptionShow extends Component
         $this->subscription->refresh()->load(['client', 'project.client', 'provider', 'renewals.invoice']);
         unset($this->renewals, $this->stats);
 
-        session()->flash('success', "Renewal processed. Next expiry: {$renewal->subscription->expiry_date->format('M d, Y')}");
+        $this->notifySuccess("Renewal processed. Next expiry: {$renewal->subscription->expiry_date->format('M d, Y')}");
     }
 
     /** Refreshes computed state after a manual payment is recorded against a renewal's invoice. */

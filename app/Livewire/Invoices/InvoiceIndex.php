@@ -66,7 +66,7 @@ class InvoiceIndex extends Component
         $invoice = Invoice::where('ulid', $invoiceUlid)->firstOrFail();
         $notificationService->sendInvoice($invoice);
 
-        session()->flash('success', "Invoice {$invoice->invoice_number} sent to {$invoice->client->email}.");
+        $this->notifySuccess("Invoice {$invoice->invoice_number} sent to {$invoice->client->email}.");
     }
 
     public function export(): StreamedResponse

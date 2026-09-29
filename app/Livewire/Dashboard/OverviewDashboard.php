@@ -7,6 +7,7 @@ namespace App\Livewire\Dashboard;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
+use App\Livewire\Concerns\Notifies;
 use App\Models\Client;
 use App\Models\DashboardActivityLog;
 use App\Models\Invoice;
@@ -22,6 +23,8 @@ use Livewire\Component;
 #[Layout('components.layouts.app')]
 class OverviewDashboard extends Component
 {
+    use Notifies;
+
     public array $revenueData = [];
 
     public array $revenueChange = [];
@@ -109,7 +112,7 @@ class OverviewDashboard extends Component
         app(NotificationService::class)->sendExpiryReminder($subscription);
 
         $clientName = $subscription->effective_client->name ?? 'client';
-        session()->flash('success', "Reminder sent to {$clientName}.");
+        $this->notifySuccess("Reminder sent to {$clientName}.");
     }
 
     public function render(): View

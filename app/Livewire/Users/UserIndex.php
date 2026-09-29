@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Users;
 
+use App\Livewire\Concerns\Notifies;
 use App\Mail\UserInviteMail;
 use App\Models\User;
 use App\Services\EmailLogger;
@@ -19,7 +20,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class UserIndex extends Component
 {
-    use WithPagination;
+    use Notifies, WithPagination;
 
     // Search
     public string $search = '';
@@ -99,7 +100,7 @@ class UserIndex extends Component
         $this->showInviteModal = false;
         $this->reset('inviteName', 'inviteEmail', 'inviteRole');
 
-        session()->flash('success', "Invitation sent to {$user->email} successfully.");
+        $this->notifySuccess("Invitation sent to {$user->email} successfully.");
     }
 
     public function openToggleModal(string $userUlid): void
@@ -125,7 +126,7 @@ class UserIndex extends Component
         $user = User::findOrFail($this->toggleUserId);
 
         if ($user->id === auth()->id()) {
-            session()->flash('error', 'You cannot disable your own account.');
+            $this->notifyError('You cannot disable your own account.');
             $this->showToggleModal = false;
 
             return;
@@ -134,7 +135,7 @@ class UserIndex extends Component
         $user->update(['is_active' => ! $user->is_active]);
 
         $action = $user->is_active ? 'enabled' : 'disabled';
-        session()->flash('success', "{$user->name} has been {$action}.");
+        $this->notifySuccess("{$user->name} has been {$action}.");
 
         $this->showToggleModal = false;
         $this->reset('confirmPassword', 'toggleUserId', 'toggleUserIsActive');
@@ -166,7 +167,7 @@ class UserIndex extends Component
 
         Mail::to($user->email)->queue($mail);
 
-        session()->flash('success', "New credentials sent to {$user->email}.");
+        $this->notifySuccess("New credentials sent to {$user->email}.");
     }
 
     public function confirmDelete(string $userUlid): void
@@ -174,7 +175,7 @@ class UserIndex extends Component
         $user = User::where('ulid', $userUlid)->firstOrFail();
 
         if ($user->id === auth()->id()) {
-            session()->flash('error', 'You cannot delete your own account.');
+            $this->notifyError('You cannot delete your own account.');
 
             return;
         }
@@ -182,7 +183,7 @@ class UserIndex extends Component
         $name = $user->name;
         $user->delete();
 
-        session()->flash('success', "{$name} has been removed.");
+        $this->notifySuccess("{$name} has been removed.");
     }
 
     public function updatedSearch(): void

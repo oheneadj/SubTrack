@@ -46,5 +46,25 @@
                 </p>
             @endif
         </div>
+
+        {{-- Live Toasts — for a Livewire component on this layout (e.g. ForcePasswordChange)
+             that dispatches: $this->dispatch('notify', type: 'success', message: '...') --}}
+        <div
+            x-data="{ toasts: [] }"
+            x-on:notify.window="
+                const toast = { id: Date.now() + Math.random(), type: $event.detail.type ?? 'success', message: $event.detail.message };
+                toasts.push(toast);
+                setTimeout(() => { toasts = toasts.filter(t => t.id !== toast.id) }, 4000);
+            "
+            class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2"
+        >
+            <template x-for="toast in toasts" :key="toast.id">
+                <div x-show="true" x-transition class="alert" :class="'alert-' + toast.type">
+                    <template x-if="toast.type === 'success'"><x-icon-check class="w-5 h-5" /></template>
+                    <template x-if="toast.type !== 'success'"><x-icon-alert-triangle class="w-5 h-5" /></template>
+                    <span x-text="toast.message"></span>
+                </div>
+            </template>
+        </div>
     </body>
 </html>

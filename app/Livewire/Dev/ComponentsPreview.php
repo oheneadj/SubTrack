@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dev;
 
+use App\Livewire\Concerns\Notifies;
 use Livewire\Component;
 
 class ComponentsPreview extends Component
 {
+    use Notifies;
+
     public $inputText = '';
 
     public $selectValue = '';
@@ -18,7 +21,7 @@ class ComponentsPreview extends Component
 
     public function delete()
     {
-        session()->flash('success', 'Delete action triggered successfully!');
+        $this->notifySuccess('Delete action triggered successfully!');
         $this->confirmDelete = false;
     }
 

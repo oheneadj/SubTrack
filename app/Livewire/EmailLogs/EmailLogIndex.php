@@ -6,6 +6,7 @@ namespace App\Livewire\EmailLogs;
 
 use App\Actions\DispatchClientMailAction;
 use App\Enums\EmailLogStatus;
+use App\Livewire\Concerns\Notifies;
 use App\Mail\GenericClientMail;
 use App\Models\EmailLog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -21,7 +22,7 @@ use Livewire\WithPagination;
  */
 class EmailLogIndex extends Component
 {
-    use WithPagination;
+    use Notifies, WithPagination;
 
     public string $search = '';
 
@@ -80,7 +81,7 @@ class EmailLogIndex extends Component
             $dispatcher->resend($log);
         }
 
-        session()->flash('success', "Resent {$logs->count()} failed email(s).");
+        $this->notifySuccess("Resent {$logs->count()} failed email(s).");
     }
 
     #[Layout('components.layouts.app')]

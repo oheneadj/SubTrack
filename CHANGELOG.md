@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **App-wide: most actions showed no success/error message at all** — including "Generate Receipt", which is what surfaced this. `session()->flash()` only renders on the *next full page load*, but a Livewire action (like clicking "Generate Receipt") only re-renders the component's own DOM, never the surrounding layout where the flash-message toast lives — so the flashed message was silently lost every time, unless the action happened to be followed by a real page redirect. This was a known, already-diagnosed issue (the toast component literally has a comment explaining it, and a working fix — dispatching a `notify` browser event instead — existed), but the fix had only ever been applied to 2 of 25 Livewire components. Converted the remaining 23 (~50 call sites): Providers, Mail Templates, Clients, Users, Email Logs, Projects, the Dashboard, Invoices, Renewals, Receipts, Subscriptions, Settings, and force-password-change. Added a small `Notifies` trait (`notifySuccess()`/`notifyError()`/`notifyWarning()`) so every component now dispatches the same way, and added the same live-toast listener to the auth layout, which had none. Left the small number of calls that genuinely are followed by a redirect (client/project creation, invoice builder save, subscription form, password change success) as `session()->flash()`, since that's the one case where it does work correctly
+- Tests: `ToastNotificationsTest`
+
+## [Unreleased]
+
 ### Added
 - A `notes` field on manual payments — both Record Payment and Edit Payment (Invoices list and Receipts page) now have an optional notes input (e.g. "Bank transfer ref #1234"), matching the reason field Void Payment already had. Edit Payment pre-fills the payment's existing notes, so a correction can also fix a typo in the note itself. Shown on the Receipts page's Payments table and included in the `payment.recorded`/`payment.edited` activity log entries
 - Tests: `PaymentNotesTest`

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Subscriptions;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\Subscription;
 use App\Traits\WithSorting;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /** Subscriptions list — search, filters, bulk actions, and CSV export. */
 class SubscriptionIndex extends Component
 {
-    use WithPagination, WithSorting;
+    use Notifies, WithPagination, WithSorting;
 
     public string $sortColumn = 'created_at';
 
@@ -121,7 +122,7 @@ class SubscriptionIndex extends Component
         if ($this->selectedSubscriptionId) {
             Subscription::findOrFail($this->selectedSubscriptionId)->delete();
             $this->selectedSubscriptionId = null;
-            session()->flash('success', 'Subscription deleted successfully.');
+            $this->notifySuccess('Subscription deleted successfully.');
         }
     }
 
@@ -145,7 +146,7 @@ class SubscriptionIndex extends Component
         $this->selectedSubscriptions = [];
         $this->selectAll = false;
 
-        session()->flash('success', 'Selected subscriptions updated successfully.');
+        $this->notifySuccess('Selected subscriptions updated successfully.');
     }
 
     /**

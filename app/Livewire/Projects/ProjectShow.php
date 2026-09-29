@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Projects;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\Project;
 use App\Models\Subscription;
 use Livewire\Attributes\Computed;
@@ -13,6 +14,8 @@ use Livewire\Component;
 
 class ProjectShow extends Component
 {
+    use Notifies;
+
     public Project $project;
 
     public ?int $deletingSubscriptionId = null;
@@ -34,7 +37,7 @@ class ProjectShow extends Component
     {
         if ($this->deletingSubscriptionId) {
             Subscription::findOrFail($this->deletingSubscriptionId)->delete();
-            session()->flash('success', 'Subscription deleted successfully.');
+            $this->notifySuccess('Subscription deleted successfully.');
         }
         $this->deletingSubscriptionId = null;
         unset($this->subscriptions, $this->stats);
@@ -60,7 +63,7 @@ class ProjectShow extends Component
     #[On('project-saved')]
     public function projectSaved(string $message): void
     {
-        session()->flash('success', $message);
+        $this->notifySuccess($message);
     }
 
     #[Layout('layouts.app')]

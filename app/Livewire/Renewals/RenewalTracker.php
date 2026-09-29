@@ -6,6 +6,7 @@ namespace App\Livewire\Renewals;
 
 use App\Actions\PrepareRenewalAction;
 use App\Enums\SubscriptionStatus;
+use App\Livewire\Concerns\Notifies;
 use App\Models\Subscription;
 use App\Traits\WithSorting;
 use Carbon\Carbon;
@@ -16,7 +17,7 @@ use RuntimeException;
 
 class RenewalTracker extends Component
 {
-    use WithPagination, WithSorting;
+    use Notifies, WithPagination, WithSorting;
 
     public string $sortColumn = 'created_at';
 
@@ -113,7 +114,7 @@ class RenewalTracker extends Component
         try {
             $action->execute($subscription, $subscription->renewal_cost_usd ?? 0, $newExpiry, $note);
         } catch (RuntimeException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->notifyError($e->getMessage());
 
             return;
         }
@@ -121,7 +122,7 @@ class RenewalTracker extends Component
         $this->showRenewalModal = false;
         $this->renewingSubscriptionId = null;
 
-        session()->flash('success', "Renewal prepared for {$subscription->domain_name} — an invoice has been raised. Take payment and process it from the subscription's page.");
+        $this->notifySuccess("Renewal prepared for {$subscription->domain_name} — an invoice has been raised. Take payment and process it from the subscription's page.");
     }
 
     public function render()

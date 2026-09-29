@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Auth;
 
 use App\Enums\UserRole;
+use App\Livewire\Concerns\Notifies;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,8 @@ use Livewire\Component;
 #[Layout('layouts.auth')]
 class ForcePasswordChange extends Component
 {
+    use Notifies;
+
     public string $password = '';
 
     public string $password_confirmation = '';
@@ -57,7 +60,7 @@ class ForcePasswordChange extends Component
 
         } catch (\Exception $e) {
             Log::error('Password change failed: '.$e->getMessage());
-            session()->flash('error', 'There was a problem updating your password. Please try again.');
+            $this->notifyError('There was a problem updating your password. Please try again.');
         }
     }
 

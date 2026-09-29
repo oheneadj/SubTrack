@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Projects;
 
+use App\Livewire\Concerns\Notifies;
 use App\Models\Project;
 use App\Traits\WithSorting;
 use Livewire\Attributes\Layout;
@@ -13,7 +14,7 @@ use Livewire\WithPagination;
 
 class ProjectIndex extends Component
 {
-    use WithPagination, WithSorting;
+    use Notifies, WithPagination, WithSorting;
 
     public string $sortColumn = 'created_at';
 
@@ -41,14 +42,14 @@ class ProjectIndex extends Component
     #[On('project-saved')]
     public function projectSaved(string $message): void
     {
-        session()->flash('success', $message);
+        $this->notifySuccess($message);
     }
 
     public function delete(): void
     {
         if ($this->deletingId) {
             Project::findOrFail($this->deletingId)->delete();
-            session()->flash('success', 'Project deleted successfully.');
+            $this->notifySuccess('Project deleted successfully.');
         }
         $this->deletingId = null;
     }

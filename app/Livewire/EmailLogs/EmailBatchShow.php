@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\EmailLogs;
 
 use App\Actions\DispatchClientMailAction;
+use App\Livewire\Concerns\Notifies;
 use App\Models\EmailLog;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -17,6 +18,8 @@ use Livewire\Component;
  */
 class EmailBatchShow extends Component
 {
+    use Notifies;
+
     public string $batchId;
 
     public string $statusFilter = '';
@@ -75,7 +78,7 @@ class EmailBatchShow extends Component
         }
 
         $dispatcher->resend($log);
-        session()->flash('success', "Resent email to {$log->to_email}.");
+        $this->notifySuccess("Resent email to {$log->to_email}.");
     }
 
     public function resendAllFailed(DispatchClientMailAction $dispatcher): void
@@ -86,7 +89,7 @@ class EmailBatchShow extends Component
             $dispatcher->resend($log);
         }
 
-        session()->flash('success', "Resent {$logs->count()} failed email(s).");
+        $this->notifySuccess("Resent {$logs->count()} failed email(s).");
     }
 
     #[Layout('components.layouts.app')]

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\MailTemplates;
 
+use App\Livewire\Concerns\Notifies;
 use App\Mail\InvoiceMail;
 use App\Mail\SubscriptionReminderMail;
 use App\Mail\UserInviteMail;
@@ -19,6 +20,8 @@ use Livewire\Component;
 
 class MailTemplateIndex extends Component
 {
+    use Notifies;
+
     public bool $showEditModal = false;
 
     public ?MailTemplate $editingTemplate = null;
@@ -58,7 +61,7 @@ class MailTemplateIndex extends Component
         $this->showEditModal = false;
         $this->reset(['editingTemplate', 'editSubject', 'editBody']);
 
-        session()->flash('success', 'Template updated successfully.');
+        $this->notifySuccess('Template updated successfully.');
     }
 
     public function sendTest(string $ulid): void
@@ -106,9 +109,9 @@ class MailTemplateIndex extends Component
             // in-process regardless of ShouldQueue, sidestepping that entirely.
             Mail::to($user->email)->sendNow($mail);
 
-            session()->flash('success', "Test email for '{$template->name}' sent to your email.");
+            $this->notifySuccess("Test email for '{$template->name}' sent to your email.");
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to send test email: '.$e->getMessage());
+            $this->notifyError('Failed to send test email: '.$e->getMessage());
         }
     }
 

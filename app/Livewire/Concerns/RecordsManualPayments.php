@@ -19,6 +19,8 @@ use Carbon\CarbonImmutable;
  */
 trait RecordsManualPayments
 {
+    use Notifies;
+
     /** ULID of the invoice currently open in the Record Payment modal. */
     public string $recordPaymentInvoiceUlid = '';
 
@@ -76,7 +78,7 @@ trait RecordsManualPayments
         $this->dispatch('close-modal', id: 'record-payment-modal');
 
         $invoice->refresh();
-        session()->flash('success', $invoice->isPaid()
+        $this->notifySuccess($invoice->isPaid()
             ? "Invoice {$invoice->invoice_number} marked as Paid."
             : "Payment recorded. Invoice {$invoice->invoice_number} is now Partially Paid — {$invoice->formatted_balance_due} remaining.");
 

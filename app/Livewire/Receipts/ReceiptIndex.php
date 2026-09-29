@@ -150,7 +150,7 @@ class ReceiptIndex extends Component
         $this->dispatch('close-modal', id: 'edit-payment-modal');
         $this->refreshInvoiceComputedState();
 
-        session()->flash('success', 'Payment corrected.');
+        $this->notifySuccess('Payment corrected.');
     }
 
     #[Computed]
@@ -180,7 +180,7 @@ class ReceiptIndex extends Component
 
             return;
         } catch (PaymentNotVoidableException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->notifyError($e->getMessage());
 
             return;
         }
@@ -188,7 +188,7 @@ class ReceiptIndex extends Component
         $this->dispatch('close-modal', id: 'void-payment-modal');
         $this->refreshInvoiceComputedState();
 
-        session()->flash('success', 'Payment voided.');
+        $this->notifySuccess('Payment voided.');
     }
 
     /** Busts every computed property whose value depends on the scoped invoice's payment state. */
@@ -210,14 +210,14 @@ class ReceiptIndex extends Component
         try {
             $action->execute($payment);
         } catch (RuntimeException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->notifyError($e->getMessage());
 
             return;
         }
 
         $this->refreshInvoiceComputedState();
 
-        session()->flash('success', 'Receipt generated. You can download it or send it to the client below.');
+        $this->notifySuccess('Receipt generated. You can download it or send it to the client below.');
     }
 
     /** Emails the receipt PDF to the client it was issued for. */
@@ -226,7 +226,7 @@ class ReceiptIndex extends Component
         $receipt = Receipt::with('client')->where('ulid', $receiptUlid)->firstOrFail();
 
         if ($receipt->isInvalidated()) {
-            session()->flash('error', "Receipt {$receipt->receipt_number} can't be sent — it no longer matches a valid payment.");
+            $this->notifyError("Receipt {$receipt->receipt_number} can't be sent — it no longer matches a valid payment.");
 
             return;
         }
@@ -242,7 +242,7 @@ class ReceiptIndex extends Component
 
         Mail::to($receipt->client->email)->queue($mail);
 
-        session()->flash('success', "Receipt {$receipt->receipt_number} sent to {$receipt->client->email}.");
+        $this->notifySuccess("Receipt {$receipt->receipt_number} sent to {$receipt->client->email}.");
     }
 
     /**
