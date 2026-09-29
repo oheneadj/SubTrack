@@ -31,6 +31,7 @@ class FinanceDashboard extends Component
         $totalCosts = $revenue->totalProviderCosts();
         $profit = $revenue->totalProfit();
         $costByProvider = $revenue->costByProvider();
+        $topClients = $revenue->topClientsByRevenue();
 
         $recentPayments = $this->recentPayments();
 
@@ -52,6 +53,7 @@ class FinanceDashboard extends Component
             'totalCosts' => $totalCosts,
             'profit' => $profit,
             'costByProvider' => $costByProvider,
+            'topClients' => $topClients,
             'recentPayments' => $recentPayments,
             'upcomingRenewals' => $upcomingRenewals,
             'comparisonData' => $comparisonData,

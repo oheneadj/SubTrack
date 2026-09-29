@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Top Clients by Revenue on the Finance dashboard** — no dashboard previously showed which clients the business actually depends on, useful for spotting revenue concentration risk. Combines both revenue sources (paid invoices and directly-paid renewals), attributing a renewal to the subscription's effective client — its own client, or its project's client when the subscription belongs to a project
+- Tests: `RevenueServiceTopClientsTest`
+
+## [Unreleased]
+
+### Added
 - **Provider cost breakdown on the Finance dashboard** — "Annual Provider Costs" was a single lump figure with no visibility into which provider was actually responsible for the spend. Added a "Provider Costs Breakdown" card grouping paid renewal costs by provider, sorted highest-spend first
 - Tests: `RevenueServiceCostByProviderTest`
 

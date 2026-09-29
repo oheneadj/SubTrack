@@ -33,6 +33,40 @@ class RevenueService
             + $this->directRenewalRevenueQuery()->sum('client_cost_usd') / 100;
     }
 
+    /**
+     * The clients contributing the most revenue, from both sources (see
+     * class docblock). Money received via a directly-paid renewal is
+     * attributed to the subscription's effective client — either its own
+     * client_id or, when it belongs to a project instead, the project's
+     * client — matching how every other client-facing figure in this app
+     * resolves "who does this belong to".
+     *
+     * @return array<int, array{name: string, amount: float}>
+     */
+    public function topClientsByRevenue(int $limit = 5): array
+    {
+        $totals = collect();
+
+        $this->invoiceRevenueQuery()->with('client')->get()
+            ->each(function (Invoice $invoice) use ($totals) {
+                $name = $invoice->client?->name ?? 'Unknown Client';
+                $totals[$name] = ($totals[$name] ?? 0) + $invoice->amount_paid;
+            });
+
+        $this->directRenewalRevenueQuery()->with('subscription.client', 'subscription.project.client')->get()
+            ->each(function (Renewal $renewal) use ($totals) {
+                $name = $renewal->subscription?->effective_client?->name ?? 'Unknown Client';
+                $totals[$name] = ($totals[$name] ?? 0) + $renewal->client_cost_usd;
+            });
+
+        return $totals
+            ->map(fn ($cents, $name) => ['name' => $name, 'amount' => (float) $cents / 100])
+            ->sortByDesc('amount')
+            ->take($limit)
+            ->values()
+            ->all();
+    }
+
     public function lastSixMonths(): array
     {
         $months = collect(range(5, 0))->map(function ($monthsAgo) {
