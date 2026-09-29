@@ -119,7 +119,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
         <x-ui.stat-card
-            label="Est. MRR"
+            label="Avg. Monthly Revenue"
             value="${{ number_format($this->financeStats['mrr'], 2) }}"
             icon="calculator"
             variant="info"

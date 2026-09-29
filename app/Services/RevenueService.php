@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\SubscriptionRenewalType;
 use App\Enums\SubscriptionStatus;
 use App\Models\Invoice;
 use App\Models\Renewal;
@@ -124,18 +125,26 @@ class RevenueService
     }
 
     /**
-     * Estimated Monthly Recurring Revenue — every active subscription's
-     * client-facing renewal cost (with markup), annualized then divided by
-     * 12. An estimate of what a "typical" month brings in if everything
-     * renews on schedule, not money actually received.
+     * Average expected monthly revenue if every active subscription renews
+     * on schedule — not money actually received, and not a true
+     * billing-cycle-aware MRR. client_renewal_cost_usd already IS a
+     * monthly figure for a RecurringMonthly subscription, so it's summed
+     * as-is; for a RecurringAnnually subscription it's an annual figure,
+     * so it's divided by 12 before summing. Lumping both together and
+     * dividing the whole total by 12 (the previous behavior) silently
+     * shrank every monthly subscription's contribution by 12x.
      */
     public function estimatedMonthlyRecurringRevenue(): float
     {
-        $annualRecurring = Subscription::where('status', SubscriptionStatus::Active)
-            ->get()
+        $active = Subscription::where('status', SubscriptionStatus::Active)->get();
+
+        $monthly = $active->filter(fn (Subscription $s) => $s->renewal_type === SubscriptionRenewalType::RecurringMonthly)
             ->sum('client_renewal_cost_usd') / 100;
 
-        return $annualRecurring / 12;
+        $annual = $active->filter(fn (Subscription $s) => $s->renewal_type === SubscriptionRenewalType::RecurringAnnually)
+            ->sum('client_renewal_cost_usd') / 100 / 12;
+
+        return $monthly + $annual;
     }
 
     /**
@@ -168,16 +177,24 @@ class RevenueService
     }
 
     /**
-     * Estimated monthly provider cost, from active subscriptions'
-     * provider-facing renewal_cost_usd (no markup — this is what *we*
-     * pay, not what the client pays) annualized then divided by 12. An
-     * "Expected Monthly Cost" baseline, not literal expense tracking.
+     * Average expected monthly provider cost, from active subscriptions'
+     * provider-facing renewal_cost_usd (no markup — this is what *we* pay,
+     * not what the client pays). Same cycle-aware split as
+     * estimatedMonthlyRecurringRevenue(): a RecurringMonthly subscription's
+     * renewal_cost_usd is already a monthly figure and is summed as-is; a
+     * RecurringAnnually one is divided by 12 first.
      */
     private function estimatedMonthlyProviderCosts(): float
     {
-        $annual = Subscription::where('status', SubscriptionStatus::Active)->sum('renewal_cost_usd') / 100;
+        $active = Subscription::where('status', SubscriptionStatus::Active)->get();
 
-        return round($annual / 12, 2);
+        $monthly = $active->filter(fn (Subscription $s) => $s->renewal_type === SubscriptionRenewalType::RecurringMonthly)
+            ->sum('renewal_cost_usd') / 100;
+
+        $annual = $active->filter(fn (Subscription $s) => $s->renewal_type === SubscriptionRenewalType::RecurringAnnually)
+            ->sum('renewal_cost_usd') / 100 / 12;
+
+        return round($monthly + $annual, 2);
     }
 
     /**

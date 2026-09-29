@@ -21,7 +21,7 @@
             variant="neutral"
         />
         <x-ui.stat-card
-            label="Est. Monthly MRR"
+            label="Avg. Monthly Revenue"
             value="${{ number_format($mrr, 2) }}"
             icon="calculator"
             variant="info"

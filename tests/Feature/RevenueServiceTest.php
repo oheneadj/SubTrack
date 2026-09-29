@@ -200,6 +200,37 @@ test('outstandingRevenue excludes a fully Draft invoice not yet sent to the clie
     expect(app(RevenueService::class)->outstandingRevenue())->toBe(0.0);
 });
 
+test('estimatedMonthlyRecurringRevenue does not divide a monthly subscription cost by 12 again', function () {
+    $client = Client::factory()->create();
+    Subscription::create([
+        'client_id' => $client->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringMonthly,
+        'domain_name' => 'mrr-monthly-'.uniqid().'.test',
+        'purchase_date' => now()->subMonths(2),
+        'expiry_date' => now()->addMonth(),
+        'purchase_cost_usd' => 500,
+        'renewal_cost_usd' => 1000, // $10.00/mo, already a monthly figure
+        'status' => SubscriptionStatus::Active,
+    ]);
+    Subscription::create([
+        'client_id' => $client->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'mrr-annual-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addYear(),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 12000, // $120.00/yr = $10.00/mo
+        'status' => SubscriptionStatus::Active,
+    ]);
+
+    // Previously: (1000 + 12000) / 100 / 12 = $10.83/mo — the monthly sub's
+    // $10.00 got divided by 12 a second time. Correct: $10.00 (monthly, as
+    // is) + $10.00 ($120/yr / 12) = $20.00/mo.
+    expect(app(RevenueService::class)->estimatedMonthlyRecurringRevenue())->toBe(20.0);
+});
+
 test('totalProfit is paid client revenue minus paid provider costs, excluding pending renewals', function () {
     $client = Client::factory()->create();
     $project = Project::create(['client_id' => $client->id, 'project_name' => 'Profit Test']);
