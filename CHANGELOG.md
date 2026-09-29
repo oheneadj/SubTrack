@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Deleting a client or project now cascades a soft-delete to its active scope, consistently, app-wide**: previously, deleting a `Client` or `Project` had no cascade at all — related Projects/Subscriptions stayed fully active, and different pages disagreed about it (Invoices/Projects indexes silently hid records belonging to a deleted client via `whereHas('client')`, while Subscriptions, the Renewal Tracker, and every dashboard money figure kept counting them normally under "Unknown Client"). Deleting a Client now soft-deletes its Projects (which cascades to their Subscriptions) and any Subscription attached directly to the client. Deleting a Project soft-deletes its Subscriptions. Invoices/Renewals/Payments/Receipts are deliberately left untouched in both cases — they're already-billed financial history, not active scope, and this app already treats a missing client/subscription reference on those defensively (`?->name ?? 'Unknown Client'`) rather than as an error. Also corrected the delete confirmation copy, which previously said "permanently remove" for what is actually a soft delete
+- Tests: `ClientProjectCascadeDeleteTest`
+
+## [Unreleased]
+
 ### Added
 - **Provider cost is now shown on the Providers index, and sortable** — the Finance dashboard's "Provider Costs Breakdown" card is capped at the top 5 (was previously unbounded, making the card grow with every provider ever paid), and now links through to the Providers index for the full list. The Providers index gained a "Total Cost" column (same Paid/Renewed-only definition as `RevenueService::totalProviderCosts()`), sortable like the other columns. "Top Clients by Revenue" was already capped at 5 by default — added a "View All Clients" link there too and a regression test proving the cap actually holds with more than 5 clients
 - Tests: `ProviderIndexCostColumnTest`, extended `RevenueServiceCostByProviderTest` and `RevenueServiceTopClientsTest`

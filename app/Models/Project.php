@@ -42,6 +42,22 @@ class Project extends Model
     }
 
     /**
+     * Deleting a project cascades a soft-delete to its subscriptions — they
+     * represent active scope tied to this project, not historical money
+     * records, so leaving them behind (still active, still renewable) once
+     * their project is gone would be an inconsistent, orphaned state.
+     * Invoices raised against this project are left untouched: they're
+     * already-billed history, and already resolve their project/client
+     * defensively wherever they're displayed.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $project): void {
+            $project->subscriptions()->get()->each->delete();
+        });
+    }
+
+    /**
      * Get (or create) the client's catch-all "Unrelated" project — used when a
      * subscription is created without picking a real project, so it still has
      * something to group/filter by instead of a bare null.

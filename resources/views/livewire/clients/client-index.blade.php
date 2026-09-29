@@ -75,7 +75,7 @@
                     <x-icon-trash class="w-6 h-6 text-red-600" />
                 </div>
                 <h3 class="text-lg font-bold text-primary">Delete Client</h3>
-                <p class="text-sm text-secondary mt-1">This will permanently remove the client. All associated projects and subscriptions will be disconnected.</p>
+                <p class="text-sm text-secondary mt-1">This will remove the client along with all of their projects and subscriptions. Invoices and past payments are kept for your records.</p>
             </div>
 
             <form wire:submit="deleteWithPassword" class="space-y-4">

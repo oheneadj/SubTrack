@@ -31,6 +31,24 @@ class Client extends Model
 
     protected $fillable = ['name', 'email', 'phone', 'company_name'];
 
+    /**
+     * Deleting a client cascades a soft-delete to its projects (whose own
+     * deleting hook cascades further to their subscriptions) and any
+     * subscription attached directly to this client with no project —
+     * active scope that shouldn't keep renewing or showing up as live once
+     * its client is gone. Invoices/Renewals/Payments/Receipts are left
+     * untouched: they're already-billed financial history, not active
+     * scope, and already resolve their client/subscription defensively
+     * (?->name ?? 'Unknown Client') everywhere they're displayed.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $client): void {
+            $client->projects()->get()->each->delete();
+            $client->directSubscriptions()->get()->each->delete();
+        });
+    }
+
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);

@@ -65,7 +65,7 @@
     <x-ui.confirm-modal 
         id="delete-project-modal"
         title="Delete Project?" 
-        message="This will delete the project. Associated subscriptions will also be moved to trash (if soft deletes enabled)." 
+        message="This will remove the project along with all of its subscriptions. Invoices raised against it are kept for your records."
         confirmAction="delete"
     />
 
