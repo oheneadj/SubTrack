@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\ActivityEventType;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionRenewalType;
 use App\Enums\SubscriptionStatus;
+use App\Models\DashboardActivityLog;
 use App\Models\Invoice;
 use App\Models\Renewal;
 use App\Models\Subscription;
@@ -65,6 +67,46 @@ class RevenueService
             ->take($limit)
             ->values()
             ->all();
+    }
+
+    /**
+     * Recurring subscriptions auto-cancelled (grace period lapsed with no
+     * renewal payment) within the last $days — a churn signal that was
+     * previously invisible; a subscription simply disappearing from
+     * "Active" was the only trace of it anywhere. Reads from the
+     * SubscriptionAutoCancelled activity log rather than
+     * Subscription::updated_at, since Cancelled is the only status this
+     * app ever auto-sets (no manual "Cancel" action exists) but a later
+     * unrelated edit to an already-cancelled subscription would still bump
+     * updated_at and make it look freshly churned.
+     *
+     * @return array{count: int, lostMonthlyRevenue: float}
+     */
+    public function recentChurn(int $days = 90): array
+    {
+        $subscriptionIds = DashboardActivityLog::where('event_type', ActivityEventType::SubscriptionAutoCancelled)
+            ->where('created_at', '>=', now()->subDays($days))
+            ->get()
+            ->pluck('meta.subscription_id')
+            ->filter()
+            ->all();
+
+        $subscriptions = Subscription::whereIn('id', $subscriptionIds)->get();
+
+        // Recurring revenue this cancellation actually cost going forward —
+        // a monthly subscription's client_renewal_cost_usd is already a
+        // monthly figure, an annual one is divided by 12 (same split as
+        // estimatedMonthlyRecurringRevenue()).
+        $lostMonthlyCents = $subscriptions->sum(fn (Subscription $s) => match ($s->renewal_type) {
+            SubscriptionRenewalType::RecurringMonthly => $s->client_renewal_cost_usd,
+            SubscriptionRenewalType::RecurringAnnually => $s->client_renewal_cost_usd / 12,
+            default => 0,
+        });
+
+        return [
+            'count' => $subscriptions->count(),
+            'lostMonthlyRevenue' => round($lostMonthlyCents / 100, 2),
+        ];
     }
 
     public function lastSixMonths(): array

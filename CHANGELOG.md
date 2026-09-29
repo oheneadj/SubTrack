@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Churn / non-renewal signal on the Finance dashboard** — a recurring subscription lapsing without renewal previously left no trace anywhere except quietly disappearing from "Active" status. Added `RevenueService::recentChurn()`, reading the `SubscriptionAutoCancelled` activity log (not `Subscription::updated_at`, since a later unrelated edit to an already-cancelled subscription would otherwise make it look freshly churned) to show a count of subscriptions auto-cancelled in the last 90 days and the estimated lost monthly recurring revenue. Shown as an alert banner, only when something has actually churned
+- Tests: `RevenueServiceChurnTest`
+
+## [Unreleased]
+
 ### Changed
 - **Home dashboard no longer duplicates the entire Finance breakdown**: it previously repeated the Revenue vs. Expenses chart and 4 stat cards (Total Revenue, Outstanding, Avg. Monthly Revenue, Annual Costs) — the exact source of the "two dashboards silently drift apart" bug class this session kept finding and fixing (outstanding revenue, provider costs, and the $69/$6,900 bug all stemmed from this same duplication). Home now shows just 2 lightweight context tiles (Total Revenue, Outstanding) plus a link through to the Finance dashboard for the full breakdown, chart, provider costs, MRR, profit, and provider/client breakdowns. Also removed the now-dead `comparisonData`/`revenueData`/`revenueChange` properties on `OverviewDashboard`, which were computed on every page load and never actually used in the view
 - Tests: `OverviewDashboardFinanceSummaryTest`

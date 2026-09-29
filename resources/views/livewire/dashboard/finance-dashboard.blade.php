@@ -42,6 +42,18 @@
         />
     </div>
 
+    {{-- Churn signal — no dashboard previously showed a subscription
+         lapsing without renewal at all; it just silently disappeared from
+         "Active". Only shown when something has actually churned recently. --}}
+    @if($churn['count'] > 0)
+        <x-ui.alert-banner
+            :message="$churn['count'] . ' subscription(s) auto-cancelled in the last 90 days (grace period lapsed, no renewal) — an estimated $' . number_format($churn['lostMonthlyRevenue'], 2) . '/mo in recurring revenue lost.'"
+            :count="$churn['count']"
+            actionLabel="View subscriptions"
+            :actionLink="route('subscriptions.index')"
+        />
+    @endif
+
     {{-- Comparison Chart Section --}}
     <x-ui.card x-data="comparisonChart({{ json_encode($comparisonData) }})" class="mb-8">
         <div class="flex items-center justify-between mb-6">
