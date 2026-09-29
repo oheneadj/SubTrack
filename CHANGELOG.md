@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Smaller stat card icons, compact K/M money formatting** — icons shrunk further (`w-6 h-6` → `w-4 h-4`) for more breathing room, and dashboard summary cards (Finance's 6 top cards, Home's 2 finance tiles) now format large dollar amounts compactly: $1,124.08 → "$1.1K", $2,300,000 → "$2.3M". Added `App\Support\Money::compact()` as the single place this formatting logic lives. Itemized lists (Recent Payments, Upcoming Renewals, provider/client breakdowns) are untouched — compacting is only for the space-constrained summary cards, where precision to the cent doesn't matter as much as the number actually fitting
+- Tests: `MoneyCompactTest`, extended `FinanceDashboardRecentPaymentsTest` and `OverviewDashboardFinanceSummaryTest`
+
+## [Unreleased]
+
 ### Fixed
 - **Stat card icons were getting squeezed/clipped against the card edge**: the icon box had no `flex-shrink-0`, so on a card with a wide dollar value (e.g. "$1,124.08") in a tight 6-column row, the flex layout shrank the icon instead of the text, visibly cutting it off. Value text now truncates with an ellipsis instead of squeezing its neighbor, and the icon box is protected from shrinking. Also loosened the Finance dashboard's top stat row from a fixed 6 columns to 3 on medium screens and 6 only on extra-wide ones, so cards get enough room for their values on typical laptop screens
 

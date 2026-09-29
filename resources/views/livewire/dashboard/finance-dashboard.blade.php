@@ -4,31 +4,31 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
         <x-ui.stat-card
             label="Total Revenue (Paid)"
-            value="${{ number_format($totalRevenue, 2) }}"
+            :value="\App\Support\Money::compact($totalRevenue)"
             icon="currency-dollar"
             variant="healthy"
         />
         <x-ui.stat-card
             label="Outstanding Revenue"
-            value="${{ number_format($outstandingRevenue, 2) }}"
+            :value="\App\Support\Money::compact($outstandingRevenue)"
             icon="file-invoice"
             variant="warning"
         />
         <x-ui.stat-card
             label="Draft / Unbilled"
-            value="${{ number_format($draftInvoiceTotal, 2) }}"
+            :value="\App\Support\Money::compact($draftInvoiceTotal)"
             icon="file-invoice"
             variant="neutral"
         />
         <x-ui.stat-card
             label="Avg. Monthly Revenue"
-            value="${{ number_format($mrr, 2) }}"
+            :value="\App\Support\Money::compact($mrr)"
             icon="calculator"
             variant="info"
         />
         <x-ui.stat-card
             label="Annual Provider Costs"
-            value="${{ number_format($totalCosts, 2) }}"
+            :value="\App\Support\Money::compact($totalCosts)"
             icon="credit-card"
             variant="critical"
         />
@@ -36,7 +36,7 @@
              every page load and silently thrown away before this card existed. --}}
         <x-ui.stat-card
             label="Profit (Realized)"
-            value="${{ number_format($profit, 2) }}"
+            :value="\App\Support\Money::compact($profit)"
             icon="trending-up"
             :variant="$profit >= 0 ? 'healthy' : 'critical'"
         />

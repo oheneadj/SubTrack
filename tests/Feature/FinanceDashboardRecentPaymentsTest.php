@@ -68,3 +68,24 @@ test('Finance dashboard displays realized profit, previously computed but never 
 
     $response->assertSee('Profit (Realized)')->assertSee('$60.00');
 });
+
+test('Finance dashboard stat cards show compact K formatting for large amounts', function () {
+    $client = Client::factory()->create();
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-COMPACT-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 150000, // $1,500.00 paid
+        'amount_paid' => 150000,
+        'status' => InvoiceStatus::Paid,
+    ]);
+
+    $response = Livewire::actingAs(User::factory()->create())
+        ->test(FinanceDashboard::class);
+
+    // The stat card compacts to $1.5K; the Recent Payments list below it
+    // still shows the precise $1,500.00 for that same payment — only the
+    // summary cards use compact formatting, not itemized lists.
+    $response->assertSee('$1.5K');
+});

@@ -80,14 +80,14 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <x-ui.stat-card
             label="Total Revenue"
-            value="${{ number_format($this->financeStats['total_revenue'], 2) }}"
+            :value="\App\Support\Money::compact($this->financeStats['total_revenue'])"
             icon="currency-dollar"
             variant="healthy"
             :href="route('finances.index')"
         />
         <x-ui.stat-card
             label="Outstanding"
-            value="${{ number_format($this->financeStats['outstanding'], 2) }}"
+            :value="\App\Support\Money::compact($this->financeStats['outstanding'])"
             icon="file-invoice"
             variant="warning"
             :href="route('finances.index')"

@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Enums\InvoiceStatus;
 use App\Livewire\Dashboard\OverviewDashboard;
+use App\Models\Client;
+use App\Models\Invoice;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -21,4 +24,22 @@ test('Home dashboard shows only minimal finance context, not the full duplicated
     $response->assertDontSee('Revenue vs. Expenses')
         ->assertDontSee('Avg. Monthly Revenue')
         ->assertDontSee('Annual Costs');
+});
+
+test('Home dashboard finance tiles show compact K formatting for large amounts', function () {
+    $client = Client::factory()->create();
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-HOME-COMPACT-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 250000, // $2,500.00 paid
+        'amount_paid' => 250000,
+        'status' => InvoiceStatus::Paid,
+    ]);
+
+    $response = Livewire::actingAs(User::factory()->create())
+        ->test(OverviewDashboard::class);
+
+    $response->assertSee('$2.5K');
 });
