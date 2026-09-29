@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **"Draft / Unbilled" figure on the Finance dashboard** — money already committed once a renewal is started (its invoice raised as Draft via `PrepareRenewalAction`) but not yet sent to the client, so it deliberately doesn't count as "Outstanding" (nothing's been billed yet). Previously this money just vanished from view in the gap between "renewal started" and "invoice sent" — now it has its own figure alongside Outstanding Revenue instead of disappearing
+- Tests: extended `RevenueServiceTest`
+
+## [Unreleased]
+
 ### Changed
 - **Finance dashboard's "Upcoming Renewals" card only showed half the forecast** — the provider cost we'll owe, but never what we'll actually bill the client for the same renewal. Renamed from "Upcoming Expenses (Renewals)" and now shows both figures per row: the client bill (with markup) as the primary figure, provider cost as a secondary line
 - Tests: extended `FinanceDashboardUpcomingRenewalsTest`

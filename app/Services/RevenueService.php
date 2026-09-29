@@ -110,6 +110,20 @@ class RevenueService
     }
 
     /**
+     * Money already committed but not yet billed — invoices still in Draft
+     * (e.g. a renewal just started via "Start Renewal", which raises its
+     * invoice as Draft before anyone sends it) are deliberately excluded
+     * from outstandingRevenue(), since nothing has actually been billed to
+     * the client yet. This is the other half of that decision made
+     * visible, rather than the money just disappearing between "renewal
+     * started" and "invoice sent".
+     */
+    public function draftInvoiceTotal(): float
+    {
+        return Invoice::where('status', InvoiceStatus::Draft)->sum('total_amount') / 100;
+    }
+
+    /**
      * Estimated Monthly Recurring Revenue — every active subscription's
      * client-facing renewal cost (with markup), annualized then divided by
      * 12. An estimate of what a "typical" month brings in if everything

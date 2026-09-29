@@ -26,6 +26,7 @@ class FinanceDashboard extends Component
         // ever being invoiced — see RevenueService for why both count.
         $totalRevenue = $revenue->totalRevenue();
         $outstandingRevenue = $revenue->outstandingRevenue();
+        $draftInvoiceTotal = $revenue->draftInvoiceTotal();
         $mrr = $revenue->estimatedMonthlyRecurringRevenue();
         $totalCosts = $revenue->totalProviderCosts();
 
@@ -51,6 +52,7 @@ class FinanceDashboard extends Component
         return view('livewire.dashboard.finance-dashboard', [
             'totalRevenue' => $totalRevenue,
             'outstandingRevenue' => $outstandingRevenue,
+            'draftInvoiceTotal' => $draftInvoiceTotal,
             'mrr' => $mrr,
             'totalCosts' => $totalCosts,
             'profit' => $profit,

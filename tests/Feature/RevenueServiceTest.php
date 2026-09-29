@@ -200,6 +200,31 @@ test('outstandingRevenue excludes a fully Draft invoice not yet sent to the clie
     expect(app(RevenueService::class)->outstandingRevenue())->toBe(0.0);
 });
 
+test('draftInvoiceTotal sums invoices not yet sent, separately from outstanding revenue', function () {
+    $client = Client::factory()->create();
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-DRAFT-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 25000,
+        'status' => InvoiceStatus::Draft,
+    ]);
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-SENT-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 10000,
+        'status' => InvoiceStatus::Sent,
+    ]);
+
+    $revenue = app(RevenueService::class);
+
+    expect($revenue->draftInvoiceTotal())->toBe(250.0)
+        ->and($revenue->outstandingRevenue())->toBe(100.0);
+});
+
 test('comparisonData expenses are in dollars, not 100x too large in cents', function () {
     $client = Client::factory()->create();
     Subscription::create([

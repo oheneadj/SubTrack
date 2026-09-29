@@ -1,30 +1,36 @@
 <div>
     <x-ui.page-header title="Finance Dashboard" subtitle="High-level overview of revenue, costs, and cash flow" />
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <x-ui.stat-card 
-            label="Total Revenue (Paid)" 
-            value="${{ number_format($totalRevenue, 2) }}" 
-            icon="currency-dollar" 
-            variant="healthy" 
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <x-ui.stat-card
+            label="Total Revenue (Paid)"
+            value="${{ number_format($totalRevenue, 2) }}"
+            icon="currency-dollar"
+            variant="healthy"
         />
-        <x-ui.stat-card 
-            label="Outstanding Revenue" 
-            value="${{ number_format($outstandingRevenue, 2) }}" 
-            icon="file-invoice" 
-            variant="warning" 
+        <x-ui.stat-card
+            label="Outstanding Revenue"
+            value="${{ number_format($outstandingRevenue, 2) }}"
+            icon="file-invoice"
+            variant="warning"
         />
-        <x-ui.stat-card 
-            label="Est. Monthly MRR" 
-            value="${{ number_format($mrr, 2) }}" 
-            icon="calculator" 
-            variant="info" 
+        <x-ui.stat-card
+            label="Draft / Unbilled"
+            value="${{ number_format($draftInvoiceTotal, 2) }}"
+            icon="file-invoice"
+            variant="neutral"
         />
-        <x-ui.stat-card 
-            label="Annual Provider Costs" 
-            value="${{ number_format($totalCosts, 2) }}" 
-            icon="credit-card" 
-            variant="critical" 
+        <x-ui.stat-card
+            label="Est. Monthly MRR"
+            value="${{ number_format($mrr, 2) }}"
+            icon="calculator"
+            variant="info"
+        />
+        <x-ui.stat-card
+            label="Annual Provider Costs"
+            value="${{ number_format($totalCosts, 2) }}"
+            icon="credit-card"
+            variant="critical"
         />
     </div>
 
