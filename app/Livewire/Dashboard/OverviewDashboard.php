@@ -6,7 +6,6 @@ namespace App\Livewire\Dashboard;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
-use App\Enums\SubscriptionStatus;
 use App\Livewire\Concerns\Notifies;
 use App\Models\Client;
 use App\Models\DashboardActivityLog;
@@ -79,16 +78,19 @@ class OverviewDashboard extends Component
     #[Computed]
     public function financeStats(): array
     {
-        $activeSubscriptions = Subscription::where('status', '=', SubscriptionStatus::Active)->get();
-        $annualRecurringCents = $activeSubscriptions->sum('client_renewal_cost_usd');
+        $revenue = app(RevenueService::class);
 
+        // All four figures come from RevenueService — the single source of
+        // truth also used by the Finance dashboard — so the two pages can
+        // never disagree on what these mean again (this file used to
+        // duplicate the calculations independently, which is exactly how
+        // 'costs' drifted out of sync: the Finance dashboard was fixed to
+        // exclude renewals still Pending payment, but this copy wasn't).
         return [
-            // Includes both paid invoices and renewals paid for directly
-            // without ever being invoiced — see RevenueService.
-            'total_revenue' => app(RevenueService::class)->totalRevenue(),
-            'outstanding' => Invoice::whereIn('status', [InvoiceStatus::Sent, InvoiceStatus::Overdue])->sum('total_amount') / 100,
-            'mrr' => $annualRecurringCents / 12 / 100,
-            'costs' => Renewal::sum('provider_cost_usd') / 100,
+            'total_revenue' => $revenue->totalRevenue(),
+            'outstanding' => $revenue->outstandingRevenue(),
+            'mrr' => $revenue->estimatedMonthlyRecurringRevenue(),
+            'costs' => $revenue->totalProviderCosts(),
         ];
     }
 

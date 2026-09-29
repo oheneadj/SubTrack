@@ -24,25 +24,16 @@ class FinanceDashboard extends Component
         // Includes both paid invoices and renewals paid for directly without
         // ever being invoiced — see RevenueService for why both count.
         $totalRevenue = $revenue->totalRevenue();
-
-        $outstandingRevenue = Invoice::whereIn('status', [
-            InvoiceStatus::Sent,
-            InvoiceStatus::Overdue,
-        ])->sum('total_amount') / 100;
-
-        $activeSubscriptions = Subscription::where('status', SubscriptionStatus::Active)->get();
-
-        $annualRecurring = $activeSubscriptions->sum('client_renewal_cost_usd') / 100;
-        $mrr = $annualRecurring / 12;
+        $outstandingRevenue = $revenue->outstandingRevenue();
+        $mrr = $revenue->estimatedMonthlyRecurringRevenue();
+        $totalCosts = $revenue->totalProviderCosts();
 
         // Only renewals actually paid for — a renewal is now created Pending
         // the moment "Start Renewal" raises its invoice (see
         // PrepareRenewalAction), before any payment has been collected, so
-        // counting every renewal here would inflate costs/profit for money
-        // that hasn't come in yet.
-        $paidRenewalStatuses = [PaymentStatus::Paid, PaymentStatus::Renewed];
-        $totalCosts = Renewal::whereIn('payment_status', $paidRenewalStatuses)->sum('provider_cost_usd') / 100;
-        $profit = Renewal::whereIn('payment_status', $paidRenewalStatuses)->sum('client_cost_usd') / 100 - $totalCosts;
+        // counting every renewal here would inflate profit for money that
+        // hasn't come in yet.
+        $profit = Renewal::whereIn('payment_status', [PaymentStatus::Paid, PaymentStatus::Renewed])->sum('client_cost_usd') / 100 - $totalCosts;
 
         $recentPayments = $this->recentPayments();
 

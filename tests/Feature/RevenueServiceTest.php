@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\PrepareRenewalAction;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ServiceType;
@@ -10,6 +11,7 @@ use App\Enums\SubscriptionStatus;
 use App\Livewire\Dashboard\OverviewDashboard;
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\Project;
 use App\Models\Renewal;
 use App\Models\Subscription;
 use App\Models\User;
@@ -102,4 +104,78 @@ test('OverviewDashboard and FinanceDashboard report the same total revenue', fun
     $financeTotal = app(RevenueService::class)->totalRevenue();
 
     expect($overviewTotal)->toBe($financeTotal)->toBe(550.0);
+});
+
+test('OverviewDashboard and FinanceDashboard report the same outstanding revenue, MRR, and provider costs', function () {
+    $client = Client::factory()->create();
+    Invoice::create([
+        'client_id' => $client->id,
+        'invoice_number' => 'INV-REV-OUT-'.uniqid(),
+        'issued_date' => now(),
+        'due_date' => now()->addDays(14),
+        'total_amount' => 12000,
+        'status' => InvoiceStatus::Sent,
+    ]);
+    Subscription::create([
+        'client_id' => $client->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'mrr-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addYear(),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 12000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+
+    $user = User::factory()->create();
+    $stats = Livewire::actingAs($user)->test(OverviewDashboard::class)->get('financeStats');
+    $revenue = app(RevenueService::class);
+
+    expect($stats['outstanding'])->toBe($revenue->outstandingRevenue())
+        ->and($stats['mrr'])->toBe($revenue->estimatedMonthlyRecurringRevenue())
+        ->and($stats['costs'])->toBe($revenue->totalProviderCosts());
+});
+
+test('totalProviderCosts excludes a renewal still Pending payment', function () {
+    $client = Client::factory()->create();
+    $project = Project::create(['client_id' => $client->id, 'project_name' => 'P']);
+    $subscription = Subscription::create([
+        'client_id' => $client->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'pending-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addDays(5),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 1000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+
+    // Renewal created Pending — the moment "Start Renewal" raises its
+    // invoice, before any payment has actually been collected.
+    app(PrepareRenewalAction::class)->execute($subscription, 1000, now()->addYear());
+
+    expect(app(RevenueService::class)->totalProviderCosts())->toBe(0.0);
+});
+
+test('comparisonData expenses are in dollars, not 100x too large in cents', function () {
+    $client = Client::factory()->create();
+    Subscription::create([
+        'client_id' => $client->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'expense-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addYear(),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 6900, // $69.00 in cents
+        'status' => SubscriptionStatus::Active,
+    ]);
+
+    $data = app(RevenueService::class)->comparisonData(1);
+
+    // $69.00/yr / 12 months = $5.75/mo — not $575 (the 100x-too-large
+    // bug this reproduces: dividing cents by 12 without also by 100).
+    expect($data[0]['expenses'])->toBe(5.75);
 });

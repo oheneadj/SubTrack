@@ -78,22 +78,73 @@ class RevenueService
 
     public function comparisonData(int $months = 12): array
     {
-        $data = collect(range($months - 1, 0))->map(function ($monthsAgo) {
-            $date = now()->subMonths($monthsAgo);
+        // Estimated monthly provider costs, held constant across every
+        // month in the range — computed once, not per iteration.
+        $monthlyExpenses = $this->estimatedMonthlyProviderCosts();
 
-            // Expenses: Estimated monthly provider costs (calculated from active subscriptions' renewal_cost_usd / 12)
-            // Note: This is an "Expected Monthly Cost" baseline rather than literal expense tracking
-            $expenses = (float) Subscription::where('status', SubscriptionStatus::Active)
-                ->sum('renewal_cost_usd') / 12;
+        $data = collect(range($months - 1, 0))->map(function ($monthsAgo) use ($monthlyExpenses) {
+            $date = now()->subMonths($monthsAgo);
 
             return [
                 'label' => $date->format('M Y'),
                 'revenue' => $this->revenueForMonth($date->year, $date->month),
-                'expenses' => round($expenses, 2),
+                'expenses' => $monthlyExpenses,
             ];
         });
 
         return $data->toArray();
+    }
+
+    /**
+     * Money actually owed by clients right now — invoices raised but not
+     * yet (fully) paid.
+     */
+    public function outstandingRevenue(): float
+    {
+        return Invoice::whereIn('status', [InvoiceStatus::Sent, InvoiceStatus::Overdue])
+            ->sum('total_amount') / 100;
+    }
+
+    /**
+     * Estimated Monthly Recurring Revenue — every active subscription's
+     * client-facing renewal cost (with markup), annualized then divided by
+     * 12. An estimate of what a "typical" month brings in if everything
+     * renews on schedule, not money actually received.
+     */
+    public function estimatedMonthlyRecurringRevenue(): float
+    {
+        $annualRecurring = Subscription::where('status', SubscriptionStatus::Active)
+            ->get()
+            ->sum('client_renewal_cost_usd') / 100;
+
+        return $annualRecurring / 12;
+    }
+
+    /**
+     * Total actually paid to providers for renewals — only renewals that
+     * have actually been paid for (Paid/Renewed), not ones still Pending
+     * payment. A renewal is created Pending the moment "Start Renewal"
+     * raises its invoice (see PrepareRenewalAction), before any payment
+     * has been collected, so counting every renewal here would inflate
+     * costs for money that hasn't come in yet.
+     */
+    public function totalProviderCosts(): float
+    {
+        return Renewal::whereIn('payment_status', [PaymentStatus::Paid, PaymentStatus::Renewed])
+            ->sum('provider_cost_usd') / 100;
+    }
+
+    /**
+     * Estimated monthly provider cost, from active subscriptions'
+     * provider-facing renewal_cost_usd (no markup — this is what *we*
+     * pay, not what the client pays) annualized then divided by 12. An
+     * "Expected Monthly Cost" baseline, not literal expense tracking.
+     */
+    private function estimatedMonthlyProviderCosts(): float
+    {
+        $annual = Subscription::where('status', SubscriptionStatus::Active)->sum('renewal_cost_usd') / 100;
+
+        return round($annual / 12, 2);
     }
 
     /**
