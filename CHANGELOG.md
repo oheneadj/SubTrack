@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Stat card icons were getting squeezed/clipped against the card edge**: the icon box had no `flex-shrink-0`, so on a card with a wide dollar value (e.g. "$1,124.08") in a tight 6-column row, the flex layout shrank the icon instead of the text, visibly cutting it off. Value text now truncates with an ellipsis instead of squeezing its neighbor, and the icon box is protected from shrinking. Also loosened the Finance dashboard's top stat row from a fixed 6 columns to 3 on medium screens and 6 only on extra-wide ones, so cards get enough room for their values on typical laptop screens
+
+## [Unreleased]
+
 ### Added
 - **Churn / non-renewal signal on the Finance dashboard** — a recurring subscription lapsing without renewal previously left no trace anywhere except quietly disappearing from "Active" status. Added `RevenueService::recentChurn()`, reading the `SubscriptionAutoCancelled` activity log (not `Subscription::updated_at`, since a later unrelated edit to an already-cancelled subscription would otherwise make it look freshly churned) to show a count of subscriptions auto-cancelled in the last 90 days and the estimated lost monthly recurring revenue. Shown as an alert banner, only when something has actually churned
 - Tests: `RevenueServiceChurnTest`

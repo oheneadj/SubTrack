@@ -22,13 +22,13 @@ $baseClasses = "block rounded-2xl border p-5 relative group transition-all durat
     <!-- Decorative background glow -->
     <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
     
-    <div class="relative z-10 flex items-center justify-between">
-        <div>
-            <p class="text-3xl font-bold font-mono leading-none tracking-tight">{{ $value }}</p>
-            <p class="text-xs mt-2 font-medium uppercase tracking-wider text-white/80">{{ $label }}</p>
+    <div class="relative z-10 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+            <p class="text-2xl font-bold font-mono leading-tight tracking-tight truncate">{{ $value }}</p>
+            <p class="text-xs mt-2 font-medium uppercase tracking-wider text-white/80 truncate">{{ $label }}</p>
         </div>
-        
-        <div class="p-3.5 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 text-white">
+
+        <div class="p-3.5 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 text-white shrink-0">
             <x-dynamic-component :component="'icon-' . $icon" class="w-6 h-6" />
         </div>
     </div>
