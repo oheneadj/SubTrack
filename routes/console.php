@@ -21,6 +21,10 @@ Schedule::command('queue:work --stop-when-empty --max-time=55')
 // Check subscription expiries and send reminders daily at 8 AM
 Schedule::command('subtrack:check-expiries')->dailyAt('08:00');
 
+// Flag Sent invoices past their due date as Overdue — money figures and
+// stat cards that filter on Overdue depend on this actually running.
+Schedule::command('subtrack:check-invoice-overdue')->hourly();
+
 // Fallback for missed/late payment webhooks — polls gateways directly
 Schedule::command('payments:poll-pending')->everyFiveMinutes()->withoutOverlapping();
 

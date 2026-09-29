@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Invoices past their due date are now actually flagged Overdue**: the original spec called for this, but no code path anywhere ever performed the transition — invoice status only ever changed in response to a payment. A `Sent` invoice could sit unpaid for months and stay labeled "Sent" forever. This silently broke two things already built assuming it worked: the Home dashboard's "Overdue" stat card (always showed 0) and `RevenueService::outstandingRevenue()`'s inclusion of Overdue invoices (dead filter, never matched). Added `subtrack:check-invoice-overdue`, scheduled hourly, which flags `Sent` invoices past `due_date` as `Overdue` (per-model updates so the existing `InvoiceObserver` activity logging fires correctly). Deliberately scoped to `Sent` only — a `Partially Paid` invoice past due date stays `Partially Paid` rather than being collapsed into `Overdue`, since that would destroy the "some money already came in" information
+- Tests: `CheckInvoiceOverdueTest`, including one proving the Home dashboard's Overdue stat actually goes from 0 to correct after this command runs
+
+## [Unreleased]
+
+### Added
 - **Restore for deleted subscriptions** — same "Trash" toggle pattern as Clients/Projects, added to the Subscriptions index. Bulk-select and "Add Subscription" are hidden while viewing the trash, since neither applies there. Also corrected the delete confirmation copy, which previously said "This action cannot be undone" for what's actually a soft delete. Providers were deliberately left without this (a Provider is just a name/website/email — trivial to recreate, not worth the added UI for how rarely it'd be needed)
 - Tests: `SubscriptionTrashUiTest`
 
