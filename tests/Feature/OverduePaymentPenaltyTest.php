@@ -5,14 +5,18 @@ declare(strict_types=1);
 use App\Enums\ActivityEventType;
 use App\Enums\SubscriptionRenewalType;
 use App\Enums\SubscriptionStatus;
+use App\Livewire\Renewals\RenewalTracker;
+use App\Livewire\Subscriptions\SubscriptionShow;
 use App\Mail\SubscriptionReminderMail;
 use App\Models\Client;
 use App\Models\DashboardActivityLog;
 use App\Models\Provider;
 use App\Models\Setting;
 use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
 
 function makePenaltyTestSubscription(int $daysOverdue, SubscriptionStatus $status = SubscriptionStatus::Expired): Subscription
 {
@@ -98,6 +102,36 @@ test('the reminder email does not mention penalties before expiry', function () 
     $html = (new SubscriptionReminderMail($subscription))->render();
 
     expect($html)->not->toContain('Payment Overdue Notice');
+});
+
+test('subscription-show displays the stated penalty amount once accrued', function () {
+    Setting::set('penalty_percentage', '5');
+    $subscription = makePenaltyTestSubscription(65);
+
+    $response = Livewire::actingAs(User::factory()->create())
+        ->test(SubscriptionShow::class, ['subscription' => $subscription]);
+
+    // Previously computed and never shown anywhere but a reminder email.
+    $response->assertSee('$15.00')->assertSee('Late Penalty Owed');
+});
+
+test('subscription-show does not show a penalty card when none has accrued', function () {
+    Setting::set('penalty_percentage', '5');
+    $subscription = makePenaltyTestSubscription(-5, SubscriptionStatus::Active);
+
+    $response = Livewire::actingAs(User::factory()->create())
+        ->test(SubscriptionShow::class, ['subscription' => $subscription]);
+
+    $response->assertDontSee('Late Penalty Owed');
+});
+
+test('renewal tracker shows the penalty amount next to missed payments', function () {
+    Setting::set('penalty_percentage', '5');
+    $subscription = makePenaltyTestSubscription(65);
+
+    $response = Livewire::actingAs(User::factory()->create())->test(RenewalTracker::class);
+
+    $response->assertSee('3 payments missed')->assertSee('$15.00 penalty');
 });
 
 test('a subscription is auto-cancelled once the grace period lapses', function () {

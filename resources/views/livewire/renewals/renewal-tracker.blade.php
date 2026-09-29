@@ -50,6 +50,9 @@
                         <div class="text-[10px] uppercase text-slate-400">
                             @if($sub->days_until_expiry < 0 && $sub->missed_payments_count)
                                 {{ $sub->missed_payments_count }} payment{{ $sub->missed_payments_count > 1 ? 's' : '' }} missed
+                                @if($sub->formatted_stated_penalty_amount)
+                                    &middot; {{ $sub->formatted_stated_penalty_amount }} penalty
+                                @endif
                             @else
                                 {{ $sub->days_until_expiry }} days left
                             @endif

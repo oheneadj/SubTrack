@@ -16,7 +16,7 @@
     </x-ui.page-header>
 
     {{-- Stats Row --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 {{ $subscription->formatted_stated_penalty_amount ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} gap-4 mb-8">
         <x-ui.stat-card
             :label="$subscription->cost_label"
             :value="$subscription->formatted_renewal_cost_usd . $subscription->cost_cycle_suffix"
@@ -37,6 +37,15 @@
                 :value="$subscription->days_until_expiry >= 0 ? $subscription->days_until_expiry : $subscription->expiry_date->format('M d, Y')"
                 icon="check"
                 variant="neutral"
+            />
+        @endif
+        {{-- Only appears once a missed payment has actually accrued a stated penalty (Setting `penalty_percentage`) --}}
+        @if($subscription->formatted_stated_penalty_amount)
+            <x-ui.stat-card
+                label="Late Penalty Owed"
+                :value="$subscription->formatted_stated_penalty_amount"
+                icon="alert-circle"
+                variant="critical"
             />
         @endif
         <x-ui.stat-card

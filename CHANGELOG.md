@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Stated late-payment penalty amounts were computed but never shown anywhere except one reminder email**: `Subscription::stated_penalty_amount` (a real $ figure once a recurring subscription has missed payments and a `penalty_percentage` is configured) was invisible on the subscription's own page and on the renewal tracker — only the missed-payment *count* was shown, never the dollar amount tied to it. Added a "Late Penalty Owed" stat card to Subscription Show (only when a penalty has actually accrued) and the penalty amount next to the missed-payments note on the Renewal Tracker
+- Tests: extended `OverduePaymentPenaltyTest` with 3 new UI-rendering cases
+
+## [Unreleased]
+
+### Fixed
 - **"Outstanding Revenue" silently excluded partially paid invoices**: `RevenueService::outstandingRevenue()` only counted `Sent`/`Overdue` invoices, and summed their full `total_amount` rather than the remaining `balance_due`. A `Partially Paid` invoice's remaining balance — real money still owed — wasn't in that `whereIn` at all, so it never appeared in "Outstanding Revenue" anywhere in the app. Now sums `balance_due` across `Sent`, `Overdue`, and `PartiallyPaid` invoices. `Draft` invoices remain excluded on purpose — money not yet billed to the client isn't "outstanding"
 - Tests: extended `RevenueServiceTest` with a partial-payment and a draft-invoice case
 
