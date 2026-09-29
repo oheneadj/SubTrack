@@ -101,7 +101,12 @@ class OverviewDashboard extends Component
             'critical' => Subscription::critical()->count(),
             'warning' => Subscription::warning()->count(),
             'healthy' => Subscription::healthy()->count(),
-            'awaiting' => Renewal::where('payment_status', '=', PaymentStatus::Invoiced)->count(),
+            // PaymentStatus::Invoiced is never actually assigned anywhere in
+            // the app — a real Renewal only ever exists as Pending or Paid
+            // (see PrepareRenewalAction / Invoice::settleLinkedRenewal), so
+            // this always returned 0 before. Pending is the real
+            // "awaiting payment" state.
+            'awaiting' => Renewal::where('payment_status', '=', PaymentStatus::Pending)->count(),
             'overdue' => Invoice::where('status', '=', InvoiceStatus::Overdue)->count(),
             'total_clients' => Client::count(),
         ];

@@ -51,7 +51,7 @@
             :value="$this->stats['awaiting']"
             icon="currency-dollar"
             variant="info"
-            :href="route('invoices.index')"
+            :href="route('renewals.index')"
         />
         <x-ui.stat-card
             label="Overdue"

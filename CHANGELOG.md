@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Home dashboard's "Awaiting" stat always showed 0**: it counted `Renewal::where('payment_status', PaymentStatus::Invoiced)`, but that enum case is never actually assigned anywhere in the app — `PrepareRenewalAction` always creates a renewal as `Pending`, and the only other real transition is straight to `Paid`. `Renewed`/`Lapsed`/`Invoiced` are all dead states no real code path ever sets. Now counts `Pending` renewals, the real "awaiting payment" state, and links to the Renewal Tracker instead of Invoices (where a Pending renewal doesn't necessarily live). Also considered merging this with Finance's "Outstanding Revenue" as one figure, but they measure genuinely different things — Awaiting counts renewals not yet paid regardless of whether their invoice has been sent, while Outstanding is money on invoices already sent — so kept them separate rather than forcing a merge that would misrepresent one or the other
+- Tests: `OverviewDashboardAwaitingStatTest`
+
+## [Unreleased]
+
 ### Added
 - **Top Clients by Revenue on the Finance dashboard** — no dashboard previously showed which clients the business actually depends on, useful for spotting revenue concentration risk. Combines both revenue sources (paid invoices and directly-paid renewals), attributing a renewal to the subscription's effective client — its own client, or its project's client when the subscription belongs to a project
 - Tests: `RevenueServiceTopClientsTest`
