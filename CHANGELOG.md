@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Finance dashboard's "Upcoming Expenses (Renewals)" card — same bug class, worse this time**: it rendered `number_format($sub->renewal_cost_usd, 2)` directly, with no `/100` conversion at all, so a $69.00 renewal cost showed as $6,900.00. Swapped in the existing `formatted_renewal_cost_usd` accessor, which already does this correctly everywhere else in the app. Also excluded one-time subscriptions from the card — a one-off purchase never renews, so it doesn't belong on a list of upcoming renewal expenses even if its expiry date happens to fall soon
+- Tests: `FinanceDashboardUpcomingRenewalsTest`
+
+## [Unreleased]
+
+### Fixed
 - **Found the exact "$69 shown as $6,900.00" bug**: `RevenueService::comparisonData()`'s monthly "expenses" figure (used for the Finance dashboard's Revenue vs. Expenses chart) divided active subscriptions' `renewal_cost_usd` — stored in cents — by 12 months, but never by 100 to convert to dollars. Every expenses value on that chart was exactly 100x too large
 - **Home dashboard's "Annual Costs" card was a second, independently-duplicated calculation of the same figure the Finance dashboard already computes**, and it had drifted out of sync: it summed *every* renewal regardless of payment status, including ones still `Pending` (created the moment "Start Renewal" raises an invoice, before any payment is collected) — a bug already fixed on the Finance dashboard earlier this session, but never applied here since it was a separate copy of the logic. Centralized all four dashboard money figures (Total Revenue, Outstanding Revenue, Est. Monthly MRR, Annual/Total Provider Costs) into `RevenueService` as the single source of truth for both dashboards, so they can't diverge like this again
 - Tests: extended `RevenueServiceTest` (including one that reproduces the exact $69/$6,900 scenario)

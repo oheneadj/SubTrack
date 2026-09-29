@@ -128,7 +128,7 @@
                                     </div>
                                 </div>
                                 <div class="font-bold text-slate-700 text-right">
-                                    ${{ number_format($sub->renewal_cost_usd, 2) }}
+                                    {{ $sub->formatted_renewal_cost_usd }}
                                     <div class="text-[10px] font-normal text-slate-400 uppercase">Cost</div>
                                 </div>
                             </div>

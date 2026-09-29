@@ -6,6 +6,7 @@ namespace App\Livewire\Dashboard;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\SubscriptionRenewalType;
 use App\Enums\SubscriptionStatus;
 use App\Models\Invoice;
 use App\Models\Renewal;
@@ -37,9 +38,12 @@ class FinanceDashboard extends Component
 
         $recentPayments = $this->recentPayments();
 
-        // Upcoming Renewals
+        // Upcoming Renewals — a one-time purchase never renews, so it
+        // doesn't belong on a list of upcoming renewal expenses even if its
+        // (non-recurring) expiry date happens to be soon.
         $upcomingRenewals = Subscription::with(['provider', 'project.client'])
             ->where('status', SubscriptionStatus::Active)
+            ->whereIn('renewal_type', [SubscriptionRenewalType::RecurringMonthly, SubscriptionRenewalType::RecurringAnnually])
             ->orderBy('expiry_date', 'asc')
             ->take(5)
             ->get();
