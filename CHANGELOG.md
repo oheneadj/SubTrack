@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- Relabeled "Monthly Revenue" to "Monthly Rev." on the Finance dashboard
+
+## [Unreleased]
+
+### Changed
 - Relabeled "Draft / Unbilled" to "Unbilled" on the Finance dashboard
 
 ## [Unreleased]

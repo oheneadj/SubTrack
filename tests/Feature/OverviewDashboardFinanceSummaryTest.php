@@ -22,7 +22,7 @@ test('Home dashboard shows only minimal finance context, not the full duplicated
     // breakdown (chart, MRR, provider costs) — the exact source of the
     // "two dashboards silently drift apart" bug class fixed this session.
     $response->assertDontSee('Revenue vs. Expenses')
-        ->assertDontSee('Monthly Revenue')
+        ->assertDontSee('Monthly Rev.')
         ->assertDontSee('Provider Costs');
 });
 

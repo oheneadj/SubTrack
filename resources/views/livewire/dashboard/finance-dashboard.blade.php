@@ -21,7 +21,7 @@
             variant="neutral"
         />
         <x-ui.stat-card
-            label="Monthly Revenue"
+            label="Monthly Rev."
             :value="\App\Support\Money::compact($mrr)"
             icon="calculator"
             variant="info"
