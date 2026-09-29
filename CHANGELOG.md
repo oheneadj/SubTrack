@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Home dashboard no longer duplicates the entire Finance breakdown**: it previously repeated the Revenue vs. Expenses chart and 4 stat cards (Total Revenue, Outstanding, Avg. Monthly Revenue, Annual Costs) — the exact source of the "two dashboards silently drift apart" bug class this session kept finding and fixing (outstanding revenue, provider costs, and the $69/$6,900 bug all stemmed from this same duplication). Home now shows just 2 lightweight context tiles (Total Revenue, Outstanding) plus a link through to the Finance dashboard for the full breakdown, chart, provider costs, MRR, profit, and provider/client breakdowns. Also removed the now-dead `comparisonData`/`revenueData`/`revenueChange` properties on `OverviewDashboard`, which were computed on every page load and never actually used in the view
+- Tests: `OverviewDashboardFinanceSummaryTest`
+
+## [Unreleased]
+
 ### Fixed
 - **Home dashboard's "Awaiting" stat always showed 0**: it counted `Renewal::where('payment_status', PaymentStatus::Invoiced)`, but that enum case is never actually assigned anywhere in the app — `PrepareRenewalAction` always creates a renewal as `Pending`, and the only other real transition is straight to `Paid`. `Renewed`/`Lapsed`/`Invoiced` are all dead states no real code path ever sets. Now counts `Pending` renewals, the real "awaiting payment" state, and links to the Renewal Tracker instead of Invoices (where a Pending renewal doesn't necessarily live). Also considered merging this with Finance's "Outstanding Revenue" as one figure, but they measure genuinely different things — Awaiting counts renewals not yet paid regardless of whether their invoice has been sent, while Outstanding is money on invoices already sent — so kept them separate rather than forcing a merge that would misrepresent one or the other
 - Tests: `OverviewDashboardAwaitingStatTest`

@@ -69,69 +69,33 @@
         />
     </div>
 
-    {{-- Finance Summary Section --}}
+    {{-- Finance Summary Section — deliberately minimal. The full breakdown
+         (chart, MRR, provider costs, profit, provider/client breakdowns)
+         lives on the Finance dashboard; duplicating it here was the exact
+         source of the "two dashboards silently drift apart" bug class this
+         app kept hitting. These 2 tiles are just enough context to know
+         whether to click through. --}}
     <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-4">Finance Summary</h2>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {{-- Revenue Chart Card --}}
-        <x-ui.card class="lg:col-span-2 flex flex-col justify-between" x-data="comparisonChart({{ json_encode($comparisonData) }})">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="font-bold text-slate-800">Revenue vs. Expenses</h3>
-                    <p class="text-xs text-slate-500">Performance over the last 12 months</p>
-                </div>
-                <div class="flex flex-col items-end gap-2">
-                    <div class="flex items-center gap-3 text-[10px] font-bold">
-                        <div class="flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                            <span class="text-slate-500 uppercase">Revenue</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-                            <span class="text-slate-500 uppercase">Expenses</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="h-[180px] w-full relative">
-                <canvas x-ref="canvas"></canvas>
-            </div>
-        </x-ui.card>
 
-        {{-- Mini Stats Column --}}
-        <div class="grid grid-cols-1 row-span-2 gap-4">
-            <x-ui.stat-card
-                label="Total Revenue"
-                value="${{ number_format($this->financeStats['total_revenue'], 2) }}"
-                icon="currency-dollar"
-                variant="healthy"
-                :href="route('finances.index')"
-            />
-            <x-ui.stat-card
-                label="Outstanding"
-                value="${{ number_format($this->financeStats['outstanding'], 2) }}"
-                icon="file-invoice"
-                variant="warning"
-                :href="route('finances.index')"
-            />
-        </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <x-ui.stat-card
+            label="Total Revenue"
+            value="${{ number_format($this->financeStats['total_revenue'], 2) }}"
+            icon="currency-dollar"
+            variant="healthy"
+            :href="route('finances.index')"
+        />
+        <x-ui.stat-card
+            label="Outstanding"
+            value="${{ number_format($this->financeStats['outstanding'], 2) }}"
+            icon="file-invoice"
+            variant="warning"
+            :href="route('finances.index')"
+        />
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        <x-ui.stat-card
-            label="Avg. Monthly Revenue"
-            value="${{ number_format($this->financeStats['mrr'], 2) }}"
-            icon="calculator"
-            variant="info"
-            :href="route('finances.index')"
-        />
-        <x-ui.stat-card
-            label="Annual Costs"
-            value="${{ number_format($this->financeStats['costs'], 2) }}"
-            icon="credit-card"
-            variant="critical"
-            :href="route('finances.index')"
-        />
+    <div class="text-center mb-8">
+        <a href="{{ route('finances.index') }}" class="text-sm font-medium text-blue-600 hover:underline" wire:navigate>View Finance Dashboard for full details &rarr;</a>
     </div>
 
     {{-- Two Column Section: Critical + Warning Tables --}}
@@ -327,92 +291,3 @@
     </div>
 
 </div>
-
-@push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script>
-function comparisonChart(data) {
-    return {
-        init() {
-            const labels = data.map(d => d.label);
-            const revenue = data.map(d => d.revenue);
-            const expenses = data.map(d => d.expenses);
-            const ctx = this.$refs.canvas.getContext('2d');
-            
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'Revenue',
-                            data: revenue,
-                            borderColor: '#2563eb', // blue-600
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 2,
-                            pointHoverRadius: 6,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#2563eb',
-                            pointBorderWidth: 2,
-                        },
-                        {
-                            label: 'Expenses',
-                            data: expenses,
-                            borderColor: '#94a3b8', // slate-400
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            fill: false,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            pointHoverRadius: 4,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            padding: 12,
-                            bodySpacing: 4,
-                            callbacks: {
-                                label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.raw.toLocaleString()
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { 
-                                font: { size: 9 },
-                                maxRotation: 0,
-                                autoSkip: true,
-                                maxTicksLimit: 6
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#f1f5f9' },
-                            ticks: {
-                                font: { size: 9 },
-                                callback: value => '$' + value.toLocaleString()
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-}
-</script>
-@endpush
