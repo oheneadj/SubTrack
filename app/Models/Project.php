@@ -55,6 +55,11 @@ class Project extends Model
         static::deleting(function (self $project): void {
             $project->subscriptions()->get()->each->delete();
         });
+
+        // Mirrors the deleting cascade above.
+        static::restoring(function (self $project): void {
+            $project->subscriptions()->onlyTrashed()->get()->each->restore();
+        });
     }
 
     /**

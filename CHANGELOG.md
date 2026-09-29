@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Restore for deleted clients and projects** — a "Trash" toggle on the Clients and Projects index pages switches the list to show only deleted records, each with a "Restore" action. Restoring cascades symmetrically to how delete cascades: restoring a client brings back its projects (and, through them, their subscriptions) and any subscription attached directly to it; restoring a project brings back its subscriptions. A project cascade-deleted along with its client still shows correctly in the Projects trash even though its client is also trashed (its own list normally hides projects whose client isn't active — the trash view drops that filter and eager-loads the client `withTrashed()` so its name still renders)
+- Tests: `ClientProjectTrashUiTest`, extended `ClientProjectCascadeDeleteTest` with restore cases
+
+## [Unreleased]
+
 ### Changed
 - **Deleting a client or project now cascades a soft-delete to its active scope, consistently, app-wide**: previously, deleting a `Client` or `Project` had no cascade at all — related Projects/Subscriptions stayed fully active, and different pages disagreed about it (Invoices/Projects indexes silently hid records belonging to a deleted client via `whereHas('client')`, while Subscriptions, the Renewal Tracker, and every dashboard money figure kept counting them normally under "Unknown Client"). Deleting a Client now soft-deletes its Projects (which cascades to their Subscriptions) and any Subscription attached directly to the client. Deleting a Project soft-deletes its Subscriptions. Invoices/Renewals/Payments/Receipts are deliberately left untouched in both cases — they're already-billed financial history, not active scope, and this app already treats a missing client/subscription reference on those defensively (`?->name ?? 'Unknown Client'`) rather than as an error. Also corrected the delete confirmation copy, which previously said "permanently remove" for what is actually a soft delete
 - Tests: `ClientProjectCascadeDeleteTest`

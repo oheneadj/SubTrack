@@ -1,12 +1,25 @@
 <div>
-    <x-ui.page-header title="Clients" subtitle="Manage your client relationships and contact details">
-        <x-ui.button
-            class="whitespace-nowrap"
-            @click="$dispatch('open-modal', { id: 'client-modal' }); Livewire.dispatchTo('clients.client-form', 'open-client-modal')"
-        >
-            <x-icon-plus class="w-4 h-4" />
-            <span>Add Client</span>
-        </x-ui.button>
+    <x-ui.page-header title="Clients" subtitle="{{ $showTrash ? 'Deleted clients — restore one to bring it and its projects/subscriptions back' : 'Manage your client relationships and contact details' }}">
+        <div class="flex items-center gap-2">
+            <x-ui.button variant="ghost" wire:click="toggleTrash" class="whitespace-nowrap">
+                @if($showTrash)
+                    <x-icon-arrow-left class="w-4 h-4" />
+                    <span>Back to Clients</span>
+                @else
+                    <x-icon-trash class="w-4 h-4" />
+                    <span>Trash</span>
+                @endif
+            </x-ui.button>
+            @unless($showTrash)
+                <x-ui.button
+                    class="whitespace-nowrap"
+                    @click="$dispatch('open-modal', { id: 'client-modal' }); Livewire.dispatchTo('clients.client-form', 'open-client-modal')"
+                >
+                    <x-icon-plus class="w-4 h-4" />
+                    <span>Add Client</span>
+                </x-ui.button>
+            @endunless
+        </div>
     </x-ui.page-header>
 
 
@@ -16,21 +29,28 @@
     {{-- Table --}}
     @if($clients->isEmpty())
         <x-ui.empty-state
-            icon="users"
-            title="No clients found"
-            message="{{ $search ? 'Try adjusting your search query.' : 'Get started by adding your first client.' }}"
+            icon="{{ $showTrash ? 'trash' : 'users' }}"
+            title="{{ $showTrash ? 'Trash is empty' : 'No clients found' }}"
+            message="{{ $showTrash ? 'Deleted clients will show up here.' : ($search ? 'Try adjusting your search query.' : 'Get started by adding your first client.') }}"
         >
-            <x-ui.button @click="$dispatch('open-modal', { id: 'client-modal' }); Livewire.dispatchTo('clients.client-form', 'open-client-modal')">Add Client</x-ui.button>
+            @unless($showTrash)
+                <x-ui.button @click="$dispatch('open-modal', { id: 'client-modal' }); Livewire.dispatchTo('clients.client-form', 'open-client-modal')">Add Client</x-ui.button>
+            @endunless
         </x-ui.empty-state>
     @else
-        <x-ui.data-table :headers="['name' => 'Client Name', 'email' => 'Email', 'projects_count' => 'Projects', 'created_at' => 'Registered', '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
+        <x-ui.data-table :headers="['name' => 'Client Name', 'email' => 'Email', 'projects_count' => 'Projects', 'created_at' => ($showTrash ? 'Deleted' : 'Registered'), '']" :sortColumn="$sortColumn" :sortDirection="$sortDirection">
             @foreach($clients as $client)
-                <tr class="hover:bg-slate-50 transition-colors">
+                <tr class="hover:bg-slate-50 transition-colors" wire:key="client-{{ $client->id }}">
                     <td>
-                        <a href="{{ route('clients.show', $client) }}" class="group block" wire:navigate>
-                            <div class="font-bold text-primary group-hover:text-blue-600 group-hover:underline transition-colors">{{ $client->name }}</div>
+                        @if($showTrash)
+                            <div class="font-bold text-slate-500">{{ $client->name }}</div>
                             <div class="text-xs text-secondary">{{ $client->company_name ?? 'Individual' }}</div>
-                        </a>
+                        @else
+                            <a href="{{ route('clients.show', $client) }}" class="group block" wire:navigate>
+                                <div class="font-bold text-primary group-hover:text-blue-600 group-hover:underline transition-colors">{{ $client->name }}</div>
+                                <div class="text-xs text-secondary">{{ $client->company_name ?? 'Individual' }}</div>
+                            </a>
+                        @endif
                     </td>
                     <td>
                         <a href="mailto:{{ $client->email }}" class="text-accent hover:underline flex items-center gap-1.5">
@@ -42,20 +62,27 @@
                         <span class="badge badge-neutral badge-soft font-mono">{{ $client->projects_count }}</span>
                     </td>
                     <td class="text-secondary text-sm">
-                        {{ $client->created_at->format('M d, Y') }}
+                        {{ $showTrash ? $client->deleted_at->format('M d, Y') : $client->created_at->format('M d, Y') }}
                     </td>
                     <td class="text-right">
-                        <x-ui.action-menu 
-                            :viewAction="route('clients.show', $client)"
-                            editAction="Livewire.dispatchTo('clients.client-form', 'open-client-modal', { id: '{{ $client->ulid }}' })"
-                            editModalId="client-modal"
-                            deleteAction="openDeleteModal('{{ $client->ulid }}')"
-                        >
-                            <x-ui.button as="a" variant="info" size="xs" href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" wire:navigate>
-                                <x-icon-mail class="w-3.5 h-3.5" />
-                                <span>Email</span>
+                        @if($showTrash)
+                            <x-ui.button wire:click="restore('{{ $client->ulid }}')" variant="soft" size="xs">
+                                <x-icon-refresh class="w-3.5 h-3.5" />
+                                <span>Restore</span>
                             </x-ui.button>
-                        </x-ui.action-menu>
+                        @else
+                            <x-ui.action-menu
+                                :viewAction="route('clients.show', $client)"
+                                editAction="Livewire.dispatchTo('clients.client-form', 'open-client-modal', { id: '{{ $client->ulid }}' })"
+                                editModalId="client-modal"
+                                deleteAction="openDeleteModal('{{ $client->ulid }}')"
+                            >
+                                <x-ui.button as="a" variant="info" size="xs" href="{{ route('mail-mailer.index', ['clientId' => $client->ulid]) }}" wire:navigate>
+                                    <x-icon-mail class="w-3.5 h-3.5" />
+                                    <span>Email</span>
+                                </x-ui.button>
+                            </x-ui.action-menu>
+                        @endif
                     </td>
                 </tr>
             @endforeach

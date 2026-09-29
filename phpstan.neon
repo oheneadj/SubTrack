@@ -34,3 +34,7 @@ parameters:
           path: app/Services/RevenueService.php
         # Fortify scaffolded MustVerifyEmail instanceof check — safe to suppress.
         - '#Instanceof between Illuminate\\Contracts\\Auth\\MustVerifyEmail#'
+        # onlyTrashed() is a real Eloquent method on any relation targeting a
+        # SoftDeletes model (added by SoftDeletingScope's macro registration)
+        # — Larastan's stubs just don't know about it.
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany::onlyTrashed\(\)#'

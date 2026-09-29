@@ -31,8 +31,13 @@ class ClientIndex extends Component
 
     public string $deletePassword = '';
 
+    // Trash view — a simple toggle rather than a separate page, since
+    // restoring a deleted client is expected to be rare.
+    public bool $showTrash = false;
+
     protected $queryString = [
         'search' => ['except' => ''],
+        'showTrash' => ['except' => false],
     ];
 
     /** Flash the success message from the shared client-form modal after a create/update. */
@@ -75,12 +80,29 @@ class ClientIndex extends Component
         $this->reset('deletePassword', 'deletingId');
     }
 
+    public function toggleTrash(): void
+    {
+        $this->showTrash = ! $this->showTrash;
+        $this->resetPage();
+    }
+
+    public function restore(string $ulid): void
+    {
+        $client = Client::onlyTrashed()->where('ulid', $ulid)->firstOrFail();
+        $client->restore();
+        $this->notifySuccess("{$client->name} has been restored.");
+    }
+
     public function render(): View
     {
+        $query = Client::search($this->search)->withCount('projects');
+
+        if ($this->showTrash) {
+            $query->onlyTrashed();
+        }
+
         return view('livewire.clients.client-index', [
-            'clients' => $this->applySorting(Client::search($this->search)
-                ->withCount('projects'))
-                ->paginate(15),
+            'clients' => $this->applySorting($query)->paginate(15),
         ])->layout('layouts.app');
     }
 }

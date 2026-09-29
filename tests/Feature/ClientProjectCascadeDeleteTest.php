@@ -144,3 +144,68 @@ test('the project index delete flow cascades to subscriptions', function () {
     expect(Project::withTrashed()->find($project->id)->trashed())->toBeTrue()
         ->and(Subscription::withTrashed()->find($subscription->id)->trashed())->toBeTrue();
 });
+
+test('restoring a client cascades to its projects and directly-attached subscriptions', function () {
+    $client = Client::factory()->create();
+    $project = Project::create(['client_id' => $client->id, 'project_name' => 'Restore Cascade Project']);
+    $directSubscription = Subscription::create([
+        'client_id' => $client->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'restore-direct-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addYear(),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 1000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+
+    $client->delete();
+    $client->restore();
+
+    expect(Client::find($client->id))->not->toBeNull()
+        ->and(Project::find($project->id))->not->toBeNull()
+        ->and(Subscription::find($directSubscription->id))->not->toBeNull();
+});
+
+test('restoring a client cascades through its projects to their subscriptions too', function () {
+    $client = Client::factory()->create();
+    $project = Project::create(['client_id' => $client->id, 'project_name' => 'Restore Nested Project']);
+    $projectSubscription = Subscription::create([
+        'project_id' => $project->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'restore-nested-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addYear(),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 1000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+
+    $client->delete();
+    $client->restore();
+
+    expect(Subscription::find($projectSubscription->id))->not->toBeNull();
+});
+
+test('restoring a project cascades to its subscriptions', function () {
+    $client = Client::factory()->create();
+    $project = Project::create(['client_id' => $client->id, 'project_name' => 'Restore Solo Project']);
+    $subscription = Subscription::create([
+        'project_id' => $project->id,
+        'service_type' => ServiceType::Domain,
+        'renewal_type' => SubscriptionRenewalType::RecurringAnnually,
+        'domain_name' => 'restore-solo-'.uniqid().'.test',
+        'purchase_date' => now()->subYear(),
+        'expiry_date' => now()->addYear(),
+        'purchase_cost_usd' => 1000,
+        'renewal_cost_usd' => 1000,
+        'status' => SubscriptionStatus::Active,
+    ]);
+
+    $project->delete();
+    $project->restore();
+
+    expect(Subscription::find($subscription->id))->not->toBeNull();
+});

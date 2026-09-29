@@ -47,6 +47,15 @@ class Client extends Model
             $client->projects()->get()->each->delete();
             $client->directSubscriptions()->get()->each->delete();
         });
+
+        // Mirrors the deleting cascade above: restoring a client restores
+        // every project (which cascades to its own subscriptions) and
+        // direct subscription that's currently trashed, rather than
+        // leaving the client "back" but its scope still gone.
+        static::restoring(function (self $client): void {
+            $client->projects()->onlyTrashed()->get()->each->restore();
+            $client->directSubscriptions()->onlyTrashed()->get()->each->restore();
+        });
     }
 
     public function projects(): HasMany
